@@ -94,10 +94,10 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.kidstube" name="Kids-Tube.nl" version="1.0.1" provider-name="spoyser">
+<addon id="plugin.video.kidstube" name="Kids-Tube.nl" version="1.0.2" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="plugin.video.youtube" version="4.4.6"/>
+    <import addon="script.module.simpleYT" version="0.0.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
@@ -209,13 +209,13 @@
 
 <addon id="repository.spoyser"
         name="spoysers XBMC Add-ons"
-        version="1.0.4"
+        version="1.0.5"
         provider-name="spoyser">
     <extension point="xbmc.addon.repository"
         name="spoysers XBMC Add-ons">
-        <info compressed="false">https://spoyser-repo.googlecode.com/git/addons.xml</info>
-        <checksum>https://spoyser-repo.googlecode.com/git/addons.xml.md5</checksum>
-        <datadir zip="true">https://spoyser-repo.googlecode.com/git/zips</datadir>
+        <info compressed="false">https://github.com/spoyser/spoyser-repo/raw/master/addons.xml</info>
+        <checksum>https://github.com/spoyser/spoyser-repo/raw/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://github.com/spoyser/spoyser-repo/raw/master/zips/</datadir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Install XBMC add-ons from the official spoyser repository</summary>
