@@ -22,6 +22,7 @@ import urllib
 import urllib2
 import random
 import re
+
 import os
 
 import xbmc
@@ -36,7 +37,7 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Kids-Tube.nl'
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 URL     = 'http://www.kids-tube.nl/'
 
 
@@ -60,9 +61,10 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if curr == '1.0.0':
+    if prev == '0.0.0':
         d = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, GETTEXT(30001), GETTEXT(30002), '')
+        return
 
 
 def Clean(text):
@@ -200,28 +202,21 @@ def ParseURL(_url):
             AddVideo(title, url, image)
         except:
             pass
-    
-    try:    nav   = re.compile('<div class=\'wp-pagenavi\'>(.+?)</div>').search(original).group(1)
+
+    try:    nav = re.compile('<div class=\'wp-pagenavi\'>(.+?)</div>').search(original).group(1)
     except: return
 
-    match = re.compile('<a href=\'(.+?)\' class=\'.+?\'>(.+?)</a>').findall(nav)
-    pages = []
+    match = re.compile('href="http://www.kids-tube.nl/page/(.+?)/').findall(nav)
+
+    pages = [1]
     root  = None
     for page in match:
-        url = page[0]
-        if not root:
-            try:    root = url.split('page', 1)[0]
-            except: root = None
-
-        try:    
-            page = url.rsplit('page/', 1)[1]
-            page = page.split('/',     1)[0]
-            page = int(page)
-        except: page = 1
-
-        pages.append(page)
+        if int(page) not in pages:
+            pages.append(int(page))
 
     pages.sort()
+
+    root = 'http://www.kids-tube.nl/'
 
     for page in range(1, pages[-1]+1):
         url = root
@@ -242,7 +237,8 @@ def PlayID(mode, id):
     url = None
 
     if mode == YOUTUBE:
-        url = 'plugin://plugin.video.youtube/?path=root/video&action=play_video&videoid=%s' % id
+        return PlayYouTube(id) 
+        #url = 'plugin://plugin.video.youtube/?path=root/video&action=play_video&videoid=%s' % id
 
     if mode == VIMEO:
         if CheckVimeo(): 
@@ -251,6 +247,10 @@ def PlayID(mode, id):
     if url:
         xbmc.Player().play(url) 
 
+
+def PlayYouTube(id):
+    from simpleYT import yt
+    return yt.PlayVideo(id)
 
 
 def CheckVimeo():

@@ -1,0 +1,11 @@
+v1.0.2:
+  - Removed need for YouTube addon
+  - Fixed due to changes on website
+
+v1.0.1:
+  - Fixed Vimeo hosted videos
+  - Show all available pages rather than just what the website shows
+  - Added language files
+
+v1.0.0:
+  - initial release

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.kidstube" name="Kids-Tube.nl" version="1.0.1" provider-name="spoyser">
+<addon id="plugin.video.kidstube" name="Kids-Tube.nl" version="1.0.2" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="plugin.video.youtube" version="4.4.6"/>
+    <import addon="script.module.simpleYT" version="0.0.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
