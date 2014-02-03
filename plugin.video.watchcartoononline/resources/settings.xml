@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="General">
+        <setting id="VERSION"       type="text"      label="Current Version"         default="0.0.0" visible="false"/>
+        <setting id="RECORD_FOLDER" type="folder"    label="Default download folder" default=""      visible="false"/>
+        <setting id="ASK_FOLDER"    type="bool"      label="Ask for folder"          default="false" visible="false"/>
+        <setting id="ASK_FILENAME"  type="bool"      label="Ask for filename"        default="true"  visible="false"/>
+    </category>
+</settings>

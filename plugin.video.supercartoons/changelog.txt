@@ -1,0 +1,19 @@
+v1.0.4:
+  - added Download via Context menu
+
+v1.0.3:
+  - fixed due to changes at website
+
+v1.0.2:
+  - fixed playing from favourites menu
+
+v1.0.1:
+  - display characters in alphabetical order
+  - added plot descriptions, available in certain view types, eg Media Info
+  - added charatcer descriptions, available in certain view types, eg Media Info
+  - added "Kids Time" feature - plays 10 cartoons chosen at random
+  - added caching functionality to reduce strain on website
+  - fixed "More..." for character lists, caused by bug on website
+
+v1.0.0:
+  - initial release

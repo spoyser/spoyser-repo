@@ -1,0 +1,18 @@
+v1.0.4:
+   - fixed due to changes to website
+
+v1.0.3:
+   - now works on Xbox
+
+v1.0.2:
+   - fixed missing a cartoons from certain lists
+   - removed need for YouTube addon for playing YouTube hosted videos
+
+v1.0.1:
+  - fixed playing from XBMC favourites
+  - fixed YouTube resolving
+  - added Movieweb resolver
+  - added images
+
+v1.0.0:
+  - initial release

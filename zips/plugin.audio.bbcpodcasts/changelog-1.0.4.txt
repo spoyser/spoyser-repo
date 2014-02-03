@@ -1,0 +1,11 @@
+v1.0.4:
+  - Python version bump
+
+v1.0.2:
+  - Fixed search following update of source website
+
+v1.0.1:
+  - Downloaded enhanced podcasts have extension automatically changed to mp4
+
+v1.0.0:
+  - initial release

@@ -1,0 +1,16 @@
+v1.0.4:
+  - Fixed searching
+
+v1.0.3:
+  - Added 'Resume' feature
+
+v1.0.2:
+  - Fixed Genre author results
+  - Subscribed to developers fund
+
+v1.0.1:
+  - added Genre results settings
+  - work around for bug in XBMC context menu causing certain parameters to be come become lowercase
+
+v1.0.0:
+  - initial release

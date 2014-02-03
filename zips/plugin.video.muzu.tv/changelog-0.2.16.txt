@@ -1,0 +1,94 @@
+[B]Version 0.2.16[/B]
+- go rid of bodge.mp4 (hopefully) when auto-playing playlists
+
+[B]Version 0.2.15[/B]
+- fixed Charts script error caused due to change to web-site
+
+[B]Version 0.2.14[/B]
+- updates for Gotham
+
+[B]Version 0.2.13[/B]
+- fix for missing module
+
+[B]Version 0.2.12[/B]
+- fixed Playlists caused by change to web-site
+
+[B]Version 0.2.11[/B]
+- fixed downloads on non-windows OS
+- subscribed to developers fund
+
+[B]Version 0.2.10[/B]
+- refactored download mechanism to improve reliability
+- added 'Add to Library' functionality to context menu
+
+[B]Version 0.2.9[/B]
+- (workaround) uses chart playlists to identify Number 1 as it no longer appears on Muzu chart page
+
+[B]Version 0.2.8[/B]
+- fixed bug caused by artists/tracks with non-ascii characters
+
+[B]Version 0.2.7[/B]
+- fixed downloading when title include non-alphanumeric characters
+
+[B]Version 0.2.6[/B]
+- fixed charts due to changes at muzu.tv
+- added Verify API Key to settings page
+
+[B]Version 0.2.5[/B]
+- completely redesigned playlists due to changes at muzu.tv
+- removed A-Z sorting as no longer available at muzu.tv
+
+[B]Version 0.2.4[/B]
+- fixed due to changes at muzu.tv
+
+[B]Version 0.2.3[/B]
+- added option to start playlist automatically or view as a list
+
+[B]Version 0.2.2[/B]
+- added user playlists - created on www.muzu.tv
+- removed unnecessary 'Watch' text from New Releases
+- added 'Play 1-40' and 'Play 40-1' mode to Charts
+
+[B]Version 0.2.1[/B]
+- added selectable video quality (240p, 360p, 480p and 720p)
+- added country to search to filter out unplayable items
+- fix playlists
+
+[B]Version 0.2.0[/B]
+- interim release due to muzu.tv/player/playAsset no longer working
+
+[B]Version 0.1.9[/B]
+- fix logging of non-ascii characters
+
+[B]Version 0.1.8[/B]
+- fix scraping on non-english site
+- added artists to chart lists
+
+[B]Version 0.1.7[/B]
+- added New Releases
+
+[B]Version 0.1.6[/B]
+- fix channels
+- download on context menu
+
+[B]Version 0.1.5[/B]
+- fix chart listings
+- fix search listings
+- added API key setting
+- muzu can now spell acoustic :-)
+
+[B]Version 0.1.4[/B]
+- fix chart listings
+
+[B]Version 0.1.3[/B]
+- fix unicode logging stupidity
+
+[B]Version 0.1.2[/B]
+- ugly bodge to try and make playlists/jukebox work on 10.1
+
+[B]Version 0.1.1[/B]
+- muzu can't spell acoustic ;-)
+- unicode fix
+
+[B]Version 0.1.0[/B]
+- Initial version

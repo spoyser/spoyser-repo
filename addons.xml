@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="plugin.audio.bbcpodcasts"
+       name="BBC Podcasts"
+       version="1.0.3"
+       provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Browse and play podcasts from the BBC website</summary>
+    <description lang="en">Browse and play podcasts from the BBC website</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.booksshouldbefree" name="Books Should Be Free" version="1.0.4" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Books Should Be Free</summary>
+    <description lang="en">Free public domain audiobooks</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="1.0.16" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">RAM FM Eighties Hits</summary>
+    <description lang="en">RAM FM broadcast music within a wide perspective from the years between and around 1975-1995 and some of today's music that would have fit in just fine at the time. RAM FM play all genres of eighties music, from punk to disco, from synth-pop to folk, from rock to easy listening and from new wave to dance. RAM FM play these different genres of eighties music in no special order and without any priority or personal musical preferences involved whatsoever. RAM FM aim to create a realistic musical time image of the eighties. RAM FM never play the same song within 36 hours and never the same artist within 4 hours. Listeners online can request 3 tracks every 30 minutes complying with these musical format and playlist rotation rules.</description>
+    <platform>all</platform>
+    <language>en</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <forum>http://www.xunitytalk.com/showthread.php?1480-RELEASE-RAM-FM-Eighties-Hit-Radio</forum>
+    <website>http://www.ramfm.org</website>
+    <source>http://code.google.com/p/spoyser-repo/source/browse/#git%2Fplugin.audio.ramfm</source>
+    <email>seanpoyser at gmail dot com</email>
+  </extension>
+</addon>
+
+<addon id="plugin.image.comicstrips" name="Comic Strips" version="1.0.2" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>image video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>100s of Comic Strips to choose from.</summary>
+    <description lang="en">100s of Comic Strips to choose from.</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.80smusicvideos" name="80s Music Videos" version="1.0.4" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>80s Music Videos</summary>
+    <description lang="en">Over 1,000 classic music videos from the 1980's and 1990's.</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.funniermoments" name="Funnier Moments" version="1.0.11" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Watch your favourite Hanna-Barbera cartoons, and many more, courtesy of www.funniermoments.com</summary>
+    <description lang="en">Watch your favourite Hanna-Barbera cartoons, and many more, courtesy of www.funniermoments.com</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.kidstube" name="Kids-Tube.nl" version="1.0.1" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="plugin.video.youtube" version="4.4.6"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Watch your favourite kids programs (in Dutch)</summary>
+    <description lang="en">Watch your favourite kids programs (in Dutch)</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.musicvideojukebox"
+       name="Music Video Jukebox"
+       version="2.0.1"
+       provider-name="iZE">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="plugin.video.youtube" version="2.1.0" />
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="Default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Search for an artist and it will play up to 150 music videos of that artist.</summary>
+    <description lang="en">This plugin uses Google Suggest API, Last.fm and YouTube to search for music videos of an artist, and plays up to 150 music videos of that artist.</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.muzu.tv" version="0.2.17" name="muzu.tv" provider-name="spoyser">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>audio</provides>
+    </extension>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Plays music videos from muzu.tv</summary>
+        <description>Choose from a huge selection of music videos available at muzu.tv</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.supercartoons" name="Super Cartoons" version="1.0.4" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Watch cartoons online</summary>
+    <description lang="en">Watch cartoons online, search by most popular, characters and studio</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.thegreat80s" name="The Great 80's" version="1.0.3" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.simpleYT" version="0.0.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>80s Music Videos</summary>
+    <description lang="en">Classic music videos from the 1980's.</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.4" provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.simpleYT" version="0.0.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Watch even more of your favourite cartoons from www.watchcartoononline.com</summary>
+    <description lang="en">Watch even more of your favourite cartoons from www.watchcartoononline.com</description>
+     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="repository.ramfm"
+        name="RAM FM Eighties Hit Radio"
+        version="1.0.0"
+        provider-name="RAM FM Eighties Hit Radio">
+    <extension point="xbmc.addon.repository"
+        name="RAM FM XBMC Add-ons">
+        <info compressed="false">https://spoyser-repo.googlecode.com/git/RAM.FM/addons.xml</info>
+        <checksum>https://spoyser-repo.googlecode.com/git/RAM.FM/addons.xml.md5</checksum>
+        <datadir zip="true">https://spoyser-repo.googlecode.com/git/zips</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Install the RAM FM Eighties Hit Radio XBMC add-on from the official repository</summary>
+        <description lang="en">RAM FM Eighties Hit Radio is a Non Profit Organisation run by volunteers.[CR][CR]Listening is free for everybody but running a radio station costs money.[CR][CR]We pay royalties for the artists that we play and there are costs for the website host and streaming server.[CR][CR]So if you like our radio station, feel free to show your support by making a small donation to help us cover our expenses..[CR][CR]Please visit www.ramfm.org and click on the [COLOR FFFF00FF]purple donate[/COLOR] button.</description>
+        <disclaimer></disclaimer>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="repository.spoyser"
+        name="spoysers XBMC Add-ons"
+        version="1.0.4"
+        provider-name="spoyser">
+    <extension point="xbmc.addon.repository"
+        name="spoysers XBMC Add-ons">
+        <info compressed="false">https://spoyser-repo.googlecode.com/git/addons.xml</info>
+        <checksum>https://spoyser-repo.googlecode.com/git/addons.xml.md5</checksum>
+        <datadir zip="true">https://spoyser-repo.googlecode.com/git/zips</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Install XBMC add-ons from the official spoyser repository</summary>
+        <description>Install XBMC add-ons from spoysers official repository</description>
+        <disclaimer></disclaimer>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="script.module.beautifulsoup"
+       name="BeautifulSoup"
+       version="3.0.8"
+       provider-name="Leonard Richardson (leonardr@segfault.org)">
+  <requires>
+    <import addon="xbmc.python"
+    		version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.module"
+             library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary>HTML/XML parser for quick-turnaround applications like screen-scraping</summary>
+    <description>Beautiful Soup parses arbitrarily invalid SGML and provides a variety of methods and Pythonic idioms for iterating and searching the parse tree.</description>
+    <license>BSD</license>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="script.module.simpleYT"
+       name="Simple YouTube Resolver" version="1.0.2"  provider-name="spoyser">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+   <extension point="xbmc.python.module" library="lib" />
+   <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Simple resolver for obtaining YouTube playable URLs from VideoID</summary>
+        <description lang="en">Simple resolver for obtaining YouTube playable URLs from VideoID</description>
+   </extension>
+</addon>
+</addons>

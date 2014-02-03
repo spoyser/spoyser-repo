@@ -16,6 +16,11 @@ local.properties
 .settings/
 .loadpath
 
+RAM.FM/plugin.audio.ramfm/
+RAM.FM/repository.ramfm/
+RAM.FM/addons_xml_generator.py
+
+
 # External tool builders
 .externalToolBuilders/
 

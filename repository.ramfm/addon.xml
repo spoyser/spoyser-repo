@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.ramfm" 
+        name="RAM FM Eighties Hit Radio" 
+        version="1.0.0"
+        provider-name="RAM FM Eighties Hit Radio">
+    <extension point="xbmc.addon.repository" 
+        name="RAM FM XBMC Add-ons">
+        <info compressed="false">https://spoyser-repo.googlecode.com/git/RAM.FM/addons.xml</info>
+        <checksum>https://spoyser-repo.googlecode.com/git/RAM.FM/addons.xml.md5</checksum>
+        <datadir zip="true">https://spoyser-repo.googlecode.com/git/zips</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Install the RAM FM Eighties Hit Radio XBMC add-on from the official repository</summary>
+        <description lang="en">RAM FM Eighties Hit Radio is a Non Profit Organisation run by volunteers.[CR][CR]Listening is free for everybody but running a radio station costs money.[CR][CR]We pay royalties for the artists that we play and there are costs for the website host and streaming server.[CR][CR]So if you like our radio station, feel free to show your support by making a small donation to help us cover our expenses..[CR][CR]Please visit www.ramfm.org and click on the [COLOR FFFF00FF]purple donate[/COLOR] button.</description>
+        <disclaimer></disclaimer>
+        <platform>all</platform>
+    </extension>
+</addon>
+

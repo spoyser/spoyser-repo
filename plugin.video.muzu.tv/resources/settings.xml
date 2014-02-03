@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <category label="30200">
+    <setting type="lsep" label="30100" />
+    <setting_old id="hq" type="bool" label="30101" default="true" />
+    <setting id="hq" type="labelenum" label="Resolution" default="480p" values="240p|360p|480p|720p"/>
+    <setting type="lsep" label="30102" />
+    <setting id="res_per_page" type="number" label="30103" default="20" />
+    <setting id="sort" type="enum" label="30029" default="3" lvalues="30030|30031|30033"/>
+
+    <setting type="lsep" label="Add to Library" />
+    <setting id="library_folder" type="folder" label="Folder" default=""/>
+
+    <setting type="lsep" label="30104" />
+    <setting id="country" type="text" label="30105" default="gb" />
+    <setting id="random_pl" type="bool" label="30106" default="true" />
+    <setting id="auto_pl" type="bool" label="30307" default="true" />
+  </category>
+  <category label="30300">
+    <setting type="lsep" label="30301" />
+    <setting id="api" type="text" label="30302" default="" />
+    <setting id="username" type="text" label="30306" default="" />
+    <setting label="Verify API Key" type="action" option="close" action="RunScript($CWD/verify_settings.py)" />
+  </category>
+  <category label="Downloads">
+    <setting id="download_folder" type="folder" label="Default download folder"  default=""/>
+    <setting id="ask_folder"      type="bool"   label="Ask for folder"           default="false"/>
+    <setting id="ask_filename"    type="bool"   label="Ask for filename"         default="false"/>
+    <setting id="download_hq"     type="bool"   label="Always download HQ"       default="true" />
+  </category>
+</settings>

@@ -1,0 +1,5 @@
+[B]Version 1.0.1[/B]
+- Added Clean up of title returned from YouTube
+
+[B]Version 1.0.0[/B]
+- Initial Release.

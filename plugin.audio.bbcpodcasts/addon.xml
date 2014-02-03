@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.audio.bbcpodcasts"
+       name="BBC Podcasts"
+       version="1.0.3"
+       provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Browse and play podcasts from the BBC website</summary>
+    <description lang="en">Browse and play podcasts from the BBC website</description>
+     <platform>all</platform>
+  </extension>
+</addon>
