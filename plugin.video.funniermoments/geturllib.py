@@ -14,10 +14,6 @@ ADDON   = xbmcaddon.Addon(ADDONID)
 
 
 def getUserAgent():
-    mobile = ADDON.getSetting('SITE') == 'true'
-    if mobile:
-        return 'Apple-iPhone/'
-
     return ' Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
 
 #==============================================================================
@@ -34,16 +30,6 @@ def CheckCacheDir():
     if gCacheDir == '':
         raise Exception('CacheDir not defined')
 
-
-#==============================================================================
-
-def PostURLNoCache(url, formdata):
-    import net
-
-    theNet   = net.Net(user_agent=getUserAgent())
-    response = theNet.http_POST(url, formdata)
-    html     = response.content
-    return html
 
 #==============================================================================
 
@@ -70,7 +56,7 @@ def GetURLNoCache(url):
     req = urllib2.Request(url)
     
     req.add_header('User-Agent', getUserAgent())
-    req.add_header('Referer',    'http://www.funniermoments.com/mobile')
+    req.add_header('Referer',    'http://www.funniermoments.com')
 
     response = urllib2.urlopen(req)
     html     = response.read()

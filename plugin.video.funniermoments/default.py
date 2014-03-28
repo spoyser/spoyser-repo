@@ -34,9 +34,9 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Funnier Moments'
-VERSION = '1.0.9'
+VERSION = '1.0.12'
 URL     = 'http://www.funniermoments.com/'
-MOBILE  = False #ADDON.getSetting('SITE') == 'true'
+MOBILE  = False
 
 
 ALL      = 100
@@ -76,6 +76,7 @@ def Clean(text):
     text = text.replace('&#8220;', '"')
     text = text.replace('&#8221;', '"')
     text = text.replace('&#39;',   '\'')
+    text = text.replace('&euml;',  'e')
     text = text.replace('<b>',     '')
     text = text.replace('</b>',    '')
     text = text.replace('&amp;',   '&')
@@ -110,14 +111,9 @@ def Main():
     AddSection('Kids Time',      'kidstime', KIDSTIME, False)    
     AddSection('All Moments',    'all',      ALL)
     AddSection('New Moments',    'new',      NEW)
-
-    if not MOBILE:
-        AddSection('Top Moments',    'top',      TOP)
-
+    AddSection('Top Moments',    'top',      TOP)
     AddSection('Random Moment',  'random',   RANDOM,   False)
-
-    if not MOBILE:
-        AddSection('Search Moments', 'search',   SEARCH)
+    AddSection('Search Moments', 'search',   SEARCH)
 
 
 def AddSection(name, image, mode, isFolder=True):
@@ -126,14 +122,6 @@ def AddSection(name, image, mode, isFolder=True):
 
 def AddMore(mode, url, page, keyword = None):
     AddDir('More Moments...', mode, url, image=os.path.join(ARTWORK, 'more.png'), page=page, keyword=keyword)
-
-
-def AddMoreItem(case, extradata, lastpos):
-    if not case:
-        return
-
-    url = '%s,%s,%s' % (case, extradata, lastpos)
-    AddDir('More Moments...', MORE, url, image=os.path.join(ARTWORK, 'more.png'))
 
 
 def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, contextMenu=None):
@@ -170,10 +158,9 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 
 
 def All():
-    if MOBILE:
-        match = All_M()
-    else:
-        match = All_S()
+    html  = GetHTML(URL)
+    html  = html.replace('&nbsp;&nbsp;&nbsp;', '')
+    match = re.compile('<li class=""><a href="(.+?)" class="">(.+?) \(.+?\)</a></li>').findall(html)
 
     list = []
 
@@ -186,39 +173,16 @@ def All():
             AddProgram(title, url, 1, menu)
 
 
-def All_S():
-    html  = GetHTML(URL)
-    html  = html.replace('&nbsp;&nbsp;&nbsp;', '')
-    #match = re.compile('<li class=""><a href="(.+?)" class="">(.+?)</a></li>').findall(html)
-    match = re.compile('<li class=""><a href="(.+?)" class="">(.+?) \(.+?\)</a></li>').findall(html)
-    return match
-
-
-def All_M():
-    html  = GetHTML(URL + 'mobile/category.php')
-    match = re.compile('<li class=""><a href="(.+?)">(.+?)</a> <span class="category_count">.+?</span></li>').findall(html)
-    return match
-
-
-def Program(url, page):
-    if MOBILE:
-        return Program_M(url)
-    else:
-        return Program_S(url, page)
-
-
-def Program_S(_url, page):
+def Program(_url, page):
     page  = int(page)
     url   = _url + '&' + 'order=ASC&page=' + str(page)
     html  = GetHTML(url)
 
-    #main  = re.compile('<h2 class="entry-title compact">(.+?)</h2>').search(html).group(1)
-    #split = '<h2 class="entry-title compact">%s</h2>' % main
+    main = re.compile('<h2><p>(.+?)</p></h2>').search(html).group(1)
 
-    main = re.compile('<h2>(.+?)</h2>').search(html).group(1)
-    split = '<h2>%s</h2>' % main
-
-    html  = html.split(split, 1)[1]
+    split = '<h2><p>%s</p></h2>' % main
+    html  = html.split(split, 1)[-1]
+    #html = html.split('http://www.yesads.com', 1)[-1]
 
     match = re.compile('<a href="(.+?)" class="pm-thumb-fix pm-thumb-145"><span class="pm-thumb-fix-clip"><img src="(.+?)" alt="(.+?)" width="145"><span class="vertical-align"></span></span></a>.+?watch.php').findall(html)
 
@@ -234,135 +198,25 @@ def Program_S(_url, page):
     next += '&page=%d' % (page+1)
 
     if next in html:
-        print "adding more"
         AddMore(PROGRAM, _url, page+1)
 
 
-
-def Program_M(url):
-    html  = GetHTML(url)   
-
-    case, extradata, lastpos = ParsePrograms(html)
-
-    AddMoreSections(2, case, extradata, lastpos)
-
-
-def More(url):
-    url       = url.split(',')
-    case      = url[0]
-    extradata = url[1]
-    lastpos   = url[2]
-
-    AddMoreSections(4, case, extradata, lastpos)
-
-
-def AddMoreSections(nSection, case, extradata, lastpos):
-    print "ADDMORESECTIONS"
-    print case
-    for i in range(0, nSection):
-        if not case:
-            return
-        url  = 'http://funniermoments.com/mobile/ajax.php?extradata=%s&lastpos=%s' % (extradata, lastpos)
-        data = {'case':case, 'extradata':extradata, 'lastpos':lastpos }
-        html = PostHTML(url, data)
-        print "I AM HERE"
-        print html
-
-        case, extradata, lastpos = ParsePrograms(html)
-
-    AddMoreItem(case, extradata, lastpos)
-
-
-def ParsePrograms(html):
-    items = re.compile('<li>.+?<img src="(.+?)".+?<div class="video_title"><a href="(.+?)" class="ellipsis">(.+?)</a>').findall(html)
-
-    for img, url, title in items:
-        url  = url.split('"',     1)[0]
-
-        try:    title = title.split(' - ', 1)[1]
-        except: pass        
-
-        AddCartoon(title, url, img)
-
-    return ParseMore(html)
-
-
-def ParseMore(html):
-    print "*******************************"
-    print html
-    if 'moreajax.gif' not in html:
-        return None, None, None
-
-    #normal page
-    r = '<button class="minimal more" id="(.+?)">.+?oad more.+?</button>.+?<div class="case" id="(.+?)"></div><div class="extra_data" id="(.+?)"></div>'
-
-    try:
-        more      = re.compile(r).findall(html)[0] 
-        case      = more[1]
-        extradata = more[2]
-        lastpos   = more[0]
-        return case, extradata, lastpos
-    except:
-        print "1*******************************************"
-        pass
-
-    #New episodes page
-    #r = 'class="morebox"><div class="case" id="(.+?)"></div>.+?<button class="minimal more" id="(.+?)">'
-    r = '<button class="minimal more" id="(.+?)">Load more episodes</button></div>'
-  
-    try:
-        print "1a**********************************************"
-        more      = re.compile(r).findall(html)[0] 
-        print more
-        case      = more#more[0]
-        extradata = ''
-        lastpos   = ''#more[1]
-        return case, extradata, lastpos
-    except:
-        print "2********************************"
-        pass
-
-    #New episodes AJAX response
-    r = 'class="morebox">.+?class="minimal more" id="(.+?)">.+?<div class="case" id="(.+?)">'
-    try:
-        more      = re.compile(r).findall(html)[0] 
-        case      = more[1]
-        extradata = ''
-        lastpos   = more[0]
-        return case, extradata, lastpos
-    except:
-        print "3***************************"
-        pass
-
-    print "4************************************"
-    return None, None, None
-
-
 def New():
-    if MOBILE:
-        return New_M()
-    return New_S()
-
-
-def New_S():
     url  = URL + 'newvideos.php'
     html = GetHTML(url)
+
+    split = 'class="pm-ul-new-videos thumbnails'
+    html  = html.split(split, 1)[-1]    
     
-    match = re.compile('<a href="(.+?)" class="pm-thumb-fix pm-thumb-145"><span class="pm-thumb-fix-clip"><img src="(.+?)" alt="(.+?)" width="145"><span class="vertical-align"></span></span></a>').findall(html)
+    match = re.compile('<a href="(.+?)" class="pm-thumb-fix pm-thumb-145"><span class="pm-thumb-fix-clip"><img src="(.+?)" alt="(.+?)" width="145"><span class="vertical-align"></span></span></a>.+?<div class="pm-li-video">').findall(html)
 
     for url, img, title in match:
         url   = url.split('"',     1)[0]
 
-        try:    title = title.split(' - ', 1)[1]
-        except: pass
+        #try:    title = title.split(' - ', 1)[1]
+        #except: pass
+
         AddCartoon(title, url, img)
-
-
-def New_M():
-    html  = GetHTML(URL + 'mobile/')
-
-    case, extradata, lastpos = ParsePrograms(html)
-    AddMoreSections(2, case, extradata, lastpos)
 
 
 def Top(page):
@@ -374,7 +228,7 @@ def Top(page):
     
     match = re.compile('<span class="pm-video-rank">(.+?)</span>.+?<a href="(.+?)" class="pm-thumb-fix pm-thumb-194"><span class="pm-thumb-fix-clip"><img src="(.+?)" alt="(.+?)" width="194"><span class="vertical-align"></span></span></a>').findall(html)
 
-    for rank, url, img, title in match:        
+    for rank, url, img, title in match:   
         AddCartoon(rank + ': ' + title, url, img)
 
     page += 1
@@ -383,54 +237,24 @@ def Top(page):
     if next in html:
         AddMore(TOP, _url, page)
 
+
 def GetRandom():
-    if MOBILE:
-        return GetRandom_M()
-    return GetRandom_S()
-
-
-def GetRandom_S():
     url  = URL + 'randomizer.php'
-    html = GetHTML(url, False) 
-    
-    title = re.compile('title" content="Watch (.+?) Full Episode Online FREE in HIGH QUALITY"').search(html).group(1)
-    id    = re.compile('watch.php\?vid=(.+?)"').search(html).group(1)
-    url   = 'http://www.funniermoments.com/watch.php?vid=%s'        % id
-    img   = 'http://www.funniermoments.com/uploads/thumbs/%s-1.jpg' % id
+    html = GetHTML(url, 0) 
+
+    try:    title = re.compile('title" content="Watch (.+?) Full Episode Online 4 FREE in HIGH QUALITY"').search(html).group(1)
+    except: pass
+
+    try:    id    = re.compile('watch.php\?vid=(.+?)"').search(html).group(1)
+    except: pass
+
+    try:    url   = 'http://www.funniermoments.com/watch.php?vid=%s'        % id
+    except: pass
+
+    try:    img   = 'http://www.funniermoments.com/uploads/thumbs/%s-1.jpg' % id
+    except: pass
 
     return title, img, url
-
-def GetRandom_M():
-    html  = GetHTML(URL + 'mobile/')
-
-    case, extradata, lastpos = ParseMore(html)
-    if not case:
-        return None, None, None
-
-    lastpos  = int(lastpos) + 10
-    firstpos = 4
-
-    import random
-    index = str(random.randrange(firstpos, lastpos+1))
-
-    url  = 'http://funniermoments.com/mobile/ajax.php?extradata=%s&lastpos=%s' % (extradata, index)
-    data = {'case':case, 'extradata':extradata, 'lastpos':index }
-    html = PostHTML(url, data)
-
-    items = re.compile('<li>.+?<img src="(.+?)".+?<div class="video_title"><a href="(.+?)" class="ellipsis">(.+?)</a>').findall(html)
-
-    try:
-        for img, url, title in items:
-            url  = url.split('"',     1)[0]
-
-            try:    title = title.split(' - ', 1)[1]
-            except: pass        
-
-            return title, img, url
-    except:
-        pass
-
-    return None, None, None
 
 
 def Random():
@@ -527,14 +351,7 @@ def DownloadPath(url):
     return os.path.join(downloadFolder, filename)
 
 
-def AddToLibrary(series, url):
-    if MOBILE:
-        return AddToLibrary_M(series, url)
-
-    return AddToLibrary_S(series, url, 1)
-
-
-def AddToLibrary_S(series, _url, page):
+def AddToLibrary(series, _url, page):
     page  = int(page)
     url   = _url + '&' + 'order=ASC&page=' + str(page)
     html  = GetHTML(url)
@@ -561,43 +378,7 @@ def AddToLibrary_S(series, _url, page):
     next += '&page=%d' % (page+1)
 
     if next in html:
-        AddToLibrary_S(series, _url, page+1)
-
-
-def AddToLibrary_M(series, url):
-    html  = GetHTML(url)   
-
-    case, extradata, lastpos = ParseToLibrary(series, html)
-
-    ParseMoreToLibrary(series, case, extradata, lastpos)
-
-
-def ParseToLibrary(series, html):
-    items = re.compile('<li>.+?<img src="(.+?)".+?<div class="video_title"><a href="(.+?)" class="ellipsis">(.+?)</a>').findall(html)
-
-    index = len(items)
-
-    for img, url, title in items:
-        url  = url.split('"',     1)[0]
-
-        try:    title = title.split(' - ', 1)[1]
-        except: pass        
-
-        AddCartoonToLibrary(series, title, url, img, index)
-        index -= 1
-
-    return ParseMore(html)
-
-
-def ParseMoreToLibrary(series, case, extradata, lastpos):
-    while True:
-        if not case:
-            return
-        url  = 'http://funniermoments.com/mobile/ajax.php?extradata=%s&lastpos=%s' % (extradata, lastpos)
-        data = {'case':case, 'extradata':extradata, 'lastpos':lastpos }
-        html = PostHTML(url, data)
-
-        case, extradata, lastpos = ParseToLibrary(series, html)
+        AddToLibrary(series, _url, page+1)
 
 
 def AddCartoonToLibrary(series, title, url, img, index):
@@ -673,8 +454,8 @@ def FixEpisodeForLibrary(series, episode):
     return episode
 
 
-def FixNameForLibrary(_series):
-    SERIES = _series.upper()
+def FixNameForLibrary(series):
+    SERIES = series.upper()
 
     if 'THE ADDAMS FAMILY' in SERIES:
         return 'The Addams Family (1973)'
@@ -709,7 +490,7 @@ def FixNameForLibrary(_series):
     if 'GRAPE APE' in SERIES:
         return 'Grape Ape'
 
-    return _series
+    return series
     
 
 def GetCartoonURL(url):
@@ -829,7 +610,8 @@ mode   = None
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass
 
-
+#print "***** MODE *********"
+#print mode
 
 if mode == ALL:
     All()
@@ -862,7 +644,7 @@ elif mode == CARTOON:
 elif mode == LIBRARY:
     url   = urllib.unquote_plus(params['url'])
     title = urllib.unquote_plus(params['title'])
-    AddToLibrary(title, url)
+    AddToLibrary(title, url, 1)
 
 
 elif mode == DOWNLOAD:
