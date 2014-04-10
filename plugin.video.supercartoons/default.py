@@ -1,6 +1,6 @@
 
 #
-#      Copyright (C) 2013 Sean Poyser
+#      Copyright (C) 2013-2014 Sean Poyser
 #
 #  This Program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Super Cartoons'
-VERSION = '1.0.3'
+VERSION = '1.0.5'
 URL     = 'http://www.supercartoons.net/'
 
 
@@ -102,11 +102,12 @@ def Clean(text):
     return text
 
 
-def GetHTML(url):
-    html, cached = geturllib.GetURL(url, 86400)
-    html         = html.replace('\n',            '')
-    html         = html.replace('&quot;',        '"')
-    html         = html.replace('title="Search', '')
+def GetHTML(url, agent = 'Apple-iPhone/'):
+    html = geturllib.GetURL(url, 86400, agent)
+    html = html.replace('\n',            '')
+    html = html.replace('\t',            '')
+    html = html.replace('&quot;',        '"')
+    html = html.replace('title="Search', '')
     return html
 
 
@@ -237,22 +238,21 @@ def Search(page, keyword):
     keyword  = urllib.quote_plus(keyword)
     start    = (page-1) * nResults
 
-    url = 'http://www.google.co.uk/search?q=site:http://www.supercartoons.net/cartoon+%s&start=%d&num=%d' % (keyword, start, nResults)
-
+    url  = 'http://www.google.co.uk/search?q=site:http://www.supercartoons.net/cartoon+%s&start=%d&num=%d' % (keyword, start, nResults)
     html = GetHTML(url)
-    main = re.compile('<table style(.+?)</table>').findall(html)
-    for item in main:
-        if 'supercartoons' in item:
-            item  = item.split('href')[2]            
-            item  = re.compile('q=(.+?).html.+?">(.+?)</a>').findall(item)
+    next = 'Next page' in html
 
+    html = html.split('class="video_result">')
+    for item in html:
+        item  = re.compile('q=(.+?).html.+?">(.+?)</a>').findall(item)
+        if len(item) > 0:
             link  = item[0][0] + '.html'
             title = GetSearchTitle(item[0][1])
             image = GetSearchImage(link)
 
             AddCartoon(title, image, link, '')
 
-    if 'nav_next_2.gif' in html:
+    if next:
         AddMore(SEARCH, '', page+1, keyword)
 
 
@@ -267,7 +267,6 @@ def PlayCartoon(title, image, url):
 
 def MostRecent():
     html  = GetHTML(URL)
-    #match = re.compile('Most Recently Added Cartoons(.+?)Most Popular Cartoons').search(html).group(1)
     match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>Cartoons</h3>').search(html).group(1)
     match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
 
@@ -277,7 +276,6 @@ def MostRecent():
 
 def MostPopular():
     html  = GetHTML(URL)
-    #match = re.compile('Most Popular Cartoons(.+?)</html>').search(html).group(1)
     match = re.compile('<h3>Best Cartoons</h3>.+?<h3>Cartoons</h3>(.+?)</div></div>').search(html).group(1)
     match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
 
@@ -291,12 +289,20 @@ def Studios(page):
 
 
 def DoStudios(page):
-    url   = URL + 'studios/' + str(page)
-    html  = GetHTML(url)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(html)
+    url  = URL + 'studios/' + str(page)
+    html = GetHTML(url)
+    html = html.split('<div class="studio">')
 
-    for desc, img, link, title in match:
-        AddStudio(title, img, link, desc)
+    for item in html:
+        try:
+            match = re.compile('title="(.+?)"><img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(item)
+            desc  = match[0][0]
+            img   = match[0][1]
+            link  = match[0][2]
+            title = match[0][3]
+            AddStudio(title, img, link, desc)
+        except:
+            pass
 
 
 def Studio(_url, page):
@@ -321,7 +327,7 @@ def Characters(page):
     characters += GetCharacters(1)
     characters += GetCharacters(2)
 
-    characters.sort(key=lambda tup: tup[0])
+    characters.sort()#key=lambda tup: tup[0])
 
     for character in characters:
         title = character[0]
@@ -334,12 +340,20 @@ def Characters(page):
 def GetCharacters(page):
     url   = URL + 'characters/' + str(page)
     html  = GetHTML(url)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(html)
 
     characters = []
 
-    for desc, img, link, title in match:
-        characters.append([title, img, link, desc])
+    html = html.split('<div class="character">')
+    for item in html:
+        try:
+            match = re.compile('title="(.+?)"><img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(item)
+            desc  = match[0][0]
+            img   = match[0][1]
+            link  = match[0][2]
+            title = match[0][3]
+            characters.append([title, img, link, desc])
+        except:
+            pass
 
     return characters
 
@@ -373,7 +387,9 @@ def AddCartoon(title, img, link, desc):
 
 def AddCharacter(title, img, link, desc):
 
-    if desc.startswith('Watch Free'):
+    print link
+
+    if desc.upper().startswith('WATCH FREE'):
         desc = desc.split('. ', 1)[1]
     infoLabels = {'title':title, 'plot':desc}
 
@@ -516,6 +532,7 @@ geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addo
 
 params = get_params()
 mode   = None
+print params
 
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass

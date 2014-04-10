@@ -24,9 +24,10 @@ def CheckCacheDir():
 
 #==============================================================================
 
-def GetURLNoCache(url):
+def GetURLNoCache(url, agent):
     req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Apple-iPhone/')
+    if agent:
+        req.add_header('User-Agent', 'Apple-iPhone/')
     req.add_header('Referer',    'http://www.supercartoons.net/')
     response = urllib2.urlopen(req)
     html = response.read()
@@ -36,7 +37,7 @@ def GetURLNoCache(url):
 #==============================================================================
 
 #return is data, and whether it is in the cache
-def GetURL(url, maxSecs = 0, cacheOnly = False):        
+def GetURL(url, maxSecs = 0, agent = ''):
     if url == None:
         return None, True
 
@@ -46,14 +47,11 @@ def GetURL(url, maxSecs = 0, cacheOnly = False):
 	cachedURLTimestamp = CacheGetURLTimestamp(url)
 	if cachedURLTimestamp > 0:
 	    if (time.time() - cachedURLTimestamp) <= maxSecs:
-		return CacheGetData(url), True
-	
-    if cacheOnly:
-        return None, False
+		return CacheGetData(url)
 
-    data = GetURLNoCache(url)
+    data = GetURLNoCache(url, agent)
     CacheAdd(url, data)    
-    return data, True
+    return data
 
 #==============================================================================
 
