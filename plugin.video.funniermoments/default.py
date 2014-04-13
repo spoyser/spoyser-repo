@@ -301,20 +301,20 @@ def DownloadPath(url):
     downloadFolder = ADDON.getSetting('DOWNLOAD_FOLDER')
 
     if ADDON.getSetting('ASK_FOLDER') == 'true':
-        dialog = xbmcgui.Dialog()
-    downloadFolder = dialog.browse(3, 'Download to folder...', 'files', '', False, False, downloadFolder)
-    if downloadFolder == '' :
-        return None
+        d = xbmcgui.Dialog()
+        downloadFolder = d.browse(3, 'Download to folder...', 'files', '', False, False, xbmc.translatePath(downloadFolder))
+        if downloadFolder == '':
+            return None
 
     if downloadFolder is '':
         d = xbmcgui.Dialog()
-    d.ok('Funnier Moments', 'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
-    ADDON.openSettings() 
-    downloadFolder = ADDON.getSetting('DOWNLOAD_FOLDER')
+        d.ok('Funnier Moments', 'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
+        ADDON.openSettings() 
+        downloadFolder = xbmc.translatePath(ADDON.getSetting('DOWNLOAD_FOLDER'))
 
     if downloadFolder == '' and ADDON.getSetting('ASK_FOLDER') == 'true':
         dialog = xbmcgui.Dialog()
-    downloadFolder = dialog.browse(3, 'Download to folder...', 'files', '', False, False, downloadFolder)   
+        downloadFolder = dialog.browse(3, 'Download to folder...', 'files', '', False, False, downloadFolder)   
 
     if downloadFolder == '' :
         return None
@@ -322,7 +322,7 @@ def DownloadPath(url):
     downloadFolder = xbmc.translatePath(downloadFolder)
 
     html   = GetHTML(url)
-    info   = re.compile('<h3 class="entry-title">(.+?)</h3>').search(html).group(1)
+    info   = re.compile('<h4 class="entry-title">(.+?)</h4>').search(html).group(1)
     series = FileSystemSafe(info.split(' - ', 1)[0])
     title  = FileSystemSafe(info.split(' - ', 1)[-1])
 
@@ -332,11 +332,11 @@ def DownloadPath(url):
    
     if ADDON.getSetting('ASK_FILENAME') == 'true':        
         kb = xbmc.Keyboard(filename, 'Download Cartoon as...' )
-    kb.doModal()
-    if kb.isConfirmed():
-        filename = kb.getText()
-    else:
-        return None
+        kb.doModal()
+        if kb.isConfirmed():
+            filename = kb.getText()
+        else:
+            return None
 
     ext      = 'mp4'
     filename = FileSystemSafe(filename) + '.' + ext
@@ -610,8 +610,9 @@ mode   = None
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass
 
-#print "***** MODE *********"
-#print mode
+print sys.argv[2]
+print "***** MODE *********"
+print mode
 
 if mode == ALL:
     All()

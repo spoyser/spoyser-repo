@@ -43,7 +43,7 @@ def doDownload(title, url, dest):
     while True:
         percent = min(100 * total / content, 100)
         if percent >= notify:
-            xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i)" % ( title + ' - Download Progress - ' + str(percent)+'%', dest, 5000))
+            xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i,%s)" % ( title + ' - Download Progress - ' + str(percent)+'%', dest, 5000,'DefaultFile.png'))
             notify += 10
 
         chunk = None
