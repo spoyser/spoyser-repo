@@ -40,6 +40,9 @@ def DoResolve(html):
     try:
         from simpleYT import yt
         match = re.compile('src="http://.+?.com/v/(.+?)">').findall(html)
+        if len(match) < 1:
+            return DoResolve2(html)
+
         for id in match:            
             id  = id.split('?', 1)[0]
 
@@ -49,6 +52,33 @@ def DoResolve(html):
                 ret.append([video['best'], ''])
             
     except:
+        pass
+
+    if len(ret) < 1:
+        ret.append([None, 'Error Resolving YouTube URL'])
+
+    return ret
+
+def DoResolve2(html):
+    ret  = []
+    text = ''
+
+    if not 'youtube' in html:
+        return []
+
+    try:
+        from simpleYT import yt
+        match = re.compile('src="http://.+?.com/embed/(.+?)"').findall(html)
+
+        for id in match:
+            video, links = yt.GetVideoInformation(id)
+
+            if 'best' in video:
+                ret.append([video['best'], ''])
+    except:
+        pass
+
+    if len(ret) < 1:
         ret.append([None, 'Error Resolving YouTube URL'])
 
     return ret

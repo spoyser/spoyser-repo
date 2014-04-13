@@ -91,18 +91,29 @@ def DoSection(url):
     names = []
 
     match = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(html)
+
+    sorted = []
+
     for url, name in match:
         if ('#' not in url) and ('title="' not in url):
             if name not in names:
                 names.append(name)
                 if mode == SERIES:
-                    AddSeries(name, url)
+                    #AddSeries(name, url)
+                    newName = name
+                    if newName.startswith('The '):
+                        newName = newName.split('The ', 1)[-1]
+                    sorted.append([newName, name, url])
                 elif mode == EPISODE:
                     AddEpisode(name, url)
 
+    sorted.sort()
+    for item in sorted:
+        AddSeries(item[1], item[2])
 
-def DoSeries(url):
-    html = common.GetHTML(url)
+
+def DoSeries(html):#url):
+    #html = common.GetHTML(url)
 
     title = re.compile('<title>(.+?) \| .+?').search(html).group(1)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
@@ -125,9 +136,9 @@ def DoSeries(url):
         if name and url:
             AddEpisode(name, url, image)
 
-    if 'Previous Entries' in html:
-        url = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
-        AddSeries('More...', url)
+    #if 'Previous Entries' in html:
+    #    url = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
+    #    AddSeries('More...', url)
 
 
 def GetLinkIndex(resolved):
@@ -285,7 +296,17 @@ if mode == SECTION:
     DoSection(url)
 
 elif mode == SERIES:
-    DoSeries(url)
+    #DoSeries(url)
+
+    html = common.GetHTML(url)
+
+    while('Previous Entries' in html):
+        DoSeries(html)
+        url  = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
+        html = common.GetHTML(url)
+
+    DoSeries(html)
+
 
 elif mode == EPISODE:
     PlayVideo(url)

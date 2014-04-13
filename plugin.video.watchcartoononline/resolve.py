@@ -40,6 +40,7 @@ def ResolveURL(url):
     #url = 'http://www.watchcartoononline.com/tmnt-season-7-episode-13-wedding-bells-and-bytes' #Youtube 2 PARS
     #url = 'http://www.watchcartoononline.com/thundercats-2011-premiere' #movieweb
     #url = 'http://www.watchcartoononline.com/hacklegend-of-the-twilight-episode-12-english-dubbed'
+    #url = 'http://www.watchcartoononline.com/mr-bean-the-animated-series-episode-49-in-the-pink' #YouTube embeded
 
     ImportModules()
 
