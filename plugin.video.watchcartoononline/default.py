@@ -1,4 +1,3 @@
-
 #
 #      Copyright (C) 2013 Sean Poyser
 #
@@ -251,7 +250,12 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
         liz.addContextMenuItems(contextMenu)
 
     if infoLabels:
-        liz.setInfo(type="Video", infoLabels=infoLabels)
+        #liz.setInfo(type="Video", infoLabels=infoLabels)
+        infoLabels['title'] = name
+    else:
+        infoLabels = { 'title' : name }
+    liz.setInfo(type="Video", infoLabels=infoLabels)
+
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
     
@@ -306,6 +310,7 @@ elif mode == SERIES:
         html = common.GetHTML(url)
 
     DoSeries(html)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
 
 
 elif mode == EPISODE:
