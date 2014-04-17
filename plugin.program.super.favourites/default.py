@@ -328,13 +328,13 @@ def playCommand(cmd):
         cmd = cmd.replace('&quot;', '')
         cmd = cmd.replace('&amp;', '&')
 
-        #if 'ActivateWindow' in cmd:
-        #    return activateWindowCommand(cmd)
+        if 'ActivateWindow' in cmd:
+            return activateWindowCommand(cmd)
 
         #workaraound bug in Frodo that can cause lock-up
         #when running a script favourite
-        #if not GOTHAM and 'RunScript' in cmd:
-        #    xbmc.executebuiltin('ActivateWindow(Home)')
+        if not GOTHAM and 'RunScript' in cmd:
+            xbmc.executebuiltin('ActivateWindow(Home)')
 
         xbmc.executebuiltin(cmd)
     except:
