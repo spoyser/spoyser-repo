@@ -73,6 +73,11 @@ def CheckVersion():
     ADDON.setSetting('VERSION', curr)
 
     if prev == '0.0.0':
+
+        folder  = xbmc.translatePath(PROFILE)
+        if not os.path.isdir(folder):
+            os.makedirs(folder) 
+
         VerifyKeymap()
         
 
