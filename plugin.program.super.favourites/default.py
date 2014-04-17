@@ -79,9 +79,6 @@ def main():
 
     addNewFolderItem(profile)
 
-    if SHOWXBMC:        
-        addDir(GETTEXT(30040), _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
-
     parseFolder(profile)
 
 
@@ -179,6 +176,9 @@ def parseFile(file, isXBMC=False, reqSep=False):
 
 
 def parseFolder(folder):
+    if SHOWXBMC:        
+        addDir(GETTEXT(30040), _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
+
     try:    current, dirs, files = os.walk(folder).next()
     except: return
 
