@@ -185,8 +185,11 @@ def parseFolder(folder):
     nmrDirs = len(dirs)
     reqSep  = nmrDirs > 0
 
-    if SHOWXBMC and reqSep:
-        addSeparatorItem()
+    if SHOWXBMC:
+        if reqSep:
+            addSeparatorItem()
+        else:
+            reqSep = True
 
     for dir in dirs:
         path = os.path.join(current, dir)
