@@ -32,17 +32,17 @@ def GetXBMCVersion():
     return int(version[0]), int(version[1]) #major, minor
 
 
-ADDONID  = 'plugin.program.super.favourites'
-ADDON    =  xbmcaddon.Addon(ADDONID)
-HOME     =  ADDON.getAddonInfo('path')
-PROFILE  =  xbmc.translatePath(ADDON.getAddonInfo('profile'))
-VERSION  = '1.0.0'
-ICON     =  os.path.join(HOME, 'icon.png')
-FANART   =  os.path.join(HOME, 'fanart.jpg')
-BLANK    =  os.path.join(HOME, 'resources', 'media', 'blank.png')
-GETTEXT  =  ADDON.getLocalizedString
-TITLE    =  GETTEXT(30000)
-KEYMAP   = 'super_favourites.xml'
+ADDONID = 'plugin.program.super.favourites'
+ADDON   =  xbmcaddon.Addon(ADDONID)
+HOME    =  ADDON.getAddonInfo('path')
+PROFILE =  os.path.join(ADDON.getAddonInfo('profile'), 'Super Favourites')
+VERSION = '1.0.0'
+ICON    =  os.path.join(HOME, 'icon.png')
+FANART  =  os.path.join(HOME, 'fanart.jpg')
+BLANK   =  os.path.join(HOME, 'resources', 'media', 'blank.png')
+GETTEXT =  ADDON.getLocalizedString
+TITLE   =  GETTEXT(30000)
+KEYMAP  = 'super_favourites.xml'
 
 MAJOR, MINOR = GetXBMCVersion()
 GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
@@ -58,50 +58,23 @@ def DialogYesNo(line1, line2='', line3=''):
     return d.yesno(TITLE + ' - ' + VERSION, line1, line2 , line3) == True
 
 
+def Verify():
+    CheckVersion()
+    VerifyKeymap()
+
+
 def CheckVersion():
     prev = ADDON.getSetting('VERSION')
     curr = VERSION
 
     if prev == curr:
-        return True
+        return
 
     ADDON.setSetting('VERSION', curr)
 
     if prev == '0.0.0':
         VerifyKeymap()
-        return verifySource()
-
-    return True
         
-
-def verifySource():
-    file = xbmc.translatePath(os.path.join('special://profile', 'sources.xml'))
-    xml  = ''
-
-    if os.path.exists(file):  
-        fav = open(file , 'r')
-        xml = fav.read()
-        fav.close()
-    else:
-        fav = open(file , 'w')
-        fav.write('<sources><files><default pathversion="1"></default></files></sources>')
-        fav.close()
-        return verifySource()
-
-    path = 'special:\\\\profile\\addon_data\\' + ADDONID
-
-    if path in xml:
-        return True
-
-    xml = xml.replace('</files>', '<source><name>%s</name><path pathversion="1">%s</path></source></files>' % (TITLE, path))
-
-    f = open(file , 'w')
-    f.write(xml)
-    f.close()
-
-    DialogOK(GETTEXT(30002), GETTEXT(30003))
-    return False
-
 
 def DeleteKeymap():
     path = os.path.join(xbmc.translatePath('special://userdata/keymaps'), KEYMAP)
@@ -114,7 +87,6 @@ def DeleteKeymap():
             break 
         except: 
             xbmc.sleep(500)
-
 
 
 def VerifyKeymap():
@@ -150,9 +122,4 @@ def VerifyKeymap():
 
 
 if __name__ == '__main__':
-    param = ''
-    if len(sys.argv) > 1:
-        param = sys.argv[1]
-
-    if param == 'sources':
-        verifySource()
+    pass

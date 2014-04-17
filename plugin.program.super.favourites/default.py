@@ -45,7 +45,6 @@ GETTEXT  = utils.GETTEXT
 TITLE    = utils.TITLE
 GOTHAM   = utils.GOTHAM
 
-
 FILENAME = 'favourites.xml'
 
 _SEPARATOR    = 0
@@ -72,17 +71,17 @@ def clean(text):
 
 
 def main():
-    utils.VerifyKeymap()
-    if not utils.CheckVersion():
-        return
+    utils.CheckVersion()
 
-    addNewFolderItem(PROFILE)
+    profile = xbmc.translatePath(PROFILE)
+
+    addNewFolderItem(profile)
 
     if SHOWXBMC:        
         addDir('XBMC Favourites', _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
         addSeparatorItem()
 
-    parseFolder(PROFILE)
+    parseFolder(profile)
 
 
 def addNewFolderItem(path):
@@ -207,7 +206,11 @@ def getText(title, text=''):
 
 
 def getFolder(title):
-    default = '-None-'
+    default = ADDON.getAddonInfo('profile')
+    folder  = xbmc.translatePath(PROFILE)
+
+    if not os.path.isdir(folder):
+        os.makedirs(folder) 
 
     folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, default)
     if folder == default:

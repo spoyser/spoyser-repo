@@ -19,7 +19,7 @@
 #
 
 import utils
-utils.CheckVersion()
+utils.Verify()
 
 import xbmc
 import os

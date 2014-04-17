@@ -2,8 +2,6 @@
 <strings>
     <string id="30000">Super Favourites</string>
     <string id="30001">Super Favourite</string>
-    <string id="30002">Super Favourites has been added to your XBMC sources</string>
-    <string id="30003">Please restart XBMC for this change to take effect</string>
     <string id="30004">New Super Folder</string>
 	<string id="30005">Add-on settings</string>
 	<string id="30006">Add to XBMC favourites</string>
@@ -25,7 +23,6 @@
 	<string id="30022">Configuration</string>	
 	<string id="30023">Show New Super Folder item</string>	
 	<string id="30024">Show XBMC Favourites item</string>			
-	<string id="30025">Add Super Folders to XBMC sources</string>				
     <string id="30026">Hotkey</string>	
 	<string id="30027">None</string>	
 	<string id="30028">F1</string>
