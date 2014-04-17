@@ -161,9 +161,9 @@ def parseFile(file, isXBMC=False, reqSep=False):
 
         include = True #originally set to (not isXBMC) to prevent altering XBMC favourites themselves
 
-        if include:
-            menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
-            menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN,       urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #if include:
+            #menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
+            #menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN,       urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
         menu.append((GETTEXT(30007), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY,       urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
