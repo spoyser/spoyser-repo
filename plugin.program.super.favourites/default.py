@@ -127,9 +127,9 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
 
 
 def addToXBMC(name, thumb, cmd):
-    cmd = cmd.replace('&', '&amp;')
+    #cmd = cmd.replace('&', '&amp;')
     cmd = cmd.replace('+', '%20')
-    cmd = '&quot;%s&quot;' % cmd
+    cmd = '"%s"' % cmd
 
     cmd = 'ActivateWindow(10025,%s)' % cmd
 
@@ -576,7 +576,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         addFavouriteMenuItem(menu, label, thumbnail, u)
 
     addGlobalMenuItem(menu)
-    liz.addContextMenuItems(menu, replaceItems=False)
+    liz.addContextMenuItems(menu, replaceItems=True)
 
     infoLabels = {'container.folderName' : 'FANART'}
     liz.setInfo(type='default-view', infoLabels=infoLabels)
