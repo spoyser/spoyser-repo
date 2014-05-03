@@ -123,15 +123,22 @@ def addGlobalMenuItem(menu):
 
 
 def addFavouriteMenuItem(menu, name, thumb, cmd):
+    if cmd.endswith('&mode=0'):
+        return
+
     menu.append((GETTEXT(30006), 'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s)' % (sys.argv[0], _ADDTOXBMC, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd))))
 
 
 def addToXBMC(name, thumb, cmd):
-    #cmd = cmd.replace('&', '&amp;')
-    cmd = cmd.replace('+', '%20')
     cmd = '"%s"' % cmd
 
-    cmd = 'ActivateWindow(10025,%s)' % cmd
+    folder = '&mode=%d&' % _FOLDER
+
+    if folder in cmd:
+        cmd = cmd.replace('+', '%20')
+        cmd = 'ActivateWindow(10001,%s)' % cmd
+    else:
+        cmd = 'PlayMedia(%s)' % cmd
 
     fave = [name, thumb, cmd]
 
@@ -169,8 +176,6 @@ def parseFile(file, reqSep=False, isXBMC=False):
         label = fave[0]
         thumb = fave[1]
         cmd   = fave[2]
-
-        print cmd
 
         menu  = []
 
@@ -548,7 +553,7 @@ def activateWindowCommand(cmd):
     if id not in activate:
         xbmc.executebuiltin(activate)
     
-    xbmc.executebuiltin('XBMC.Container.Update(%s)' % plugin)
+    xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None):
@@ -572,7 +577,8 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if not menu:
         menu = []
 
-    if isFolder and mode != _XBMC:
+    #if isFolder and mode != _XBMC:
+    if mode != _XBMC:
         addFavouriteMenuItem(menu, label, thumbnail, u)
 
     addGlobalMenuItem(menu)
@@ -601,11 +607,10 @@ def get_params():
                 param[splitparams[0]]=splitparams[1]
     return param
 
+
 params = get_params()
 thepath  = ''
 
-print "********************************"
-print sys.argv[2]
 
 try:    mode = int(params['mode'])
 except: mode = -2

@@ -24,7 +24,6 @@ import re
 
 import HTMLParser
 
-unescape = HTMLParser.HTMLParser().unescape
 
 html_escape_table = {
     "&": "&amp;",
@@ -36,6 +35,28 @@ html_escape_table = {
 
 def escape(text):
     return "".join(html_escape_table.get(c,c) for c in text)
+
+
+def unescape(text):
+    try:
+        return HTMLParser.HTMLParser().unescape(text)
+    except:
+        pass
+
+    newText    = ''
+    ignoreNext = False
+
+    for c in text:
+        if ord(c) < 127:
+            newText   += c
+            ignoreNext = False
+        elif ignoreNext:
+            ignoreNext = False
+        else:
+            newText   += ' '
+            ignoreNext = True
+
+    return unescape(newText)
 
 
 def getFavourites(file):

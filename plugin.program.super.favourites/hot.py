@@ -19,7 +19,8 @@
 #
 
 import xbmc
+import utils
 
-#xbmc.executebuiltin('ActivateWindow(10001)')
-xbmc.executebuiltin('Container.Refresh')
-xbmc.executebuiltin('RunAddon(plugin.program.super.favourites)')
+xbmc.executebuiltin('ActivateWindow(Programs)')
+#xbmc.executebuiltin('Container.Refresh')
+xbmc.executebuiltin('RunAddon(%s)' % utils.ADDONID)

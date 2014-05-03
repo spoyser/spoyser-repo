@@ -26,6 +26,7 @@ import os
 ACTION_BACK          = 92
 ACTION_PARENT_DIR    = 9
 ACTION_PREVIOUS_MENU = 10
+ACTION_CONTEXT_MENU  = 117
 
 ACTION_LEFT  = 1
 ACTION_RIGHT = 2
@@ -61,7 +62,8 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
     def onAction(self, action):
         actionId = action.getId()
 
-        if actionId in [ACTION_PARENT_DIR, ACTION_PREVIOUS_MENU, ACTION_BACK]:
+
+        if actionId in [ACTION_CONTEXT_MENU, ACTION_PARENT_DIR, ACTION_PREVIOUS_MENU, ACTION_BACK, ACTION_CONTEXT_MENU]:
             return self.close()
 
 
