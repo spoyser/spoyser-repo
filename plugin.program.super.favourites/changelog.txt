@@ -1,6 +1,6 @@
 v1.0.3:
   - Improved handling of non-ascii characters
-  - Add to XBMC favourites for folders and favourites
+  - Add back to XBMC favourites for both folders and favourites
 
 
 v1.0.2:

@@ -558,8 +558,9 @@ def activateWindowCommand(cmd):
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None):
     u  = sys.argv[0]
-    u += '?label='    + urllib.quote_plus(label)
-    u += '&mode='     + str(mode)
+
+    u += '?label=' + urllib.quote_plus(label)
+    u += '&mode='  + str(mode)
 
     if index > -1:
         u += '&index=' + str(index)
@@ -577,15 +578,14 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if not menu:
         menu = []
 
-    #if isFolder and mode != _XBMC:
     if mode != _XBMC:
         addFavouriteMenuItem(menu, label, thumbnail, u)
 
     addGlobalMenuItem(menu)
     liz.addContextMenuItems(menu, replaceItems=True)
 
-    infoLabels = {'container.folderName' : 'FANART'}
-    liz.setInfo(type='default-view', infoLabels=infoLabels)
+    #infoLabels = {'container.folderName' : 'FANART'}
+    #liz.setInfo(type='default-view', infoLabels=infoLabels)
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
