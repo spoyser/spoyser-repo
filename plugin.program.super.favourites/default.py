@@ -136,7 +136,7 @@ def addToXBMC(name, thumb, cmd):
 
     if folder in cmd:
         cmd = cmd.replace('+', '%20')
-        cmd = 'ActivateWindow(10001,%s)' % cmd
+        cmd = 'ActivateWindow(%d,%s)' % (xbmcgui.getCurrentWindowId(), cmd)
     else:
         cmd = 'PlayMedia(%s)' % cmd
 
@@ -526,8 +526,8 @@ def playCommand(cmd):
         cmd = cmd.replace('&amp;', '&')
 
         #if a 'Super Favourite' favourite just do it
-        if ADDONID in cmd:
-            return xbmc.executebuiltin(cmd)
+        #if ADDONID in cmd:
+        #    return xbmc.executebuiltin(cmd)
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd)
@@ -708,4 +708,4 @@ else:
 if doRefresh:
     refresh()
     
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
