@@ -32,7 +32,7 @@ def Resolve(html):
         url = url.split('"')[0]
 
         if 'cizgifilmlerizle' in url:
-            return DoResolve(url)
+            return DoResolve2(url)
 
         if 'animeuploads' in url:
             return DoResolve(url)
@@ -56,6 +56,29 @@ def DoResolve(url):
         html  = theNet.http_POST(url, data).content
         #match = re.compile('file=(.+?)\'/>').search(html).group(1).split('file=', 1)[1].replace('&provider=http', '')
         match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
+
+        url = urllib.unquote(match)
+        url = url.replace(' ', '%20')
+        ret = url       
+    except:
+        text = 'Error Resolving URL'
+
+    return [[ret, text]]
+
+def DoResolve2(url):
+    ret  = None
+    text = ''
+    try:        
+        theNet = net.Net()
+
+        data = {'fuck_you' : '', 'confirm' : 'Click+Here+to+Watch+Free%21%21'}
+        url  = url.replace(' ', '%20')
+
+        theNet.set_user_agent('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+
+        html  = theNet.http_POST(url, data).content
+        #match = re.compile('file=(.+?)\'/>').search(html).group(1).split('file=', 1)[1].replace('&provider=http', '')
+        match = re.compile('file: \'(.+)\'}').search(html).group(1).split('file: ', 1)[-1]
 
         url = urllib.unquote(match)
         url = url.replace(' ', '%20')
