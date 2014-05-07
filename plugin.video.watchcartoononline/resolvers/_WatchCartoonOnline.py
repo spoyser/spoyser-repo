@@ -55,7 +55,9 @@ def DoResolve(url):
 
         html  = theNet.http_POST(url, data).content
         #match = re.compile('file=(.+?)\'/>').search(html).group(1).split('file=', 1)[1].replace('&provider=http', '')
+        #match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
         match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
+
 
         url = urllib.unquote(match)
         url = url.replace(' ', '%20')
@@ -64,3 +66,4 @@ def DoResolve(url):
         text = 'Error Resolving URL'
 
     return [[ret, text]]
+
