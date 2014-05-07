@@ -64,8 +64,16 @@ def doMenu():
     window   = xbmcgui.getCurrentWindowId()
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
-    
 
+    print folder 
+    print path    
+    print filename
+    print name    
+    print thumb   
+    print window  
+    print playable
+    print isFolder
+    
     if len(path) > 0:
         menu = []
         menu.append((utils.GETTEXT(30047), 1))
