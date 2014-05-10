@@ -1,3 +1,8 @@
+v1.0.4:
+  - Fixed context menu override when addon is disabled
+  - Better identification of filetype when using Files.GetDirectory json request
+
+
 v1.0.3:
   - Improved handling of non-ascii characters
   - Add back to XBMC favourites for both folders and favourites

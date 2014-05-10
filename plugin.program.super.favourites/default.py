@@ -50,24 +50,25 @@ FILENAME  = utils.FILENAME
 FOLDERCFG = utils.FOLDERCFG
 
 
-_SEPARATOR    = 0
-_SETTINGS     = 100
-_ADDTOXBMC    = 200
-_XBMC         = 300
-_FOLDER       = 400
-_NEWFOLDER    = 500
-_COMMAND      = 600
-_REMOVEFOLDER = 700
-_REMOVEFAVE   = 800
-_RENAMEFOLDER = 900
-_RENAMEFAVE   = 1000
-_MOVE         = 1100
-_COPY         = 1200
-_UP           = 1300
-_DOWN         = 1400
-_THUMBFAVE    = 1500
-_THUMBFOLDER  = 1600
-_PLAYBACKMODE = 1700
+_SEPARATOR      = 0
+_SETTINGS       = 100
+_ADDTOXBMC      = 200
+_XBMC           = 300
+_FOLDER         = 400
+_NEWFOLDER      = 500
+_PLAYMEDIA      = 600
+_ACTIVATEWINDOW = 650
+_REMOVEFOLDER   = 700
+_REMOVEFAVE     = 800
+_RENAMEFOLDER   = 900
+_RENAMEFAVE     = 1000
+_MOVE           = 1100
+_COPY           = 1200
+_UP             = 1300
+_DOWN           = 1400
+_THUMBFAVE      = 1500
+_THUMBFOLDER    = 1600
+_PLAYBACKMODE   = 1700
 
 
 SHOWNEW  = ADDON.getSetting('SHOWNEW')  == 'true'
@@ -196,7 +197,10 @@ def parseFile(file, reqSep=False, isXBMC=False):
             if 'sf_win_id=' in cmd:
                 menu.append((GETTEXT(30052), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYBACKMODE, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        addDir(label, _COMMAND, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu)
+        if 'playmedia(' in cmd.lower():
+            addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu)
+        else:
+            addDir(label, _ACTIVATEWINDOW, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu)
 
     return len(faves) > 0
 
@@ -550,6 +554,7 @@ def activateWindowCommand(cmd):
 
     #check if it is a different window and if so activate it
     id = str(xbmcgui.getCurrentWindowId())
+
     if id not in activate:
         xbmc.executebuiltin(activate)
     
@@ -624,14 +629,22 @@ except: cmd = None
 try:    path = urllib.unquote_plus(params['path'])
 except: path = None
 
+
 doRefresh = False
+doEnd     = True
+
 
 if mode == _XBMC:
     showXBMCFolder()
     xbmc.executebuiltin('Container.Update')
 
 
-elif mode == _COMMAND:
+elif mode == _PLAYMEDIA:
+    playCommand(cmd)
+
+
+elif mode == _ACTIVATEWINDOW:
+    doEnd = False
     playCommand(cmd)
 
 
@@ -708,4 +721,5 @@ else:
 if doRefresh:
     refresh()
     
-xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+if doEnd:
+    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)

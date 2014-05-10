@@ -19,15 +19,10 @@
 #
 
 
-import xbmc
-import xbmcgui
-
-import utils
-import contextmenu
-import favourite
-
-
 def copyFave(name, thumb, cmd):
+    import favourite
+    import utils
+
     text = utils.GETTEXT(30019)
 
     folder = utils.GetFolder(text)
@@ -51,6 +46,17 @@ def copyFave(name, thumb, cmd):
 
 
 def doMenu():
+    import xbmc
+    import xbmcgui
+
+    try:
+        import utils
+    except:
+        xbmc.executebuiltin('XBMC.Action(ContextMenu)')
+        return    
+
+    import contextmenu
+
     folder = xbmc.getInfoLabel('Container.FolderPath')
     if utils.ADDONID in folder:
         xbmc.executebuiltin('XBMC.Action(ContextMenu)')
@@ -64,6 +70,15 @@ def doMenu():
     window   = xbmcgui.getCurrentWindowId()
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
+
+    #print folder 
+    #print path    
+    #print filename
+    #print name    
+    #print thumb   
+    #print window  
+    #print playable
+    #print isFolder
     
     if len(path) > 0:
         menu = []
