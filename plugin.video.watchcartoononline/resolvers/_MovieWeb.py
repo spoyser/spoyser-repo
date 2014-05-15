@@ -33,7 +33,7 @@ def Resolve(html):
     try:
         id   = re.compile('http://www.movieweb.com/v/(.+?)"').search(html).group(1)
         url  = 'http://www.movieweb.com/v/%s/play?s=1&idx=0&e=1' % id
-        html = common.GetHTML(url, useCache=False)
+        html = common.getHTML(url, useCache=False)
         
         jsn = json.loads(html)
 

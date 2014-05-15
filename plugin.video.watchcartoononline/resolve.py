@@ -44,7 +44,7 @@ def ResolveURL(url):
 
     ImportModules()
 
-    html = common.GetHTML(url)
+    html = common.getHTML(url)
 
     url = None
     msg = None

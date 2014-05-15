@@ -21,7 +21,7 @@
 import geturllib
 
 
-def Clean(text):
+def clean(text):
     text = text.replace('&#8211;', '-')
     text = text.replace('&#8230;', '...')
     text = text.replace('&#215;',  'x')
@@ -39,7 +39,25 @@ def Clean(text):
     return text
 
 
-def GetHTML(url, useCache = True):
+def fixup(text):
+    newText    = ''
+    ignoreNext = False
+
+    for c in text:
+        if ord(c) < 127:
+            newText   += c
+            ignoreNext = False
+        elif ignoreNext:
+            ignoreNext = False
+        else:
+            newText   += ' '
+            ignoreNext = True
+
+    newText = newText.strip('/\\')
+    return newText
+
+
+def getHTML(url, useCache = True):
     if useCache:
         html, cached = geturllib.GetURL(url, 86400)
     else:

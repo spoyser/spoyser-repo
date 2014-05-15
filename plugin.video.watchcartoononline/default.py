@@ -31,20 +31,24 @@ import xbmcgui
 import resolve
 import common
 
+try:    import StorageServer
+except: import storageserverdummy as StorageServer
+
+cache = StorageServer.StorageServer("WCO", 0)
+
 ADDONID = 'plugin.video.watchcartoononline'
 ADDON   = xbmcaddon.Addon(ADDONID)
 HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Watch Cartoon Online'
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 URL     = 'http://www.watchcartoononline.com/'
 
 
 SECTION  = 100
 SERIES   = 200
 EPISODE  = 300
-
 
 
 def CheckVersion():
@@ -64,7 +68,7 @@ def CheckVersion():
 def Main():
     CheckVersion()
 
-    html = common.GetHTML(URL)
+    html = common.getHTML(URL)
 
     match = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(html)
     for url, name in match:
@@ -81,7 +85,7 @@ def DoSection(url):
     if url == 'http://www.watchcartoononline.com/ova-list':
         mode = EPISODE
 
-    html = common.GetHTML(url)
+    html = common.getHTML(url)
 
     html = html.split('<div id="ddmcc_container">', 1)[-1]
 
@@ -98,7 +102,6 @@ def DoSection(url):
             if name not in names:
                 names.append(name)
                 if mode == SERIES:
-                    #AddSeries(name, url)
                     newName = name
                     if newName.startswith('The '):
                         newName = newName.split('The ', 1)[-1]
@@ -112,8 +115,6 @@ def DoSection(url):
 
 
 def DoSeries(html):#url):
-    #html = common.GetHTML(url)
-
     title = re.compile('<title>(.+?) \| .+?').search(html).group(1)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
 
@@ -134,11 +135,6 @@ def DoSeries(html):#url):
 
         if name and url:
             AddEpisode(name, url, image)
-
-    #if 'Previous Entries' in html:
-    #    url = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
-    #    AddSeries('More...', url)
-
 
 def GetLinkIndex(resolved):
     if len(resolved) < 2:
@@ -167,7 +163,6 @@ def GetLinkIndex(resolved):
 
 
 def PlayVideo(_url):
-    #print _url
     resolved = resolve.ResolveURL(_url)
 
     if len(resolved) == 0:
@@ -186,13 +181,10 @@ def PlayVideo(_url):
         print 'WATCHCARTOONSONLINE - (%s) Failed to locate video for %s' % (msg, _url)
         return
 
-    html  = common.GetHTML(_url)
+    html  = common.getHTML(_url)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
     title = re.compile('<title>(.+?)</title>').search(html).group(1).split(' |', 1)[0]
-    title = common.Clean(title)
-
-    #print title
-    #print image
+    title = common.clean(title)
 
     liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
@@ -227,7 +219,7 @@ def AddSection(name, image, url):
 
 
 def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, contextMenu=None):
-    name = common.Clean(name)
+    name = common.clean(name)
 
     if not image:
         image = ICON
@@ -250,12 +242,17 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
         liz.addContextMenuItems(contextMenu)
 
     if infoLabels:
-        #liz.setInfo(type="Video", infoLabels=infoLabels)
         infoLabels['title'] = name
     else:
         infoLabels = { 'title' : name }
-    liz.setInfo(type="Video", infoLabels=infoLabels)
 
+    try:
+        if mode == EPISODE and cache.get(common.fixup(name)):
+            infoLabels['playcount'] = 1
+    except:
+        pass
+
+    liz.setInfo(type="Video", infoLabels=infoLabels)
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
     
@@ -285,14 +282,19 @@ geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addo
 #print sys.argv[2]
 
 params = get_params()
+
 mode   = None
 url    = None
+title  = None
 
 
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass
 
-try:    url  = urllib.unquote_plus(params['url'])
+try:    url = urllib.unquote_plus(params['url'])
+except: pass
+
+try:    title = urllib.unquote_plus(params['title'])
 except: pass
 
 
@@ -300,28 +302,27 @@ if mode == SECTION:
     DoSection(url)
 
 elif mode == SERIES:
-    #DoSeries(url)
-
-    html = common.GetHTML(url)
+    html = common.getHTML(url)
 
     while('Previous Entries' in html):
         DoSeries(html)
         url  = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
-        html = common.GetHTML(url)
+        html = common.getHTML(url)
 
     DoSeries(html)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
 
 
 elif mode == EPISODE:
-    PlayVideo(url)
+    try:
+        PlayVideo(url)
+        if title:
+            cache.set(common.fixup(title), url)
+    except Exception, e:
+        print str(e)
+        raise
 
 else:
     Main()
 
-        
-try:
-#    #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-except:
-    pass
+xbmcplugin.endOfDirectory(int(sys.argv[1]))

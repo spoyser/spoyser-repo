@@ -19,7 +19,6 @@
 #
 
 
-import common
 import re
 
 
@@ -33,7 +32,7 @@ def Resolve(html):
     try:
         id   = re.compile('veoh.php\?v=(.+?)&').search(html).group(1)
         url  = 'http://www.veoh.com/rest/video/%s/details' % id
-        html = common.GetHTML(url, useCache = False)
+        html = common.getHTML(url, useCache = False)
         if ' items="0"' in html:
             text = 'Video has been removed from Veoh'
         else:
