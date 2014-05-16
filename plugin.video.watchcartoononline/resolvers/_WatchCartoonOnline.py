@@ -36,6 +36,13 @@ def Resolve(html):
 
         if 'animeuploads' in url:
             return DoResolve(url)
+
+        if 'vid44.php' in url:
+            url = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
+            html = common.GetHTML(url)
+            url = re.compile('file: \"(.+)\",\\r  height').search(html).group(1)
+            return [[url, text]]
+
     except:
         pass
 
