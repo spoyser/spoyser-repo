@@ -62,11 +62,8 @@ def DoResolve(url):
 
         html  = theNet.http_POST(url, data).content
 
-        print html
-
-        #match = re.compile('file: \'(.+)\'}').search(html).group(1).split('file: ', 1)[-1]
-        match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
-
+        try:    match = re.compile('file: \'(.+)\'}').search(html).group(1).split('file: ', 1)[-1]
+        except: match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
 
         url = urllib.unquote(match)
         url = url.replace(' ', '%20')
