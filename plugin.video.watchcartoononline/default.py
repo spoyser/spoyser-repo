@@ -42,7 +42,7 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Watch Cartoon Online'
-VERSION = '1.0.7'
+VERSION = '1.0.9'
 URL     = 'http://www.watchcartoononline.com/'
 
 
