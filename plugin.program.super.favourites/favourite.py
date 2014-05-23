@@ -87,6 +87,7 @@ def getFavourites(file):
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 
+
         if len(cmd) > 0:
             items.append([name, thumb, cmd])
 

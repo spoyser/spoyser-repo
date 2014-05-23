@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <keymap>
+	<fullscreenvideo>
+		<keyboard>
+			<c>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/capture.py)</c>
+			<menu>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/capture.py)</menu>
+		</keyboard>
+	</fullscreenvideo>
 	<Global>
 		<keyboard>
 			<c>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/capture.py)</c>

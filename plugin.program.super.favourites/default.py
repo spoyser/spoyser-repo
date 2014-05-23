@@ -18,7 +18,6 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-
 import xbmc
 import xbmcaddon
 import xbmcplugin
@@ -35,22 +34,27 @@ import utils
 ADDONID  = utils.ADDONID
 ADDON    = utils.ADDON
 HOME     = utils.HOME
+ROOT     = utils.ROOT
 PROFILE  = utils.PROFILE
 VERSION  = utils.VERSION
 ICON     = utils.ICON
 
+
 FANART   = utils.FANART
-BLANK    = utils.BLANK
+SEARCH   = utils.SEARCH
+BLANK    = 'NULL'
+
 GETTEXT  = utils.GETTEXT
 TITLE    = utils.TITLE
 FRODO    = utils.FRODO
 GOTHAM   = utils.GOTHAM
 
-FILENAME  = utils.FILENAME
-FOLDERCFG = utils.FOLDERCFG
+FILENAME      = utils.FILENAME
+FOLDERCFG     = utils.FOLDERCFG
 
 
-_SEPARATOR      = 0
+_SUPERSEARCH    = 0
+_SEPARATOR      = 50
 _SETTINGS       = 100
 _ADDTOXBMC      = 200
 _XBMC           = 300
@@ -58,6 +62,7 @@ _FOLDER         = 400
 _NEWFOLDER      = 500
 _PLAYMEDIA      = 600
 _ACTIVATEWINDOW = 650
+_ACTIVATESEARCH = 675
 _REMOVEFOLDER   = 700
 _REMOVEFAVE     = 800
 _RENAMEFOLDER   = 900
@@ -69,11 +74,20 @@ _DOWN           = 1400
 _THUMBFAVE      = 1500
 _THUMBFOLDER    = 1600
 _PLAYBACKMODE   = 1700
+_EDITSEARCH     = 1900
 
 
 SHOWNEW  = ADDON.getSetting('SHOWNEW')  == 'true'
 SHOWXBMC = ADDON.getSetting('SHOWXBMC') == 'true'
 SHOWSEP  = ADDON.getSetting('SHOWSEP')  == 'true'
+SHOWSS   = ADDON.getSetting('SHOWSS')   == 'true'
+
+
+global nItem
+nItem = 0
+
+global separator
+separator = False
 
 
 def clean(text):
@@ -91,6 +105,8 @@ def clean(text):
 def main():
     utils.CheckVersion()
 
+    addSuperSearch()
+
     profile = xbmc.translatePath(PROFILE)
 
     addNewFolderItem(profile)
@@ -98,13 +114,30 @@ def main():
     parseFolder(profile)
 
 
+def addSuperSearch():
+    global separator
+
+    if not SHOWSS:
+        return
+
+    utils.verifySuperSearch()
+
+    separator = False        
+    addDir(GETTEXT(30054), _SUPERSEARCH, thumbnail=SEARCH, isFolder=True)
+    separator = True
+
+
 def addNewFolderItem(path):
+    global separator
     if SHOWNEW:
-        addDir(GETTEXT(30004), _NEWFOLDER, path=path, thumbnail=ICON, isFolder=False) 
-        addSeparatorItem()
+        separator = False
+        addDir(GETTEXT(30004), _NEWFOLDER, path=path, thumbnail=ICON, isFolder=False)
+        separator = True
 
 
 def addSeparatorItem():
+    global separator
+    separator = False        
     if SHOWSEP:  
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
 
@@ -115,10 +148,11 @@ def addGlobalMenuItem(menu):
         cmd = '%s?mode=%d' % (sys.argv[0], _XBMC)
         menu.append((GETTEXT(30040), 'XBMC.Container.Update(%s)' % cmd))
 
-        path = thepath
-        if path == '':
-            path = PROFILE
-        menu.append((GETTEXT(30004), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _NEWFOLDER, urllib.quote_plus(path))))
+        if mode != _SUPERSEARCH:
+            path = thepath
+            if path == '':
+                path = PROFILE
+            menu.append((GETTEXT(30004), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _NEWFOLDER, urllib.quote_plus(path))))
 
     menu.append((GETTEXT(30005), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _SETTINGS)))
 
@@ -133,9 +167,10 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
 def addToXBMC(name, thumb, cmd):
     cmd = '"%s"' % cmd
 
-    folder = '&mode=%d&' % _FOLDER
+    folder = '&mode=%d' % _FOLDER
+    search = '&mode=%d' % _SUPERSEARCH
 
-    if folder in cmd:
+    if (folder in cmd) or (search in cmd):
         cmd = cmd.replace('+', '%20')
         cmd = 'ActivateWindow(%d,%s)' % (xbmcgui.getCurrentWindowId(), cmd)
     else:
@@ -163,15 +198,12 @@ def refresh():
 
 def showXBMCFolder():
     file = os.path.join(xbmc.translatePath('special://profile'), FILENAME)
-    parseFile(file, isXBMC=True)
+    parseFile(file)
 
 
-def parseFile(file, reqSep=False, isXBMC=False):
-    faves = favourite.getFavourites(file)
-
-    if reqSep and len(faves) > 0:
-        addSeparatorItem()
-        
+def parseFile(file):
+    global separator
+    faves = favourite.getFavourites(file)        
 
     for fave in faves:
         label = fave[0]
@@ -180,46 +212,37 @@ def parseFile(file, reqSep=False, isXBMC=False):
 
         menu  = []
 
-        include = True #originally set to (not isXBMC) to prevent altering XBMC favourites themselves
+        menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        if include:
-            menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-            menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30007), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        menu.append((GETTEXT(30007), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY,       urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30008), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _MOVE,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30009), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _REMOVEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30010), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _RENAMEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _THUMBFAVE,    urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        if include:
-            menu.append((GETTEXT(30008), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _MOVE,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
-            menu.append((GETTEXT(30009), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _REMOVEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-            menu.append((GETTEXT(30010), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _RENAMEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-            menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _THUMBFAVE,    urllib.quote_plus(file), urllib.quote_plus(cmd))))
-
-            if 'sf_win_id=' in cmd:
-                menu.append((GETTEXT(30052), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYBACKMODE, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        if 'sf_win_id=' in cmd:
+            menu.append((GETTEXT(30052), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYBACKMODE, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
         if 'playmedia(' in cmd.lower():
             addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu)
         else:
             addDir(label, _ACTIVATEWINDOW, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu)
 
-    return len(faves) > 0
+    separator = len(faves) > 0
 
 
 def parseFolder(folder):
-    if SHOWXBMC:        
+    global separator
+
+    if SHOWXBMC:
+        separator = False
         addDir(GETTEXT(30040), _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
+        separator = True
 
     try:    current, dirs, files = os.walk(folder).next()
     except: return
-
-    nmrDirs = len(dirs)
-    reqSep  = nmrDirs > 0
-
-    if SHOWXBMC:
-        if reqSep:
-            addSeparatorItem()
-        else:
-            reqSep = True
 
     for dir in dirs:
         path = os.path.join(current, dir)
@@ -233,14 +256,12 @@ def parseFolder(folder):
         if not thumbnail:
             thumbnail = ICON
 
-        addDir(dir,  _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu)
+        addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu)
 
-    file     = os.path.join(folder, FILENAME)
-    nmrFaves = parseFile(file, reqSep=reqSep)
+    separator = len(dirs) > 0
 
-    if nmrDirs == 0 and nmrFaves == 0 and not SHOWNEW:
-        if not (SHOWXBMC and mode == -1):
-            addSeparatorItem() 
+    file = os.path.join(folder, FILENAME)
+    parseFile(file)
 
 
 def getParam(param, file):
@@ -524,14 +545,57 @@ def renameFave(file, cmd):
     return True
 
 
+def editSearchTerm(keyword):
+    keyword = getText(GETTEXT(30056), keyword)
+
+    winID = xbmcgui.getCurrentWindowId()
+    cmd   = 'ActivateWindow(%d,"%s?mode=%d&keyword=%s")' % (winID, sys.argv[0], _SUPERSEARCH, keyword)
+
+    activateWindowCommand(cmd)
+
+    
+def superSearch(keyword=''):
+    if len(keyword) < 1:
+        kb = xbmc.Keyboard(keyword, 'Super Search')
+        kb.doModal()
+        if kb.isConfirmed():
+            keyword = kb.getText()
+
+    if len(keyword) < 1:
+        return
+        
+    file  = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
+
+    faves = favourite.getFavourites(file)
+
+    for fave in faves:
+        label = fave[0] + ' [I](%s)[/I]' % keyword
+        thumb = fave[1]
+        cmd   = fave[2].replace('[%SF%]', urllib.quote_plus(keyword.replace('&', '')))
+
+        try:
+            plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
+            #simple check to ensure it is available
+            xbmcaddon.Addon(plugin)
+
+            menu = []
+            #menu.append((GETTEXT(30057), 'XBMC.Container.Refresh(%s?mode=%d)' % (sys.argv[0], _EDITSEARCH)))
+            menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, urllib.quote_plus(keyword.replace('&', '')))))
+
+            addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu)
+
+        except:
+            pass
+
+
 def playCommand(cmd):
     try:
         cmd = cmd.replace('&quot;', '')
         cmd = cmd.replace('&amp;', '&')
 
         #if a 'Super Favourite' favourite just do it
-        #if ADDONID in cmd:
-        #    return xbmc.executebuiltin(cmd)
+        if ADDONID in cmd:
+            return xbmc.executebuiltin(cmd)
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd)
@@ -562,6 +626,8 @@ def activateWindowCommand(cmd):
 
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None):
+    global separator
+
     u  = sys.argv[0]
 
     u += '?label=' + urllib.quote_plus(label)
@@ -592,7 +658,14 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     #infoLabels = {'container.folderName' : 'FANART'}
     #liz.setInfo(type='default-view', infoLabels=infoLabels)
 
+    if separator:
+        addSeparatorItem()
+        
+    global nItem
+    nItem += 1
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
+
+    
 
    
 def get_params():
@@ -616,14 +689,13 @@ def get_params():
 params = get_params()
 thepath  = ''
 
-
 try:    mode = int(params['mode'])
 except: mode = -2
 
 try:    file = urllib.unquote_plus(params['file'])
 except: file = None
 
-try:    cmd    = urllib.unquote_plus(params['cmd'])
+try:    cmd = urllib.unquote_plus(params['cmd'])
 except: cmd = None
 
 try:    path = urllib.unquote_plus(params['path'])
@@ -633,19 +705,28 @@ except: path = None
 doRefresh = False
 doEnd     = True
 
+cacheToDisc=False
 
-if mode == _XBMC:
-    showXBMCFolder()
-    xbmc.executebuiltin('Container.Update')
+xbmc.log('Running Super Favourites V%s' % VERSION)
+xbmc.log(sys.argv[2])
 
 
-elif mode == _PLAYMEDIA:
+if mode == _PLAYMEDIA:
+    playCommand(cmd)
+
+elif mode == _ACTIVATESEARCH:
+    doEnd = False
     playCommand(cmd)
 
 
 elif mode == _ACTIVATEWINDOW:
     doEnd = False
     playCommand(cmd)
+
+
+elif mode == _XBMC:
+    showXBMCFolder()
+    xbmc.executebuiltin('Container.Update')
 
 
 elif mode == _FOLDER:
@@ -712,14 +793,37 @@ elif mode == _SETTINGS:
     ADDON.openSettings()
     refresh()
 
+
 elif mode == _SEPARATOR:
     pass
 
+
+elif mode == _SUPERSEARCH:
+    try:    keyword = urllib.unquote_plus(params['keyword'])
+    except: keyword = ''
+    superSearch(keyword)
+    cacheToDisc=True
+
+
+elif mode == _EDITSEARCH:
+    keyword = urllib.unquote_plus(params['keyword'])
+    editSearchTerm(keyword)
+    cacheToDisc=True
+    xbmc.sleep(100)
+    doEnd = False
+    
 else:
     main()
 
+
+#make sure at least 1 line is showing to allow context menu to be displayed
+if nItem < 1:
+    addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
+
+
 if doRefresh:
     refresh()
+
     
 if doEnd:
-    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
