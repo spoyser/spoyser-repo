@@ -546,7 +546,7 @@ def renameFave(file, cmd):
 
 
 def editSearchTerm(keyword):
-    keyword = getText(GETTEXT(30056), keyword)
+    keyword = getText(GETTEXT(30057), keyword)
 
     winID = xbmcgui.getCurrentWindowId()
     cmd   = 'ActivateWindow(%d,"%s?mode=%d&keyword=%s")' % (winID, sys.argv[0], _SUPERSEARCH, keyword)
