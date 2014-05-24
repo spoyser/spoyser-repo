@@ -1,5 +1,5 @@
 v1.0.5:
-  - Super Search - configurable multi-addon search functionality
+  - Super Search - configurable multi-addon search functionality - see forum for more details
   - Configurable root folder
   - Pseudo TV Live compatibility
 

@@ -550,8 +550,11 @@ def editSearchTerm(keyword):
 
     winID = xbmcgui.getCurrentWindowId()
     cmd   = 'ActivateWindow(%d,"%s?mode=%d&keyword=%s")' % (winID, sys.argv[0], _SUPERSEARCH, keyword)
-
     activateWindowCommand(cmd)
+
+    #cmd   = 'XBMC.Container.Update("%s?mode=%d&keyword=%s")' % (sys.argv[0], _SUPERSEARCH, keyword)
+    #xbmc.executebuiltin(cmd)
+    
 
     
 def superSearch(keyword=''):
@@ -568,8 +571,11 @@ def superSearch(keyword=''):
 
     faves = favourite.getFavourites(file)
 
+    addDir('[B]Super Search - \'%s\'[/B]' % keyword, _SEPARATOR, thumbnail=BLANK, isFolder=False)
+    addSeparatorItem()
+
     for fave in faves:
-        label = fave[0] + ' [I](%s)[/I]' % keyword
+        label = fave[0]
         thumb = fave[1]
         cmd   = fave[2].replace('[%SF%]', urllib.quote_plus(keyword.replace('&', '')))
 
