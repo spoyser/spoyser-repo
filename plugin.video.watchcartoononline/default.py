@@ -42,13 +42,18 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Watch Cartoon Online'
-VERSION = '1.0.9'
+VERSION = '1.0.10'
 URL     = 'http://www.watchcartoononline.com/'
 
 
 SECTION  = 100
 SERIES   = 200
 EPISODE  = 300
+
+
+import geturllib
+geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
+
 
 
 def CheckVersion():
@@ -60,10 +65,9 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if curr == '1.0.0':
+    if prev == '0.0.0':
         d = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, '', 'Welcome to Watch Cartoon Online', '')
-
 
 def Main():
     CheckVersion()
