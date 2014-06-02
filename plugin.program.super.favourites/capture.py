@@ -1,4 +1,4 @@
-#
+﻿#
 #       Copyright (C) 2014
 #       Sean Poyser (seanpoyser@gmail.com)
 #
@@ -30,6 +30,16 @@ _LAUNCH_SF    = 300
 _SEARCH       = 400
 _DOWNLOAD     = 500
 _PLAYLIST     = 600
+
+
+def doStandard():
+    window   = xbmcgui.getCurrentWindowId()
+
+    if window == 12005: #video playing
+        xbmc.executebuiltin('ActivateWindow(videoplaylist)')
+        return
+
+    xbmc.executebuiltin('XBMC.Action(ContextMenu)')
 
 
 def copyFave(name, thumb, cmd):
@@ -77,15 +87,20 @@ def doMenu():
     try:
         import utils
     except:
-        xbmc.executebuiltin('XBMC.Action(ContextMenu)')
+        doStandard()
         return    
 
     import contextmenu
 
+    # to prevent master profile setting being used in other profiles
+    if utils.ADDON.getSetting('CONTEXT') != 'true':
+        doStandard()
+        return
+
     folder = xbmc.getInfoLabel('Container.FolderPath')
     #ignore if in Super Favourites
     if utils.ADDONID in folder:
-        xbmc.executebuiltin('XBMC.Action(ContextMenu)')
+        doStandard()
         return
         
     choice   = 0
@@ -96,6 +111,7 @@ def doMenu():
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')
     window   = xbmcgui.getCurrentWindowId()
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
+    fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
 
     try:    file = xbmc.Player().getPlayingFile()
@@ -104,37 +120,39 @@ def doMenu():
     isStream = False
     if file:
         isStream = file.startswith('http://')
+
+    #GOTHAM only 
     #if hasattr(xbmc.Player(), 'isInternetStream'):
     #    isStream = xbmc.Player().isInternetStream()
     #elif file:
     #    isStream = file.startswith('http://')
 
-    #print "**** Context Menu Information ****"
-    #print label
-    #print folder 
-    #print path    
-    #print filename
-    #print name    
-    #print thumb   
-    #print window  
-    #print playable
-    #print isFolder
-    #print file
-    #print isStream
+    #print '**** Context Menu Information ****'
+    #print 'Label      : %s' % label
+    #print 'Folder     : %s' % folder 
+    #print 'Path       : %s' % path    
+    #print 'Filename   : %s' % filename
+    #print 'Name       : %s' % name    
+    #print 'Thumb      : %s' % thumb
+    #print 'Fanart     : %s' % fanart   
+    #print 'Window     : %d' % window  
+    #print 'IsPlayable : %s' % playable
+    #print 'IsFolder   : %s' % isFolder
+    #print 'File       : %s' % file
+    #print 'IsStream   : %s' % isStream
 
     menu = []
 
-    if window == 12005: #video playing
+    if (len(menu) == 0) and window == 12005: #video playing
         if isStream:
             menu.append(('Download  %s' % label , _DOWNLOAD))
             menu.append(('Show Playlist',         _PLAYLIST))
         else:
-            xbmc.executebuiltin('ActivateWindow(videoplaylist)')
-        #cancel download feature for now by emptying menu
-        menu = []
-        xbmc.executebuiltin('ActivateWindow(videoplaylist)')
+            return doStandard()
+        #cancel download feature for now
+        return doStandard()
     
-    elif len(path) > 0:    
+    if (len(menu) == 0) and len(path) > 0:    
         utils.verifySuperSearch()
         menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
         menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
@@ -148,11 +166,11 @@ def doMenu():
 
 
     if len(menu) == 0:
+        doStandard()
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
     choice = contextmenu.showMenu(utils.ADDONID, menu)
-
 
     if choice == _PLAYLIST:
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
@@ -187,14 +205,15 @@ def doMenu():
         xbmc.executebuiltin('ActivateWindow(programs,plugin://%s)' % utils.ADDONID)
 
     if choice == _SEARCH:
+        thumb  = thumb  if len(thumb)  > 0 else 'null'
+        fanart = fanart if len(fanart) > 0 else 'null'
         import urllib
-        _SUPERSEARCH = 0     #declared in default.py
+        _SUPERSEARCH = 0     #declared as 0 in default.py
         winID        = 10025 #video
-        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s")' % (window, utils.ADDONID, _SUPERSEARCH, urllib.quote_plus(name))
+        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, utils.ADDONID, _SUPERSEARCH, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
         activateCommand(cmd)
 
-        
-    xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')
 
 if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') != 'true':
     doMenu()
+    xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

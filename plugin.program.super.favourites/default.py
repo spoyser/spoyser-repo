@@ -53,7 +53,13 @@ FILENAME      = utils.FILENAME
 FOLDERCFG     = utils.FOLDERCFG
 
 
+#addons_context.append('plugin://plugin.video.NoobRoom/?mode=17&name='+urllib.quote_plus(search)+'&url=%2fsearch')
+
+
+
+# -----Addon Modes ----- #
 _SUPERSEARCH    = 0
+_EXTSEARCH      = 25
 _SEPARATOR      = 50
 _SETTINGS       = 100
 _ADDTOXBMC      = 200
@@ -77,10 +83,15 @@ _PLAYBACKMODE   = 1700
 _EDITSEARCH     = 1900
 
 
-SHOWNEW  = ADDON.getSetting('SHOWNEW')  == 'true'
-SHOWXBMC = ADDON.getSetting('SHOWXBMC') == 'true'
-SHOWSEP  = ADDON.getSetting('SHOWSEP')  == 'true'
-SHOWSS   = ADDON.getSetting('SHOWSS')   == 'true'
+# ----- Addon Settings ----- #
+SHOWNEW       = ADDON.getSetting('SHOWNEW')        == 'true'
+SHOWXBMC      = ADDON.getSetting('SHOWXBMC')       == 'true'
+SHOWSEP       = ADDON.getSetting('SHOWSEP')        == 'true'
+SHOWSS        = ADDON.getSetting('SHOWSS')         == 'true'
+SHOWSS_FANART = ADDON.getSetting('SHOWSS_FANART')  == 'true'
+SHOWRECOMMEND = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
+SHOWXBMCROOT  = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
+
 
 
 global nItem
@@ -88,6 +99,13 @@ nItem = 0
 
 global separator
 separator = False
+
+
+LOGDEBUG = xbmc.LOGDEBUG
+#LOGDEBUG = True
+
+def log(text):
+    xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), LOGDEBUG)
 
 
 def clean(text):
@@ -135,11 +153,11 @@ def addNewFolderItem(path):
         separator = True
 
 
-def addSeparatorItem():
+def addSeparatorItem(menu=None):
     global separator
     separator = False        
-    if SHOWSEP:  
-        addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
+    if SHOWSEP:
+        addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False, menu=menu)
 
 
 def addGlobalMenuItem(menu):
@@ -161,6 +179,9 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
     if cmd.endswith('&mode=0'):
         return
 
+    if len(name) < 1:
+        return
+
     menu.append((GETTEXT(30006), 'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s)' % (sys.argv[0], _ADDTOXBMC, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd))))
 
 
@@ -169,8 +190,9 @@ def addToXBMC(name, thumb, cmd):
 
     folder = '&mode=%d' % _FOLDER
     search = '&mode=%d' % _SUPERSEARCH
+    edit   = '&mode=%d' % _EDITSEARCH
 
-    if (folder in cmd) or (search in cmd):
+    if (folder in cmd) or (search in cmd) or (edit in cmd):
         cmd = cmd.replace('+', '%20')
         cmd = 'ActivateWindow(%d,%s)' % (xbmcgui.getCurrentWindowId(), cmd)
     else:
@@ -236,7 +258,11 @@ def parseFile(file):
 def parseFolder(folder):
     global separator
 
-    if SHOWXBMC:
+    show = SHOWXBMC
+    if (mode != -2 and SHOWXBMCROOT):
+        show = False
+
+    if show:
         separator = False
         addDir(GETTEXT(30040), _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
         separator = True
@@ -258,7 +284,8 @@ def parseFolder(folder):
 
         addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu)
 
-    separator = len(dirs) > 0
+    if len(dirs) > 0:
+        separator = True
 
     file = os.path.join(folder, FILENAME)
     parseFile(file)
@@ -545,53 +572,113 @@ def renameFave(file, cmd):
     return True
 
 
-def editSearchTerm(keyword):
-    keyword = getText(GETTEXT(30057), keyword)
+
+def editSearchTerm(_keyword):
+    keyword = getText(GETTEXT(30057), _keyword)
+
+    if (not keyword) or len(keyword) < 1:
+        keyword = _keyword
 
     winID = xbmcgui.getCurrentWindowId()
     cmd   = 'ActivateWindow(%d,"%s?mode=%d&keyword=%s")' % (winID, sys.argv[0], _SUPERSEARCH, keyword)
-    activateWindowCommand(cmd)
+    activateWindowCommand(cmd)   
 
-    #cmd   = 'XBMC.Container.Update("%s?mode=%d&keyword=%s")' % (sys.argv[0], _SUPERSEARCH, keyword)
-    #xbmc.executebuiltin(cmd)
-    
+
+def externalSearch():
+    xbmcplugin.endOfDirectory(int(sys.argv[1])) 
+
+    keyword = ''
+
+    kb = xbmc.Keyboard(keyword, GETTEXT(30054))
+    kb.doModal()
+    if kb.isConfirmed():
+        keyword = kb.getText()
+
+        cmd = '%s?mode=%d&keyword=%s' % (sys.argv[0], _SUPERSEARCH, keyword)
+        xbmc.executebuiltin('XBMC.Container.Refresh(%s)' % cmd)
 
     
-def superSearch(keyword=''):
+def superSearch(keyword='', image=BLANK, fanart=BLANK):
+    #if len(keyword) < 1:
+    #    keyword = xbmcgui.Window(10000).getProperty('SF_KEYWORD')
+
     if len(keyword) < 1:
-        kb = xbmc.Keyboard(keyword, 'Super Search')
+        kb = xbmc.Keyboard(keyword, GETTEXT(30054))
         kb.doModal()
         if kb.isConfirmed():
             keyword = kb.getText()
+            #xbmcgui.Window(10000).setProperty('SF_KEYWORD', keyword)
+
+            if len(keyword) > 0:
+                cmd = '%s?mode=%d&keyword=%s&image=%s&fanart=%s' % (sys.argv[0], _SUPERSEARCH, keyword, image, fanart)
+                xbmc.executebuiltin('XBMC.Container.Update(%s)' % cmd)
+                return
 
     if len(keyword) < 1:
         return
+
+    if not SHOWSS_FANART:
+        fanart = BLANK
         
     file  = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
 
     faves = favourite.getFavourites(file)
 
-    addDir('[B]Super Search - \'%s\'[/B]' % keyword, _SEPARATOR, thumbnail=BLANK, isFolder=False)
-    addSeparatorItem()
+    menu = []
+    menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+
+    addDir(GETTEXT(30066) % keyword, _EDITSEARCH, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword)
+
+    #reset menu, since adddir call will have added to it
+    menu = []
+    menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+    addSeparatorItem(menu)
+
+    keyword = urllib.quote_plus(keyword.replace('&', ''))
 
     for fave in faves:
         label = fave[0]
         thumb = fave[1]
-        cmd   = fave[2].replace('[%SF%]', urllib.quote_plus(keyword.replace('&', '')))
+        cmd   = fave[2].replace('[%SF%]', keyword)
 
-        try:
-            plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
-            #simple check to ensure it is available
-            xbmcaddon.Addon(plugin)
+        if 'plugin' in cmd:
+            addPluginSearch(label, thumb, cmd, keyword, fanart)
 
-            menu = []
-            #menu.append((GETTEXT(30057), 'XBMC.Container.Refresh(%s?mode=%d)' % (sys.argv[0], _EDITSEARCH)))
-            menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, urllib.quote_plus(keyword.replace('&', '')))))
+        if 'RunScript' in cmd:
+            addScriptSearch(label, thumb, cmd, keyword, fanart)
 
-            addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu)
 
-        except:
-            pass
+def addPluginSearch(label, thumb, cmd, keyword, fanart):
+    try:
+        plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
+        #simple check to ensure it is available, will throw if not installed
+        xbmcaddon.Addon(plugin)
+
+        menu = []
+        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+
+        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
+
+    except:
+       pass
+
+
+def addScriptSearch(label, thumb, cmd, keyword, fanart):
+    try:
+        script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
+        #simple check to ensure it is available, will throw if not installed
+        xbmcaddon.Addon(script)
+
+        #special fix for GlobalSearch, use local launcher (globalsearch.py) to bypass keyboard
+        cmd = cmd.replace('script.globalsearch', os.path.join(HOME, 'globalsearch.py'))
+
+        menu = []
+        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+
+        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
+
+    except:
+       pass
 
 
 def playCommand(cmd):
@@ -631,7 +718,7 @@ def activateWindowCommand(cmd):
     xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
-def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None):
+def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=None, keyword=''):
     global separator
 
     u  = sys.argv[0]
@@ -648,9 +735,15 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(cmd) > 0:
         u += '&cmd=' + urllib.quote_plus(cmd)
 
+    if len(keyword) > 0:
+        u += '&keyword=' + urllib.quote_plus(keyword)
+
     label = label.replace('&apos;', '\'')
 
     liz = xbmcgui.ListItem(urllib.unquote_plus(label), iconImage=thumbnail, thumbnailImage=thumbnail)
+
+    if fanart:
+        liz.setProperty('Fanart_Image', fanart)
 
     if not menu:
         menu = []
@@ -661,17 +754,12 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     addGlobalMenuItem(menu)
     liz.addContextMenuItems(menu, replaceItems=True)
 
-    #infoLabels = {'container.folderName' : 'FANART'}
-    #liz.setInfo(type='default-view', infoLabels=infoLabels)
-
     if separator:
         addSeparatorItem()
         
     global nItem
     nItem += 1
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
-
-    
 
    
 def get_params():
@@ -708,17 +796,18 @@ try:    path = urllib.unquote_plus(params['path'])
 except: path = None
 
 
-doRefresh = False
-doEnd     = True
+doRefresh   = False
+doEnd       = True
+cacheToDisc = False
 
-cacheToDisc=False
 
-xbmc.log('Running Super Favourites V%s' % VERSION)
-xbmc.log(sys.argv[2])
+log('Started')
+log(sys.argv[2])
 
 
 if mode == _PLAYMEDIA:
     playCommand(cmd)
+
 
 elif mode == _ACTIVATESEARCH:
     doEnd = False
@@ -804,11 +893,24 @@ elif mode == _SEPARATOR:
     pass
 
 
+elif mode == _EXTSEARCH:
+    externalSearch()
+
+
 elif mode == _SUPERSEARCH:
     try:    keyword = urllib.unquote_plus(params['keyword'])
     except: keyword = ''
-    superSearch(keyword)
-    cacheToDisc=True
+
+    cacheToDisc = len(keyword) > 0
+    doEnd       = len(keyword) > 0
+
+    try:    image = urllib.unquote_plus(params['image'])
+    except: image = BLANK
+
+    try:    fanart = urllib.unquote_plus(params['fanart'])
+    except: fanart = BLANK
+
+    superSearch(keyword, image, fanart)
 
 
 elif mode == _EDITSEARCH:
@@ -819,6 +921,7 @@ elif mode == _EDITSEARCH:
     doEnd = False
     
 else:
+    #xbmcgui.Window(10000).clearProperty('SF_KEYWORD')
     main()
 
 

@@ -34,13 +34,22 @@ html_escape_table = {
     }
 
 def escape(text):
-    return "".join(html_escape_table.get(c,c) for c in text)
+    return ''.join(html_escape_table.get(c,c) for c in text)
 
 
 def unescape(text):
+    #return text
+    text = text.replace('&amp;',  '&')
+    text = text.replace('&quot;', '"')
+    text = text.replace('&apos;', '\'')
+    text = text.replace('&gt;',   '>')
+    text = text.replace('&lt;',   '<')
+    return text
+
     try:
         return HTMLParser.HTMLParser().unescape(text)
-    except:
+    except Exception, e:
+        print str(e)
         pass
 
     newText    = ''

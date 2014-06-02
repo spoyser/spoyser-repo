@@ -35,9 +35,9 @@ def GetXBMCVersion():
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
-ROOT    = ADDON.getSetting('FOLDER')
+ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.5'
+VERSION = '1.0.6'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -85,15 +85,18 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
+    verifySuperSearch(True)
+
     if prev == '0.0.0' or prev== '1.0.0':
         folder  = xbmc.translatePath(PROFILE)
         if not os.path.isdir(folder):
             os.makedirs(folder) 
 
 
-def verifySuperSearch():
+def verifySuperSearch(replace=False):
     dst = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
-    if os.path.exists(dst):
+
+    if (not replace) and os.path.exists(dst):
         return
 
     src = os.path.join(HOME, 'resources', 'Search', FILENAME)
@@ -117,7 +120,7 @@ def UpdateKeymaps():
 
         
 def DeleteKeymap(map):
-    path = os.path.join(xbmc.translatePath('special://userdata/keymaps'), map)
+    path = os.path.join(xbmc.translatePath('special://profile/keymaps'), map)
 
     tries = 5
     while os.path.exists(path) and tries > 0:
@@ -143,7 +146,7 @@ def VerifyKeymaps():
 
 
 def VerifyKeymapHot():
-    dest = os.path.join(xbmc.translatePath('special://userdata/keymaps'), KEYMAP_HOT)
+    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
 
     if os.path.exists(dest):
         return False
@@ -175,7 +178,7 @@ def VerifyKeymapHot():
 
 
 def VerifyKeymapMenu():
-    dest = os.path.join(xbmc.translatePath('special://userdata/keymaps'), KEYMAP_MENU)
+    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
 
     if os.path.exists(dest):
         return False
@@ -187,7 +190,7 @@ def VerifyKeymapMenu():
         return True
 
     src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
-    dst = os.path.join(xbmc.translatePath('special://userdata/keymaps'), KEYMAP_MENU)
+    dst = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
 
     import shutil
     shutil.copy(src, dst)
