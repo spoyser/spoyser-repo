@@ -37,7 +37,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.7'
+VERSION = '1.0.8'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -104,7 +104,7 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    verifySuperSearch(True)
+    verifySuperSearch(replace=False)
 
     if prev == '0.0.0' or prev== '1.0.0':
         folder  = xbmc.translatePath(PROFILE)
