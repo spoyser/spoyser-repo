@@ -53,13 +53,9 @@ FILENAME      = utils.FILENAME
 FOLDERCFG     = utils.FOLDERCFG
 
 
-#addons_context.append('plugin://plugin.video.NoobRoom/?mode=17&name='+urllib.quote_plus(search)+'&url=%2fsearch')
-
-
-
 # -----Addon Modes ----- #
 _SUPERSEARCH    = 0
-_EXTSEARCH      = 25
+_EXTSEARCH      = 25 #used to trigger new Super Search from outside of addon
 _SEPARATOR      = 50
 _SETTINGS       = 100
 _ADDTOXBMC      = 200
@@ -81,16 +77,22 @@ _THUMBFAVE      = 1500
 _THUMBFOLDER    = 1600
 _PLAYBACKMODE   = 1700
 _EDITSEARCH     = 1900
+_EDITFOLDER     = 2000
+_EDITFAVE       = 2100
+_SECURE         = 2200
+_UNSECURE       = 2300
+_PLAYLIST       = 2400
 
 
 # ----- Addon Settings ----- #
-SHOWNEW       = ADDON.getSetting('SHOWNEW')        == 'true'
-SHOWXBMC      = ADDON.getSetting('SHOWXBMC')       == 'true'
-SHOWSEP       = ADDON.getSetting('SHOWSEP')        == 'true'
-SHOWSS        = ADDON.getSetting('SHOWSS')         == 'true'
-SHOWSS_FANART = ADDON.getSetting('SHOWSS_FANART')  == 'true'
-SHOWRECOMMEND = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
-SHOWXBMCROOT  = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
+SHOWNEW        = ADDON.getSetting('SHOWNEW')        == 'true'
+SHOWXBMC       = ADDON.getSetting('SHOWXBMC')       == 'true'
+SHOWSEP        = ADDON.getSetting('SHOWSEP')        == 'true'
+SHOWSS         = ADDON.getSetting('SHOWSS')         == 'true'
+SHOWSS_FANART  = ADDON.getSetting('SHOWSS_FANART')  == 'true'
+SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
+SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
+PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 
 
 
@@ -101,11 +103,9 @@ global separator
 separator = False
 
 
-LOGDEBUG = xbmc.LOGDEBUG
-#LOGDEBUG = True
-
 def log(text):
-    xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), LOGDEBUG)
+    print('%s V%s : %s' % (TITLE, VERSION, text))
+    xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
 
 
 def clean(text):
@@ -182,6 +182,9 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
     if len(name) < 1:
         return
 
+    if mode == _XBMC:
+        return
+
     menu.append((GETTEXT(30006), 'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s)' % (sys.argv[0], _ADDTOXBMC, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd))))
 
 
@@ -218,6 +221,84 @@ def refresh():
     xbmc.executebuiltin('Container.Refresh')
 
 
+def addLock(path, name):
+    title    = GETTEXT(30079) % name
+    password = getText(title, text='', hidden=True)
+
+    if not password:
+        return False
+
+    md5 = utils.generateMD5(password)
+
+    cfg  = os.path.join(path, FOLDERCFG)
+    setParam('LOCK', md5, cfg)
+
+    return True
+
+
+
+def removeLock(path,name):
+    title    = GETTEXT(30078) % name
+    password = getText(title, text='', hidden=True)
+
+    if not password:
+        return False
+
+    md5 = utils.generateMD5(password)
+
+    cfg  = os.path.join(path, FOLDERCFG)
+    lock = getParam('LOCK', cfg)
+
+    if lock != md5:
+        utils.DialogOK(GETTEXT(30080))
+        return False
+
+    clearParam('LOCK', cfg)
+    utils.DialogOK(GETTEXT(30081))
+
+    return True
+
+def unlocked(path):
+    folderConfig = os.path.join(path, FOLDERCFG)
+    lock = getParam('LOCK', folderConfig)
+    if not lock:
+        return True
+
+    import cache
+    if cache.exists(path):
+        return True
+    
+    md5 = checkPassword(path, lock)
+
+    if len(md5) == 0:
+        utils.DialogOK(GETTEXT(30080))
+        return False
+
+    periods = [0, 1, 5, 15]
+    setting = int(ADDON.getSetting('CACHE'))
+    period  = periods[setting]
+
+    cache.add(path, period)
+
+    return True
+
+
+def checkPassword(path, lock=None):
+    if not lock:
+        folderConfig = os.path.join(path, FOLDERCFG)
+        lock = getParam('LOCK', folderConfig)
+
+    title  = GETTEXT(30069) % path.rsplit(os.sep, 1)[-1]
+    unlock = getText(title, hidden=True)
+    md5    = utils.generateMD5(unlock)
+    match  = md5 == lock
+
+    if not match:
+        return ''
+
+    return md5
+
+
 def showXBMCFolder():
     file = os.path.join(xbmc.translatePath('special://profile'), FILENAME)
     parseFile(file)
@@ -233,19 +314,23 @@ def parseFile(file):
         cmd   = fave[2]
 
         menu  = []
+        menu.append((GETTEXT(30068), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label))))
 
-        menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-        menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        if isPlaylist(cmd) and (not PLAY_PLAYLISTS):
+            menu.append((GETTEXT(30084), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYLIST, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        menu.append((GETTEXT(30007), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30041), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _UP,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30042), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _DOWN, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        menu.append((GETTEXT(30008), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _MOVE,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
-        menu.append((GETTEXT(30009), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _REMOVEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-        menu.append((GETTEXT(30010), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _RENAMEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
-        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _THUMBFAVE,    urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30007), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
-        if 'sf_win_id=' in cmd:
-            menu.append((GETTEXT(30052), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYBACKMODE, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30008), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _MOVE,         urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30009), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _REMOVEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30010), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _RENAMEFAVE,   urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        #menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _THUMBFAVE,    urllib.quote_plus(file), urllib.quote_plus(cmd))))
+
+        #if 'sf_win_id=' in cmd:
+        #    menu.append((GETTEXT(30052), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYBACKMODE, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
         if 'playmedia(' in cmd.lower():
             addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu)
@@ -264,7 +349,14 @@ def parseFolder(folder):
 
     if show:
         separator = False
-        addDir(GETTEXT(30040), _XBMC, thumbnail='DefaultFolder.png', isFolder=True)
+
+        profile      = xbmc.translatePath(PROFILE)
+        folderConfig = os.path.join(profile, FOLDERCFG)
+        thumbnail    = getParam('ICON', folderConfig)
+        if not thumbnail:
+            thumbnail = 'DefaultFolder.png'
+
+        addDir(GETTEXT(30040), _XBMC, thumbnail=thumbnail, isFolder=True)
         separator = True
 
     try:    current, dirs, files = os.walk(folder).next()
@@ -272,10 +364,21 @@ def parseFolder(folder):
 
     for dir in dirs:
         path = os.path.join(current, dir)
+
+        folderConfig = os.path.join(path, FOLDERCFG)
+        lock = getParam('LOCK', folderConfig)
+
         menu = []
-        menu.append((GETTEXT(30011), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _REMOVEFOLDER, urllib.quote_plus(path))))
-        menu.append((GETTEXT(30012), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _RENAMEFOLDER, urllib.quote_plus(path))))
-        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(path))))
+        menu.append((GETTEXT(30067), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _EDITFOLDER, urllib.quote_plus(path), urllib.quote_plus(dir))))
+
+        if lock:
+            menu.append((GETTEXT(30077), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _UNSECURE, urllib.quote_plus(path), urllib.quote_plus(dir))))
+        else:
+            menu.append((GETTEXT(30076), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _SECURE,   urllib.quote_plus(path), urllib.quote_plus(dir))))
+
+        #menu.append((GETTEXT(30011), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _REMOVEFOLDER, urllib.quote_plus(path))))
+        #menu.append((GETTEXT(30012), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _RENAMEFOLDER, urllib.quote_plus(path))))
+        #menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(path))))
 
         folderConfig = os.path.join(path, FOLDERCFG)
         thumbnail = getParam('ICON', folderConfig)
@@ -307,6 +410,10 @@ def getParam(param, file):
     return None
 
 
+def clearParam(param, file):
+    setParam(param, '', file)
+
+
 def setParam(param, value, file):
     config = []
     try:
@@ -323,7 +430,8 @@ def setParam(param, value, file):
         if (len(line) > 0) and (not line.startswith(param)):
             copy.append(line)
 
-    copy.append(param + value)
+    if len(value) > 0:
+        copy.append(param + value)
 
     f = open(file, 'w')
 
@@ -333,8 +441,9 @@ def setParam(param, value, file):
     f.close()
 
 
-def getText(title, text=''):
+def getText(title, text='', hidden=False):
     kb = xbmc.Keyboard(text, title)
+    kb.setHiddenInput(hidden)
     kb.doModal()
     if not kb.isConfirmed():
         return None
@@ -365,14 +474,14 @@ def getImage():
             import imagebrowser
             return imagebrowser.getImage(ADDONID, items)
 
-    image = xbmcgui.Dialog().browse(2,GETTEXT(30044), 'files')
+    image = xbmcgui.Dialog().browse(2,GETTEXT(30044), 'files', '', False, False, os.sep)
     if image and len(image) > 0:
         return image
 
     return ''
 
 
-def thumbFolder(path, cmd):
+def thumbFolder(path):
     image = getImage()
 
     if not image:
@@ -380,7 +489,7 @@ def thumbFolder(path, cmd):
 
     #special case
     if image == 'Super Favourite.png':
-        image = ''
+        image = os.path.join(HOME, 'icon.png')
 
     folderConfig = os.path.join(path, FOLDERCFG)
     setParam('ICON', image, folderConfig)
@@ -444,6 +553,70 @@ def changePlaybackMode(file, cmd):
     favourite.writeFavourites(file, copy)
     return True
 
+
+def editFolder(path, name):
+    options = []
+    options.append(GETTEXT(30011)) #remove
+    options.append(GETTEXT(30012)) #rename
+    options.append(GETTEXT(30043)) #thumb
+
+    option = xbmcgui.Dialog().select(name, options)
+    if option < 0:
+        return False
+
+    if option == 0:
+        return removeFolder(path)
+
+    if option == 1:
+        return renameFolder(path)
+
+    if option == 2:
+        return thumbFolder(path)
+
+    return False
+
+
+def editFave(file, cmd, name):
+    options = []
+    options.append(GETTEXT(30041)) #up
+    options.append(GETTEXT(30042)) #down
+    options.append(GETTEXT(30007)) #copy
+    options.append(GETTEXT(30008)) #move
+    options.append(GETTEXT(30009)) #remove
+    options.append(GETTEXT(30010)) #rename
+    options.append(GETTEXT(30043)) #thumb
+    if 'sf_win_id=' in cmd:
+        options.append(GETTEXT(30052)) #playback mode
+
+    option = xbmcgui.Dialog().select(name, options)
+    if option < 0:
+        return False
+
+    if option == 0:
+        return shiftFave(file, cmd, up=True)
+
+    if option == 1:
+        return shiftFave(file, cmd, up=False)
+
+    if option == 2:
+        return copyFave(file, cmd)
+
+    if option == 3:
+        return moveFave(file, cmd)
+
+    if option == 4:
+        return removeFave(file, cmd)
+
+    if option == 5:
+        return renameFave(file, cmd)
+
+    if option == 6:
+        return thumbFave(file, cmd)
+
+    if option == 7:
+        return changePlaybackMode(file, cmd)
+
+    return False
 
 
 def renameFolder(path):
@@ -690,17 +863,29 @@ def playCommand(cmd):
         if ADDONID in cmd:
             return xbmc.executebuiltin(cmd)
 
+        if isPlaylist(cmd):
+            if PLAY_PLAYLISTS:
+                return playPlaylist(cmd)
+
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd)
-
-        #workaround bug in Frodo that can cause lock-up
-        #when running a script favourite
-        #if FRODO and 'RunScript' in cmd:
-        #    xbmc.executebuiltin('ActivateWindow(Home)')
 
         xbmc.executebuiltin(cmd)
     except:
         pass
+
+
+def isPlaylist(cmd):
+    return cmd.lower().endswith('.m3u")')
+
+
+def playPlaylist(cmd):
+    if cmd.lower().startswith('activatewindow'):
+        playlist = cmd.split(',', 1)
+        playlist = playlist[-1][:-1]
+        cmd      = 'PlayMedia(%s)' % playlist
+
+    xbmc.executebuiltin(cmd)
 
 
 def activateWindowCommand(cmd):
@@ -748,8 +933,12 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if not menu:
         menu = []
 
-    if mode != _XBMC:
-        addFavouriteMenuItem(menu, label, thumbnail, u)
+    #special case
+    if mode == _XBMC:
+        profile = xbmc.translatePath(PROFILE)
+        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(profile))))
+
+    addFavouriteMenuItem(menu, label, thumbnail, u)
 
     addGlobalMenuItem(menu)
     liz.addContextMenuItems(menu, replaceItems=True)
@@ -795,6 +984,9 @@ except: cmd = None
 try:    path = urllib.unquote_plus(params['path'])
 except: path = None
 
+try:    name = urllib.unquote_plus(params['name'])
+except: name = ''
+
 
 doRefresh   = False
 doEnd       = True
@@ -803,18 +995,23 @@ cacheToDisc = False
 
 log('Started')
 log(sys.argv[2])
+log(sys.argv)
 
 
 if mode == _PLAYMEDIA:
     playCommand(cmd)
 
 
-elif mode == _ACTIVATESEARCH:
+elif mode == _ACTIVATEWINDOW:
     doEnd = False
     playCommand(cmd)
 
 
-elif mode == _ACTIVATEWINDOW:
+elif mode == _PLAYLIST:
+    playPlaylist(cmd)
+
+
+elif mode == _ACTIVATESEARCH:
     doEnd = False
     playCommand(cmd)
 
@@ -826,8 +1023,12 @@ elif mode == _XBMC:
 
 elif mode == _FOLDER:
     thepath = urllib.unquote_plus(params['path'])
-    addNewFolderItem(thepath)
-    parseFolder(thepath)
+    if unlocked(thepath):
+        addNewFolderItem(thepath)
+        parseFolder(thepath)
+    else:
+        pass
+        #Reset to main somehow!!!
 
 
 elif mode == _REMOVEFOLDER:
@@ -836,6 +1037,14 @@ elif mode == _REMOVEFOLDER:
 
 elif mode == _RENAMEFOLDER:
     doRefresh = renameFolder(path)
+
+
+elif mode == _EDITFOLDER:
+    doRefresh = editFolder(path, name)
+
+
+elif mode == _EDITFAVE:
+    doRefresh = editFave(file, cmd, name)
 
 
 elif mode == _NEWFOLDER:
@@ -847,8 +1056,8 @@ elif mode == _MOVE:
 
 
 elif mode == _COPY:
-    if copyFave(file, cmd):
-        refresh()
+    doRefresh = copyFave(file, cmd)
+
 
 elif mode == _UP:
     doRefresh = shiftFave(file, cmd, up=True)
@@ -867,7 +1076,6 @@ elif mode == _RENAMEFAVE:
 
 
 elif mode == _ADDTOXBMC:
-    name  = urllib.unquote_plus(params['name'])
     thumb = urllib.unquote_plus(params['thumb'])
     addToXBMC(name, thumb, cmd)
 
@@ -877,7 +1085,7 @@ elif mode == _THUMBFAVE:
 
 
 elif mode == _THUMBFOLDER:
-    doRefresh = thumbFolder(path, cmd)
+    doRefresh = thumbFolder(path)
 
 
 elif mode == _PLAYBACKMODE:
@@ -919,6 +1127,15 @@ elif mode == _EDITSEARCH:
     cacheToDisc=True
     xbmc.sleep(100)
     doEnd = False
+
+
+elif mode == _SECURE:
+    doRefresh = addLock(path, name)
+
+
+elif mode == _UNSECURE:
+    doRefresh = removeLock(path, name)
+
     
 else:
     #xbmcgui.Window(10000).clearProperty('SF_KEYWORD')
@@ -932,7 +1149,7 @@ if nItem < 1:
 
 if doRefresh:
     refresh()
-
     
+
 if doEnd:
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)

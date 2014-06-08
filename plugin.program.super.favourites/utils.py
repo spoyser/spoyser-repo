@@ -37,7 +37,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -67,6 +67,25 @@ def DialogYesNo(line1, line2='', line3='', noLabel=None, yesLabel=None):
         return d.yesno(TITLE + ' - ' + VERSION, line1, line2 , line3) == True
     else:
         return d.yesno(TITLE + ' - ' + VERSION, line1, line2 , line3, noLabel, yesLabel) == True
+
+
+def generateMD5(text):
+    if not text:
+        return ''
+
+    try:
+        import hashlib        
+        return hashlib.md5(text).hexdigest()
+    except:
+        pass
+
+    try:
+        import md5
+        return md5.new(text).hexdigest()
+    except:
+        pass
+        
+    return '0'
 
 
 #def Verify():
