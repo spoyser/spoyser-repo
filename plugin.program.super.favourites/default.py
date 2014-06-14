@@ -82,6 +82,8 @@ _EDITFAVE       = 2100
 _SECURE         = 2200
 _UNSECURE       = 2300
 _PLAYLIST       = 2400
+_COLOURFOLDER   = 2500
+_COLOURFAVE     = 2600
 
 
 # ----- Addon Settings ----- #
@@ -104,7 +106,7 @@ separator = False
 
 
 def log(text):
-    print('%s V%s : %s' % (TITLE, VERSION, text))
+    #print('%s V%s : %s' % (TITLE, VERSION, text))
     xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
 
 
@@ -271,6 +273,9 @@ def unlocked(path):
     md5 = checkPassword(path, lock)
 
     if len(md5) == 0:
+        return False
+
+    if md5 == 'ERROR':
         utils.DialogOK(GETTEXT(30080))
         return False
 
@@ -290,11 +295,15 @@ def checkPassword(path, lock=None):
 
     title  = GETTEXT(30069) % path.rsplit(os.sep, 1)[-1]
     unlock = getText(title, hidden=True)
-    md5    = utils.generateMD5(unlock)
-    match  = md5 == lock
+
+    if not unlock:
+        return ''
+
+    md5   = utils.generateMD5(unlock)
+    match = md5 == lock
 
     if not match:
-        return ''
+        return 'ERROR'
 
     return md5
 
@@ -366,7 +375,8 @@ def parseFolder(folder):
         path = os.path.join(current, dir)
 
         folderConfig = os.path.join(path, FOLDERCFG)
-        lock = getParam('LOCK', folderConfig)
+        lock   = getParam('LOCK',   folderConfig)
+        colour = getParam('COLOUR', folderConfig)
 
         menu = []
         menu.append((GETTEXT(30067), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _EDITFOLDER, urllib.quote_plus(path), urllib.quote_plus(dir))))
@@ -384,6 +394,9 @@ def parseFolder(folder):
         thumbnail = getParam('ICON', folderConfig)
         if not thumbnail:
             thumbnail = ICON
+
+        if colour:
+            dir = '[COLOR %s]%s[/COLOR]' % (colour, dir)
 
         addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu)
 
@@ -439,6 +452,32 @@ def setParam(param, value, file):
         f.write(line)
         f.write('\n')
     f.close()
+
+
+def getColour():
+    filename = os.path.join(HOME, 'resources', 'colours', 'Color.xml')
+
+    if not os.path.exists(filename):
+        return None
+
+    colours     = ['SF_RESET']
+    colourized  = [GETTEXT(30087)]
+
+    f = open(filename, 'r')
+    for line in f:
+        if 'name' in line:
+            name = line.split('"')[1]
+            colours.append(name)
+            colourized.append('[COLOR %s]%s[/COLOR]' % (name, name))
+
+    if len(colours) == 0:
+        return None
+                 
+    index = xbmcgui.Dialog().select(GETTEXT(30086), colourized)
+    if index < 0:
+        return None
+
+    return colours[index]
 
 
 def getText(title, text='', hidden=False):
@@ -559,6 +598,7 @@ def editFolder(path, name):
     options.append(GETTEXT(30011)) #remove
     options.append(GETTEXT(30012)) #rename
     options.append(GETTEXT(30043)) #thumb
+    options.append(GETTEXT(30085)) #colour
 
     option = xbmcgui.Dialog().select(name, options)
     if option < 0:
@@ -573,6 +613,9 @@ def editFolder(path, name):
     if option == 2:
         return thumbFolder(path)
 
+    if option == 3:
+        return colourFolder(path)
+
     return False
 
 
@@ -585,6 +628,7 @@ def editFave(file, cmd, name):
     options.append(GETTEXT(30009)) #remove
     options.append(GETTEXT(30010)) #rename
     options.append(GETTEXT(30043)) #thumb
+    options.append(GETTEXT(30085)) #colour
     if 'sf_win_id=' in cmd:
         options.append(GETTEXT(30052)) #playback mode
 
@@ -614,20 +658,42 @@ def editFave(file, cmd, name):
         return thumbFave(file, cmd)
 
     if option == 7:
+        return colourFave(file, cmd)
+
+    if option == 8:
         return changePlaybackMode(file, cmd)
 
     return False
 
 
-def renameFolder(path):
+def renameFolder(path, text=None):
     label = path.rsplit(os.sep, 1)[-1]
-    text  = clean(getText(GETTEXT(30015) % label, label))
+
+    if not text:
+        text = clean(getText(GETTEXT(30015) % label, label))
+
     if not text:
         return False
 
     root = path.rsplit(os.sep, 1)[0]
     newName = os.path.join(root, text)
     os.rename(path, newName)
+    return True
+
+
+def colourFolder(path):
+    colour = getColour()
+
+    if not colour:
+        return False
+
+    cfg  = os.path.join(path, FOLDERCFG)
+
+    if colour == 'SF_RESET':
+        clearParam('COLOUR', cfg)
+    else:
+        setParam('COLOUR', colour, cfg)
+
     return True
 
 
@@ -734,16 +800,47 @@ def renameFave(file, cmd):
     faves = favourite.getFavourites(file)
     for fave in faves:
         if fave[2] == cmd:
+
             text = getText(GETTEXT(30021), text=fave[0])
+
             if not text:
-                return
+                return False
+
             fave[0] = text
+
         copy.append(fave)
 
     favourite.writeFavourites(file, copy)
 
     return True
 
+
+def decolourize(text):
+    text = re.sub('\[COLOR (.+?)\]', '', text)
+    text = re.sub('\[/COLOR\]',      '', text)
+    return text
+
+
+def colourFave(file, cmd):
+    import re
+    colour = getColour()
+
+    if not colour:
+        return False
+
+    copy = []
+    faves = favourite.getFavourites(file)
+    for fave in faves:
+        if fave[2] == cmd:
+            fave[0]   = decolourize(fave[0])
+            if colour != 'SF_RESET': 
+                fave[0] = '[COLOR %s]%s[/COLOR]' % (colour, fave[0])
+
+        copy.append(fave)
+
+    favourite.writeFavourites(file, copy)
+
+    return True
 
 
 def editSearchTerm(_keyword):
@@ -772,15 +869,11 @@ def externalSearch():
 
     
 def superSearch(keyword='', image=BLANK, fanart=BLANK):
-    #if len(keyword) < 1:
-    #    keyword = xbmcgui.Window(10000).getProperty('SF_KEYWORD')
-
     if len(keyword) < 1:
         kb = xbmc.Keyboard(keyword, GETTEXT(30054))
         kb.doModal()
         if kb.isConfirmed():
             keyword = kb.getText()
-            #xbmcgui.Window(10000).setProperty('SF_KEYWORD', keyword)
 
             if len(keyword) > 0:
                 cmd = '%s?mode=%d&keyword=%s&image=%s&fanart=%s' % (sys.argv[0], _SUPERSEARCH, keyword, image, fanart)
@@ -891,16 +984,23 @@ def playPlaylist(cmd):
 def activateWindowCommand(cmd):
     cmds = cmd.split(',', 1)
 
-    activate = cmds[0]+',return)'
-    plugin   = cmds[1][:-1]
+    plugin   = None
+    activate = None
+
+    if len(cmds) == 1:
+        activate = cmds[0]
+    else:
+        activate = cmds[0]+',return)'
+        plugin   = cmds[1][:-1]
 
     #check if it is a different window and if so activate it
     id = str(xbmcgui.getCurrentWindowId())
 
     if id not in activate:
         xbmc.executebuiltin(activate)
-    
-    xbmc.executebuiltin('Container.Update(%s)' % plugin)
+
+    if plugin:    
+        xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=None, keyword=''):
@@ -929,6 +1029,10 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     if fanart:
         liz.setProperty('Fanart_Image', fanart)
+
+    #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
+    #or in Python via: xbmc.getInfoLabel('ListItem.Property(Super_Favourites_Folder)')
+    liz.setProperty('Super_Favourites_Folder', theFolder)
 
     if not menu:
         menu = []
@@ -970,7 +1074,9 @@ def get_params():
 
 
 params = get_params()
-thepath  = ''
+
+theFolder = ''
+thepath   = ''
 
 try:    mode = int(params['mode'])
 except: mode = -2
@@ -986,6 +1092,10 @@ except: path = None
 
 try:    name = urllib.unquote_plus(params['name'])
 except: name = ''
+
+try:    label = urllib.unquote_plus(params['label'])
+except: label = ''
+
 
 
 doRefresh   = False
@@ -1022,7 +1132,9 @@ elif mode == _XBMC:
 
 
 elif mode == _FOLDER:
-    thepath = urllib.unquote_plus(params['path'])
+    thepath   = path
+    theFolder = label
+
     if unlocked(thepath):
         addNewFolderItem(thepath)
         parseFolder(thepath)
@@ -1040,7 +1152,8 @@ elif mode == _RENAMEFOLDER:
 
 
 elif mode == _EDITFOLDER:
-    doRefresh = editFolder(path, name)
+    if unlocked(path):
+        doRefresh = editFolder(path, name)
 
 
 elif mode == _EDITFAVE:
@@ -1138,7 +1251,6 @@ elif mode == _UNSECURE:
 
     
 else:
-    #xbmcgui.Window(10000).clearProperty('SF_KEYWORD')
     main()
 
 
@@ -1149,7 +1261,7 @@ if nItem < 1:
 
 if doRefresh:
     refresh()
-    
+
 
 if doEnd:
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)

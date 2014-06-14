@@ -37,7 +37,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.8'
+VERSION = '1.0.8.1'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -97,19 +97,22 @@ def CheckVersion():
     prev = ADDON.getSetting('VERSION')
     curr = VERSION
 
-    VerifyKeymaps()
+    if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
+        VerifyKeymaps()
 
     if prev == curr:        
         return
 
     ADDON.setSetting('VERSION', curr)
 
-    verifySuperSearch(replace=False)
+    if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
+        verifySuperSearch(replace=False)
 
     if prev == '0.0.0' or prev== '1.0.0':
         folder  = xbmc.translatePath(PROFILE)
         if not os.path.isdir(folder):
-            os.makedirs(folder) 
+            try:    os.makedirs(folder) 
+            except: pass
 
 
 def verifySuperSearch(replace=False):
@@ -211,8 +214,19 @@ def VerifyKeymapMenu():
     src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
     dst = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
 
-    import shutil
-    shutil.copy(src, dst)
+    try:
+        import shutil
+        shutil.copy(src, dst)
+    except:
+        pass
+
+    #f = open(src, mode='r')
+    #t = f.read()
+    #f.close()
+
+    #f = open(dst, mode='w')
+    #f.write(t)
+    #f.close()
 
     return True
 
