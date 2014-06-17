@@ -50,8 +50,8 @@
     <string id="30051">Show separator</string>
     <string id="30052">Change playback mode</string>
     <string id="30053">Launch Super Favourites</string>
-    <string id="30054">Super Search</string>
-    <string id="30055">Enable Super Search</string>
+    <string id="30054">iSearch</string>
+    <string id="30055">Enable iSearch</string>
     <string id="30056">Location of Super Favourites folder</string>	
 	<string id="30057">Edit search term</string>
 	<string id="30058">G</string>	
@@ -59,10 +59,10 @@
 	<string id="30060">Swipe Right</string>	
 	<string id="30061">Swipe Up</string>	
 	<string id="30062">Swipe Down</string>	
-	<string id="30063">Enable Recommendations</string>		
+	<string id="30063">Enable iRecommend</string>		
 	<string id="30064">Enable Fanart</string>
 	<string id="30065">          Show in root folder only</string>
-	<string id="30066">[B]Super Search - '%s'[/B] [I](Click to edit search term)[/I]</string>
+	<string id="30066">[B]iSearch - '%s'[/B] [I](Click to edit search term)[/I]</string>
 	<string id="30067">Edit Super Folder</string>
 	<string id="30068">Edit Super Favourite</string>
 	<string id="30069">Enter password to temporarily unlock %s</string>
@@ -84,4 +84,6 @@
 	<string id="30085">Colourize name</string>	
 	<string id="30086">Select a colour</string>	
 	<string id="30087">[I]Decolourize[/I]</string>	
+	<string id="30088">iRecommend</string>	
+	<string id="30089">          Remember history</string>	
 </strings>

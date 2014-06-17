@@ -27,8 +27,12 @@ import re
 import urllib
 import glob
 import shutil
+import re
+import json
+
 
 import favourite
+import quicknet
 import utils
 
 ADDONID  = utils.ADDONID
@@ -84,6 +88,8 @@ _UNSECURE       = 2300
 _PLAYLIST       = 2400
 _COLOURFOLDER   = 2500
 _COLOURFAVE     = 2600
+_RECOMMEND_KEY  = 2700
+_RECOMMEND_IMDB = 2800
 
 
 # ----- Addon Settings ----- #
@@ -97,7 +103,6 @@ SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 
 
-
 global nItem
 nItem = 0
 
@@ -106,7 +111,7 @@ separator = False
 
 
 def log(text):
-    #print('%s V%s : %s' % (TITLE, VERSION, text))
+    print('%s V%s : %s' % (TITLE, VERSION, text))
     xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
 
 
@@ -496,6 +501,14 @@ def getText(title, text='', hidden=False):
 
 
 def getImage():
+    image = xbmcgui.Dialog().browse(2,GETTEXT(30044), 'files', '', False, False, os.sep)
+    if image and len(image) > 0:
+        return image
+
+    return ''
+
+
+def getSkinImage():
     image = ''
 
     skin = xbmc.getSkinDir().lower()
@@ -513,11 +526,7 @@ def getImage():
             import imagebrowser
             return imagebrowser.getImage(ADDONID, items)
 
-    image = xbmcgui.Dialog().browse(2,GETTEXT(30044), 'files', '', False, False, os.sep)
-    if image and len(image) > 0:
-        return image
-
-    return ''
+    return getImage()
 
 
 def thumbFolder(path):
@@ -666,11 +675,10 @@ def editFave(file, cmd, name):
     return False
 
 
-def renameFolder(path, text=None):
+def renameFolder(path):
     label = path.rsplit(os.sep, 1)[-1]
 
-    if not text:
-        text = clean(getText(GETTEXT(30015) % label, label))
+    text = clean(getText(GETTEXT(30015) % label, label))
 
     if not text:
         return False
@@ -822,7 +830,6 @@ def decolourize(text):
 
 
 def colourFave(file, cmd):
-    import re
     colour = getColour()
 
     if not colour:
@@ -842,6 +849,98 @@ def colourFave(file, cmd):
 
     return True
 
+
+def getTVDB(imdb):
+    try:
+        if not imdb.endswith('?'):
+            imdb = imdb + '?'
+
+        url  = 'http://api.themoviedb.org/3/find/%sapi_key=57983e31fb435df4df77afb854740ea9&external_source=imdb_id' % imdb
+        html = quicknet.getURL(url, maxSec=5*86400, agent='Firefox')
+        jsn  = json.loads(html)  
+
+        thumbnail = BLANK
+        fanart    = BLANK
+
+        movies = jsn['movie_results']
+        tvs    = jsn['tv_results']
+
+        source = None
+        if len(movies) > 0:
+            source = movies[0]
+        elif len(tvs) > 0:
+            source = tvs[0]
+
+        if source:
+            try:    thumbnail = 'http://image.tmdb.org/t/p/original' + source['poster_path']
+            except: pass
+
+            try:    fanart = 'http://image.tmdb.org/t/p/original' + source['backdrop_path']
+            except: pass
+
+        return thumbnail,  fanart
+
+    except Exception, e:
+        print str(e)
+        pass
+
+    return BLANK, BLANK
+
+
+def recommendIMDB(imdb, keyword):
+    #http://api.themoviedb.org/3/find/tt0942385?api_key=57983e31fb435df4df77afb854740ea9&external_source=imdb_id
+    #http://image.tmdb.org/t/p/original/6TdYGyANd7QhcV6gsx4meW8Y9Wf.jpg #fanart
+    #http://image.tmdb.org/t/p/original/ue9QdvhpcNPvKQyLY5a5Pd0tagS.jpg #thumb
+    #http://www.johannesbader.ch/2013/11/tutorial-download-posters-with-the-movie-database-api-in-python/
+    
+    url  = 'http://imdb.com/title/%s' % imdb
+    html = quicknet.getURL(url, maxSec=86400, agent='Firefox')
+
+    items = re.compile('<div class="rec-title">.+?<a href="/title/(.+?)/?ref_=tt_rec_tt" ><b>(.+?)</b>').findall(html)
+
+    if len(items) == 0:
+        return recommendKey(keyword)
+
+    images = True
+    #should we get plot, etc??
+
+    for item in items:
+        imdb      = item[0]
+        name      = item[1]
+
+        thumbnail = BLANK
+        fanart    = BLANK
+
+        if images:
+            thumbnail,  fanart = getTVDB(imdb)
+
+        addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, fanart=fanart, keyword=name, imdb=imdb)
+    
+
+def recommendKey(keyword):
+    url  = 'http://m.imdb.com/find?q=%s' % keyword.replace(' ', '+') #use mobile site as less data
+    html = quicknet.getURL(url, maxSec=86400, agent='Apple-iPhone/')
+
+    items = re.compile('<div class="title">.+?<a href="/title/(.+?)/">(.+?)</a>(.+?)</div>').findall(html)
+
+    images = True
+
+    for item in items:
+        imdb  = item[0]
+        name  = item[1]
+        label = name + ' ' + item[2].strip()
+
+        thumbnail = BLANK
+        fanart    = BLANK
+
+        if images:
+            print "**********************************"
+            thumbnail,  fanart = getTVDB(imdb)
+            print thumbnail
+            print fanart
+
+        addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, fanart=fanart, keyword=name, imdb=imdb)
+    
 
 def editSearchTerm(_keyword):
     keyword = getText(GETTEXT(30057), _keyword)
@@ -868,7 +967,7 @@ def externalSearch():
         xbmc.executebuiltin('XBMC.Container.Refresh(%s)' % cmd)
 
     
-def superSearch(keyword='', image=BLANK, fanart=BLANK):
+def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
     if len(keyword) < 1:
         kb = xbmc.Keyboard(keyword, GETTEXT(30054))
         kb.doModal()
@@ -900,6 +999,15 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK):
     menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
     addSeparatorItem(menu)
 
+    if SHOWRECOMMEND:
+        menu = []
+        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+
+        if len(imdb) > 0:
+            addDir(GETTEXT(30088), _RECOMMEND_IMDB, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, imdb=imdb)
+        else:
+            addDir(GETTEXT(30088), _RECOMMEND_KEY,  thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword)
+        
     keyword = urllib.quote_plus(keyword.replace('&', ''))
 
     for fave in faves:
@@ -1003,7 +1111,7 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
-def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=None, keyword=''):
+def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=None, keyword='', imdb=''):
     global separator
 
     u  = sys.argv[0]
@@ -1022,6 +1130,9 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     if len(keyword) > 0:
         u += '&keyword=' + urllib.quote_plus(keyword)
+
+    if len(imdb) > 0:
+        u += '&imdb=' + urllib.quote_plus(imdb)
 
     label = label.replace('&apos;', '\'')
 
@@ -1222,8 +1333,8 @@ elif mode == _SUPERSEARCH:
     try:    keyword = urllib.unquote_plus(params['keyword'])
     except: keyword = ''
 
-    cacheToDisc = len(keyword) > 0
-    doEnd       = len(keyword) > 0
+    try:    imdb = urllib.unquote_plus(params['imdb'])
+    except: imdb = ''
 
     try:    image = urllib.unquote_plus(params['image'])
     except: image = BLANK
@@ -1231,14 +1342,29 @@ elif mode == _SUPERSEARCH:
     try:    fanart = urllib.unquote_plus(params['fanart'])
     except: fanart = BLANK
 
-    superSearch(keyword, image, fanart)
+    try:
+        #callback = urllib.unquote_plus(params['callback'])
+
+        cacheToDisc = len(keyword) > 0
+        doEnd       = len(keyword) > 0
+
+        superSearch(keyword, image, fanart, imdb)
+
+    except:
+        winID = xbmcgui.getCurrentWindowId()
+        cmd   = '%s?mode=%d&keyword=%s&imdb=%s&image=%s&fanart=%s&callback=%s' % (sys.argv[0], _SUPERSEARCH, urllib.quote_plus(keyword), urllib.quote_plus(imdb), urllib.quote_plus(image), urllib.quote_plus(fanart),'callback')
+        xbmc.executebuiltin('Container.Refresh(%s)' % cmd)
+
+        cacheToDisc = True
+        xbmc.sleep(250)
+        doEnd = False
 
 
 elif mode == _EDITSEARCH:
     keyword = urllib.unquote_plus(params['keyword'])
     editSearchTerm(keyword)
     cacheToDisc=True
-    xbmc.sleep(100)
+    xbmc.sleep(250)
     doEnd = False
 
 
@@ -1249,7 +1375,41 @@ elif mode == _SECURE:
 elif mode == _UNSECURE:
     doRefresh = removeLock(path, name)
 
-    
+
+elif mode == _RECOMMEND_KEY:
+    try:    keyword = urllib.unquote_plus(params['keyword'])
+    except: keyword = ''
+
+    cacheToDisc = True
+    doEnd       = True
+
+    recommendKey(keyword)
+
+
+elif mode == _RECOMMEND_IMDB: #JAWS VIDEO GAME NO RSULTS CAUSES ISSUES
+    try:    imdb = urllib.unquote_plus(params['imdb'])
+    except: imdb = ''
+
+    try:    keyword = urllib.unquote_plus(params['keyword'])
+    except: keyword = ''
+
+    try:
+        if ADDON.getSetting('CACHERECOMMEND') != 'true':
+            callback = urllib.unquote_plus(params['callback'])
+
+        cacheToDisc = True
+        doEnd       = True
+
+        recommendIMDB(imdb, keyword)
+
+    except:
+        winID = xbmcgui.getCurrentWindowId()
+        cmd   = '%s?mode=%d&keyword=%s&imdb=%s&callback=%s' % (sys.argv[0], _RECOMMEND_IMDB, urllib.quote_plus(keyword), urllib.quote_plus(imdb), 'callback')
+        xbmc.executebuiltin('Container.Refresh(%s)' % cmd)
+
+        cacheToDisc = False
+        doEnd       = False
+        
 else:
     main()
 
@@ -1258,10 +1418,8 @@ else:
 if nItem < 1:
     addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
 
-
 if doRefresh:
     refresh()
-
 
 if doEnd:
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)

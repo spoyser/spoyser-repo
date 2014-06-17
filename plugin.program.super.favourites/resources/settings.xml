@@ -21,9 +21,10 @@
 	</category>
 	
 	<category label="30054">	
-		<setting id="SHOWSS"         label="30055" type="bool"                        default="true" />
-		<setting id="SHOWRECOMMEND"  label="30063" type="bool"  enable="eq(-9,true)"  default="true" />
-		<setting id="SHOWSS_FANART"  label="30064" type="bool"  enable="eq(-2,true)"  default="true" />
+		<setting id="SHOWSS"         label="30055" type="bool"                                    default="true" />
+		<setting id="SHOWRECOMMEND"  label="30063" type="bool"  enable="eq(-1,true)"              default="true" />
+		<setting id="CACHERECOMMEND" label="30089" type="bool"  enable="eq(-2,true)+eq(-1,true)"  default="true" />
+		<setting id="SHOWSS_FANART"  label="30064" type="bool"  enable="eq(-3,true)"              default="true" />
 	</category>
 	
 	<category label="30082">	

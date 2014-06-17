@@ -127,19 +127,19 @@ def doMenu():
     #elif file:
     #    isStream = file.startswith('http://')
 
-    #print '**** Context Menu Information ****'
-    #print 'Label      : %s' % label
-    #print 'Folder     : %s' % folder 
-    #print 'Path       : %s' % path    
-    #print 'Filename   : %s' % filename
-    #print 'Name       : %s' % name    
-    #print 'Thumb      : %s' % thumb
-    #print 'Fanart     : %s' % fanart   
-    #print 'Window     : %d' % window  
-    #print 'IsPlayable : %s' % playable
-    #print 'IsFolder   : %s' % isFolder
-    #print 'File       : %s' % file
-    #print 'IsStream   : %s' % isStream
+    print '**** Context Menu Information ****'
+    print 'Label      : %s' % label
+    print 'Folder     : %s' % folder 
+    print 'Path       : %s' % path    
+    print 'Filename   : %s' % filename
+    print 'Name       : %s' % name    
+    print 'Thumb      : %s' % thumb
+    print 'Fanart     : %s' % fanart   
+    print 'Window     : %d' % window  
+    print 'IsPlayable : %s' % playable
+    print 'IsFolder   : %s' % isFolder
+    print 'File       : %s' % file
+    print 'IsStream   : %s' % isStream
 
     menu = []
 

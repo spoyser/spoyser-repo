@@ -1,6 +1,12 @@
+v1.0.8.2:
+   - Removed skin specific icons
+   - Renamed Super Search to iSearch to avoid confusion with similar feature in other addons
+   - Added iRecommend - IMDB based recommendation feature (available from iSearch menu)
+
 v1.0.8.1:
-   - Allow ActivateWindow favourites without a plugin parameter, eg <favourite name="Filemanager">ActivateWindow(filemanager)</favourite> 
-   - Added list item property to identify current folder within a skin; $INFO[ListItem.Property(Super_Favourites_Folder)]
+   - Allow ActivateWindow favourites without a plugin parameter
+         eg <favourite name="Filemanager">ActivateWindow(filemanager)</favourite> 
+   - Added list item property to identify current folder within a skin $INFO[ListItem.Property(Super_Favourites_Folder)]
    - Locked folders now need unlocking before editing/removing
    - Colourize favourites and folders
 
