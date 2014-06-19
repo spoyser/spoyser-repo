@@ -111,7 +111,7 @@ separator = False
 
 
 def log(text):
-    print('%s V%s : %s' % (TITLE, VERSION, text))
+    #print('%s V%s : %s' % (TITLE, VERSION, text))
     xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
 
 
@@ -872,10 +872,10 @@ def getTVDB(imdb):
             source = tvs[0]
 
         if source:
-            try:    thumbnail = 'http://image.tmdb.org/t/p/original' + source['poster_path']
+            try:    thumbnail = 'http://image.tmdb.org/t/p/w342' + source['poster_path']
             except: pass
 
-            try:    fanart = 'http://image.tmdb.org/t/p/original' + source['backdrop_path']
+            try:    fanart = 'http://image.tmdb.org/t/p/w780' + source['backdrop_path']
             except: pass
 
         return thumbnail,  fanart
@@ -892,6 +892,13 @@ def recommendIMDB(imdb, keyword):
     #http://image.tmdb.org/t/p/original/6TdYGyANd7QhcV6gsx4meW8Y9Wf.jpg #fanart
     #http://image.tmdb.org/t/p/original/ue9QdvhpcNPvKQyLY5a5Pd0tagS.jpg #thumb
     #http://www.johannesbader.ch/2013/11/tutorial-download-posters-with-the-movie-database-api-in-python/
+ 	
+    #http://api.themoviedb.org/3/configuration?api_key=57983e31fb435df4df77afb854740ea9
+
+    #http://image.tmdb.org/t/p/
+
+    #http://www.imdb.com/xml/find?json=1&nr=1&tt=on&q=tt0376994
+    #http://www.imdb.com/title/tt0376994
     
     url  = 'http://imdb.com/title/%s' % imdb
     html = quicknet.getURL(url, maxSec=86400, agent='Firefox')
@@ -934,10 +941,7 @@ def recommendKey(keyword):
         fanart    = BLANK
 
         if images:
-            print "**********************************"
             thumbnail,  fanart = getTVDB(imdb)
-            print thumbnail
-            print fanart
 
         addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, fanart=fanart, keyword=name, imdb=imdb)
     
@@ -1111,7 +1115,7 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
-def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=None, keyword='', imdb=''):
+def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart='', keyword='', imdb=''):
     global separator
 
     u  = sys.argv[0]
@@ -1133,6 +1137,12 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     if len(imdb) > 0:
         u += '&imdb=' + urllib.quote_plus(imdb)
+
+    if mode == _SUPERSEARCH:
+        if len(thumbnail) > 0:
+            u += '&image=' + urllib.quote_plus(thumbnail)
+        if len(fanart) > 0:
+            u += '&fanart=' + urllib.quote_plus(fanart)
 
     label = label.replace('&apos;', '\'')
 
