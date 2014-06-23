@@ -1,3 +1,6 @@
+v1.0.8.3:
+   - Added meta data to iRecommend using metahandlers module
+
 v1.0.8.2:
    - Removed skin specific icons
    - Renamed Super Search to iSearch to avoid confusion with similar feature in other addons
