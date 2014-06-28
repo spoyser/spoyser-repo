@@ -90,6 +90,8 @@ _COLOURFOLDER   = 2500
 _COLOURFAVE     = 2600
 _RECOMMEND_KEY  = 2700
 _RECOMMEND_IMDB = 2800
+_PLAYTRAILER    = 2900
+
 
 # ----- Addon Settings ----- #
 SHOWNEW        = ADDON.getSetting('SHOWNEW')        == 'true'
@@ -100,6 +102,7 @@ SHOWSS_FANART  = ADDON.getSetting('SHOWSS_FANART')  == 'true'
 SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
 SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
+METARECOMMEND  = ADDON.getSetting('METARECOMMEND')  == 'true'
 
 
 global nItem
@@ -111,7 +114,7 @@ separator = False
 
 def log(text):
     try:
-        print('%s V%s : %s' % (TITLE, VERSION, text))
+        #print('%s V%s : %s' % (TITLE, VERSION, text))
         xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
     except:
         pass
@@ -169,7 +172,7 @@ def addSeparatorItem(menu=None):
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False, menu=menu)
 
 
-def addGlobalMenuItem(menu):
+def addGlobalMenuItem(menu, item):
     #check if we are in the XBMC favourites folder
     if mode != _XBMC:
         cmd = '%s?mode=%d' % (sys.argv[0], _XBMC)
@@ -182,6 +185,18 @@ def addGlobalMenuItem(menu):
             menu.append((GETTEXT(30004), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _NEWFOLDER, urllib.quote_plus(path))))
 
     menu.append((GETTEXT(30005), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _SETTINGS)))
+
+    try:
+        addon = re.compile('"(.+?)"').search(item).group(1)
+        addon = addon.replace('plugin://', '')
+        addon = addon.replace('/', '')
+        addon = addon.split('?', 1)[0]
+
+        theAddon = xbmcaddon.Addon(addon)
+        
+        menu.append((GETTEXT(30094) % theAddon.getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
+    except:
+        pass
 
 
 def addFavouriteMenuItem(menu, name, thumb, cmd):
@@ -487,10 +502,10 @@ def getText(title, text='', hidden=False):
 
 def getImage():
     image = xbmcgui.Dialog().browse(2,GETTEXT(30044), 'files', '', False, False, os.sep)
-    if image and len(image) > 0:
+    if image and image != os.sep:
         return image
 
-    return ''
+    return None
 
 
 def getSkinImage():
@@ -897,19 +912,26 @@ def getMeta(grabber, name, type, year=None, season=None, episode=None, imdb=None
 
     return infoLabels
 
+
+def getMovieMenu(infolabels, menu=None):    
+    if not menu:
+        menu = []
+
+    if len(infolabels) == 0:
+        return menu
+
+    menu.append((GETTEXT(30090), 'Action(Info)'))
+
+    if 'trailer_url' in infolabels and len(infolabels['trailer_url']) > 0:   
+        menu.append((GETTEXT(30091), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _PLAYTRAILER,  urllib.quote_plus(infolabels['trailer_url']))))          
+
+    return menu
+
+
 def recommendIMDB(imdb, keyword):
     from metahandler import metahandlers
     grabber = metahandlers.MetaData()
 
-    #http://api.themoviedb.org/3/find/tt0942385?api_key=57983e31fb435df4df77afb854740ea9&external_source=imdb_id
-    #http://image.tmdb.org/t/p/original/6TdYGyANd7QhcV6gsx4meW8Y9Wf.jpg #fanart
-    #http://image.tmdb.org/t/p/original/ue9QdvhpcNPvKQyLY5a5Pd0tagS.jpg #thumb
-    #http://www.johannesbader.ch/2013/11/tutorial-download-posters-with-the-movie-database-api-in-python/ 	
-    #http://api.themoviedb.org/3/configuration?api_key=57983e31fb435df4df77afb854740ea9
-    #http://image.tmdb.org/t/p/
-    #http://www.imdb.com/xml/find?json=1&nr=1&tt=on&q=tt0376994
-    #http://www.imdb.com/title/tt0376994
-    
     url  = 'http://imdb.com/title/%s' % imdb
     html = quicknet.getURL(url, maxSec=86400, agent='Firefox')
 
@@ -918,7 +940,6 @@ def recommendIMDB(imdb, keyword):
     if len(items) == 0:
         return recommendKey(keyword)
 
-    meta       = True
     infolabels = {}
 
     for item in items:
@@ -928,18 +949,15 @@ def recommendIMDB(imdb, keyword):
         thumbnail = BLANK
         fanart    = BLANK
 
-        if meta:
+        if METARECOMMEND:
             #thumbnail,  fanart = getTVDB(imdb)
             infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
             thumbnail  = infolabels['cover_url']
             fanart     = infolabels['fanart']  
 
-        menu = []
-        menu.append((GETTEXT(30090), 'Action(Info)'))
+        addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=getMovieMenu(infolabels), fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
 
-        addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
     
-
 def recommendKey(keyword):
     from metahandler import metahandlers
     grabber = metahandlers.MetaData()
@@ -949,7 +967,6 @@ def recommendKey(keyword):
 
     items = re.compile('<div class="title">.+?<a href="/title/(.+?)/">(.+?)</a>(.+?)</div>').findall(html)
 
-    meta       = True
     infolabels = {}
 
     for item in items:
@@ -963,16 +980,13 @@ def recommendKey(keyword):
         thumbnail = BLANK
         fanart    = BLANK
 
-        if meta:
+        if METARECOMMEND:
             #thumbnail,  fanart = getTVDB(imdb)
             infolabels = getMeta(grabber, name, 'movie', year=None, imdb=imdb)
             thumbnail  = infolabels['cover_url']
             fanart     = infolabels['fanart']  
 
-        menu = []
-        menu.append((GETTEXT(30090), 'Action(Info)'))             
-
-        addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
+        addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=getMovieMenu(infolabels), fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
     
 
 def editSearchTerm(_keyword):
@@ -1010,7 +1024,7 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
             if len(keyword) > 0:
                 cmd = '%s?mode=%d&keyword=%s&image=%s&fanart=%s' % (sys.argv[0], _SUPERSEARCH, keyword, image, fanart)
                 xbmc.executebuiltin('XBMC.Container.Update(%s)' % cmd)
-                return
+                return False
 
     if len(keyword) < 1:
         return
@@ -1027,12 +1041,12 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
 
     infolabels = {}
 
-    if len(imdb) > 0:
+
+    if METARECOMMEND and len(imdb) > 0:
         from metahandler import metahandlers
         grabber = metahandlers.MetaData()
         infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
-        menu.append((GETTEXT(30090), 'Action(Info)'))
-
+        getMovieMenu(infolabels, menu)
 
     addDir(GETTEXT(30066) % keyword, _EDITSEARCH, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, infolabels=infolabels)
 
@@ -1044,34 +1058,37 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
     if SHOWRECOMMEND:
         menu = []
         menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+        getMovieMenu(infolabels, menu)
 
         if len(imdb) > 0:
             addDir(GETTEXT(30088), _RECOMMEND_IMDB, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, imdb=imdb, infolabels=infolabels)
         else:
             addDir(GETTEXT(30088), _RECOMMEND_KEY,  thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword)
         
-    keyword = urllib.quote_plus(keyword.replace('&', ''))
+    keyword = urllib.quote_plus(keyword.replace('&', ''))   
 
     for fave in faves:
         label = fave[0]
         thumb = fave[1]
         cmd   = fave[2].replace('[%SF%]', keyword)
 
+        menu = []
+        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
+
         if 'plugin' in cmd:
-            addPluginSearch(label, thumb, cmd, keyword, fanart)
+            addPluginSearch(label, thumb, cmd, keyword, fanart, menu)
 
         if 'RunScript' in cmd:
-            addScriptSearch(label, thumb, cmd, keyword, fanart)
+            addScriptSearch(label, thumb, cmd, keyword, fanart, menu)
+
+    return True
 
 
-def addPluginSearch(label, thumb, cmd, keyword, fanart):
+def addPluginSearch(label, thumb, cmd, keyword, fanart, menu):
     try:
         plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
         #simple check to ensure it is available, will throw if not installed
         xbmcaddon.Addon(plugin)
-
-        menu = []
-        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
 
         addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
 
@@ -1079,7 +1096,7 @@ def addPluginSearch(label, thumb, cmd, keyword, fanart):
        pass
 
 
-def addScriptSearch(label, thumb, cmd, keyword, fanart):
+def addScriptSearch(label, thumb, cmd, keyword, fanart, menu):
     try:
         script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
         #simple check to ensure it is available, will throw if not installed
@@ -1087,9 +1104,6 @@ def addScriptSearch(label, thumb, cmd, keyword, fanart):
 
         #special fix for GlobalSearch, use local launcher (globalsearch.py) to bypass keyboard
         cmd = cmd.replace('script.globalsearch', os.path.join(HOME, 'globalsearch.py'))
-
-        menu = []
-        menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITSEARCH, keyword)))
 
         addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
 
@@ -1192,17 +1206,17 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     liz = xbmcgui.ListItem(urllib.unquote_plus(label), iconImage=thumbnail, thumbnailImage=thumbnail)
 
     if len(infolabels) > 0:
-        liz.setInfo(type='Video', infoLabels=infolabels)
+        liz.setInfo(type='Video', infoLabels=infolabels)       
 
     if fanart:
-        liz.setProperty('Fanart_Image', fanart)
+        liz.setProperty('Fanart_Image', fanart)        
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
     #or in Python via: xbmc.getInfoLabel('ListItem.Property(Super_Favourites_Folder)')
     liz.setProperty('Super_Favourites_Folder', theFolder)
 
     if not menu:
-        menu = []
+        menu = []   
 
     #special case
     if mode == _XBMC:
@@ -1211,7 +1225,8 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     addFavouriteMenuItem(menu, label, thumbnail, u)
 
-    addGlobalMenuItem(menu)
+    addGlobalMenuItem(menu, cmd)
+
     liz.addContextMenuItems(menu, replaceItems=True)
 
     if separator:
@@ -1375,8 +1390,12 @@ elif mode == _PLAYBACKMODE:
 
     
 elif mode == _SETTINGS:
-    ADDON.openSettings()
-    refresh()
+    try :
+        addon = urllib.unquote_plus(params['addon'])
+        xbmcaddon.Addon(addon).openSettings()
+    except:
+        ADDON.openSettings()
+        refresh()
 
 
 elif mode == _SEPARATOR:
@@ -1400,26 +1419,14 @@ elif mode == _SUPERSEARCH:
     try:    fanart = urllib.unquote_plus(params['fanart'])
     except: fanart = BLANK
 
-    try:
-        #callback = urllib.unquote_plus(params['callback'])
+    cacheToDisc = len(keyword) > 0
+    doEnd       = len(keyword) > 0
 
-        cacheToDisc = len(keyword) > 0
-        doEnd       = len(keyword) > 0
+    superSearch(keyword, image, fanart, imdb)
+    xbmc.sleep(250)
 
-        superSearch(keyword, image, fanart, imdb)
-
-        if len(imdb) > 0:
-            content = 'movies'
-
-    except:
-        pass
-        #winID = xbmcgui.getCurrentWindowId()
-        #cmd   = '%s?mode=%d&keyword=%s&imdb=%s&image=%s&fanart=%s&callback=%s' % (sys.argv[0], _SUPERSEARCH, urllib.quote_plus(keyword), urllib.quote_plus(imdb), urllib.quote_plus(image), urllib.quote_plus(fanart),'callback')
-        #xbmc.executebuiltin('Container.Refresh(%s)' % cmd)
-
-        #cacheToDisc = True
-        #xbmc.sleep(250)
-        #doEnd = False
+    if len(imdb) > 0:
+        content = 'movies'
 
 
 elif mode == _EDITSEARCH:
@@ -1473,9 +1480,16 @@ elif mode == _RECOMMEND_IMDB:
 
         cacheToDisc = False
         doEnd       = False
+
+
+elif mode == _PLAYTRAILER:
+    import yt    
+    if not yt.PlayVideo(path):
+        utils.DialogOK(GETTEXT(30092))
         
 else:
     main()
+    #xbmc.executebuiltin('Dialog.Close(all, true)')
 
 
 #make sure at least 1 line is showing to allow context menu to be displayed

@@ -3,7 +3,7 @@
     <string id="30000">Super Favourites</string>
     <string id="30001">Super Favourite</string>
     <string id="30004">Create New Super Folder</string>
-	<string id="30005">Add-on settings</string>
+	<string id="30005">Super Favourite settings</string>
 	<string id="30006">Add to XBMC favourites</string>
 	<string id="30007">Copy favourite</string>
 	<string id="30008">Move favourite</string>
@@ -87,4 +87,8 @@
 	<string id="30088">iRecommend</string>	
 	<string id="30089">          Remember history</string>	
 	<string id="30090">Movie Information</string>	
+	<string id="30091">Play Trailer</string>	
+	<string id="30092">Trailer is no longer available</string>
+	<string id="30093">          Enable metadata</string>
+	<string id="30094">%s settings</string>
 </strings>

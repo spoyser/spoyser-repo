@@ -1,3 +1,9 @@
+v1.0.10:
+   - Added trailer playback to iRecommend
+   - iRecommend metadata configurable via settings
+   - Individual addon settings now available via context menu
+   - Fixed bug when cancelling thumbnail selection
+
 v1.0.9:
    - Added iRecommend - IMDB based recommendation feature (available from iSearch menu)
    - Removed skin specific icons
