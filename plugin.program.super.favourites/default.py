@@ -1208,7 +1208,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(infolabels) > 0:
         liz.setInfo(type='Video', infoLabels=infolabels)       
 
-    if fanart:
+    if SHOWSS_FANART:
         liz.setProperty('Fanart_Image', fanart)        
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
@@ -1489,7 +1489,6 @@ elif mode == _PLAYTRAILER:
         
 else:
     main()
-    #xbmc.executebuiltin('Dialog.Close(all, true)')
 
 
 #make sure at least 1 line is showing to allow context menu to be displayed

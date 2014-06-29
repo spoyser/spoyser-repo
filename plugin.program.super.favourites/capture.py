@@ -39,7 +39,7 @@ def doStandard():
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
         return
 
-    xbmc.executebuiltin('XBMC.Action(ContextMenu)')
+    xbmc.executebuiltin('Action(ContextMenu)')
 
 
 def copyFave(name, thumb, cmd):

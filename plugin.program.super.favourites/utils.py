@@ -103,6 +103,8 @@ def CheckVersion():
     if prev == curr:        
         return
 
+    verifySuperSearch(replace=True)
+
     ADDON.setSetting('VERSION', curr)
 
     if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
