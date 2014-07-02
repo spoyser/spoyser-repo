@@ -6,7 +6,7 @@
     <setting id="hq" type="labelenum" label="Resolution" default="480p" values="240p|360p|480p|720p"/>
     <setting type="lsep" label="30102" />
     <setting id="res_per_page" type="number" label="30103" default="20" />
-    <setting id="sort" type="enum" label="30029" default="3" lvalues="30030|30031|30033"/>
+    <setting id="sort" type="enum" label="30029" default="1" lvalues="30030|30031"/>
 
     <setting type="lsep" label="Add to Library" />
     <setting id="library_folder" type="folder" label="Folder" default=""/>

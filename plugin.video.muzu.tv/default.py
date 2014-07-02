@@ -27,10 +27,11 @@ import re, urllib
 CHARTS = []
 CHARTS.append('')
 CHARTS.append(['568952', 'top-40-charts']) #Top 40
-CHARTS.append(['695693', 'uk-rock'])       #Rock Chart
-CHARTS.append(['695695', ''])              #Alternative
-CHARTS.append(['695696', 'uk-dance'])      #Dance Chart
-CHARTS.append(['695701', 'uk-rnb'])        #RnB
+#The rest no longer available on Muzu
+#CHARTS.append(['695693', 'uk-rock'])       #Rock Chart
+#CHARTS.append(['695695', ''])              #Alternative
+#CHARTS.append(['695696', 'uk-dance'])      #Dance Chart
+#CHARTS.append(['695701', 'uk-rnb'])        #RnB
 
 
 Addon.plugin_url = sys.argv[0]
@@ -48,14 +49,20 @@ Addon.log('plugin handle: '  + str(Addon.plugin_handle))
 mode = Addon.plugin_queries['mode']
 play = Addon.plugin_queries['play']
 
+#print mode
+#print play
+
 
 def autoPlay():
-    pl = Addon.get_playlist(xbmc.PLAYLIST_VIDEO)
-    xbmc.Player().play(pl)
-    #try and give it time to buffer enough of stream
-    xbmc.sleep(5000)
-    if xbmc.getCondVisibility('player.paused') == 1:
-        xbmc.Player().pause()
+    try:
+        pl = Addon.get_playlist(xbmc.PLAYLIST_VIDEO)
+        xbmc.Player().play(pl)
+        #try and give it time to buffer enough of stream
+        xbmc.sleep(5000)
+        if xbmc.getCondVisibility('player.paused') == 1:
+            xbmc.Player().pause()
+    except Exception, e:
+        print str(e)
 
 def isChart(title):
     return len(re.compile('(.+?) \((.+?)\): (.+?)').findall(title)) > 0
@@ -83,9 +90,10 @@ def addToLibrary(play):
     folder = Addon.get_setting('library_folder')
     if folder == '':
         d = xbmcgui.Dialog()
-	d.ok(Addon.get_string(30300),'You have not set the library folder.\nPlease update the addon settings and try again.','','')
-	Addon.addon.openSettings(sys.argv[0])
-        folder = Addon.get_setting('library_folder')
+    d.ok(Addon.get_string(30300),'You have not set the library folder.\nPlease update the addon settings and try again.','','')
+    Addon.addon.openSettings(sys.argv[0])
+    
+    folder = Addon.get_setting('library_folder')
     if folder == '':
         return
 
@@ -130,7 +138,7 @@ def addToLibrary(play):
     f.close()
 
 
-def downloadPath(title, stream_url):        		
+def downloadPath(title, stream_url):                
     if not stream_url or stream_url == '':
         return None
 
@@ -138,19 +146,19 @@ def downloadPath(title, stream_url):
 
     if Addon.get_setting('ask_folder') == 'true':
         dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)
-	if downloadFolder == '' :
-	    return None
+    downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)
+    if downloadFolder == '' :
+        return None
 
     if downloadFolder is '':
         d = xbmcgui.Dialog()
-	d.ok(Addon.get_string(30300),'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
-	Addon.addon.openSettings(sys.argv[0])
-	downloadFolder = Addon.get_setting('download_folder')
+    d.ok(Addon.get_string(30300),'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
+    Addon.addon.openSettings(sys.argv[0])
+    downloadFolder = Addon.get_setting('download_folder')
 
     if downloadFolder == '' and Addon.get_setting('ask_folder') == 'true':
         dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)	
+    downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)   
 
     if downloadFolder == '' :
         return None
@@ -165,11 +173,9 @@ def downloadPath(title, stream_url):
    
     if Addon.get_setting('ask_filename') == 'true':
         kb = xbmc.Keyboard(title, 'Save video as...' )
-	kb.doModal()
-	if kb.isConfirmed():
-	    filename = kb.getText()
-	else:
-	    return None
+    kb.doModal()
+    if kb.isConfirmed():
+        filename = kb.getText()    
     else:
         filename = title
 
@@ -218,8 +224,7 @@ elif play:
 
         if Addon.get_setting('auto_pl') == 'true':
             pl = Addon.get_new_playlist(xbmc.PLAYLIST_VIDEO)
-            res_dir = os.path.join(Addon.addon.getAddonInfo('path'), 
-                               'resources')
+            #res_dir = os.path.join(Addon.addon.getAddonInfo('path'), 'resources')
 
             for v in videos:
                 title = '%s: %s' % (v['artist'], v['title'])            
@@ -298,8 +303,11 @@ elif mode == 'browse':
                                      [Addon.get_string(30030),
                                       Addon.get_string(30031)])#,
                                       #Addon.get_string(30032)])
-            sort = ['views', 'recent', 'alpha'][sort]
+                                                  
+            sort = ['views', 'recent'][sort]
+                
         videos = muzu.browse_videos(genre, sort, page, res_per_page, Addon.get_setting('country'))
+            
         if videos == None:
             videos = []
             mode = 'error'
@@ -324,10 +332,8 @@ elif mode == 'browse':
 
 elif mode == 'jukebox':
     Addon.log(mode)
-    mode = 'main'
-    dialog = xbmcgui.Dialog()
-    jam = dialog.select(Addon.get_string(30038), 
-                        [Addon.get_string(30039), Addon.get_string(30040)])
+    #dialog = xbmcgui.Dialog()
+    #jam = dialog.select(Addon.get_string(30038), [Addon.get_string(30039), Addon.get_string(30040)])
     kb = xbmc.Keyboard('', Addon.get_string(30035), False)
     kb.doModal()
     if (kb.isConfirmed()):
@@ -343,18 +349,16 @@ elif mode == 'jukebox':
                 artist_id = assets['artist_ids'][q]
                 assets = muzu.jukebox(query, country)
             
-            if jam:
-                assets = muzu.jukebox(query, country, jam=artist_id)
+            #if jam:
+            #    assets = muzu.jukebox(query, country, jam=artist_id)
             
-            pl = Addon.get_new_playlist(xbmc.PLAYLIST_VIDEO)
-            #if Addon.get_setting('hq') == 'true':
-            #    hq = True
-            #else:
-            #    hq = False
+            pl = None
+            if Addon.get_setting('auto_pl') == 'true':
+                pl = Addon.get_new_playlist(xbmc.PLAYLIST_VIDEO)
+            
             videos = assets.get('videos', False)        
             random.shuffle(videos)
-            res_dir = os.path.join(Addon.addon.getAddonInfo('path'), 
-                                   'resources')            
+            
             if videos:
                 for v in videos:
                     title = unicode('%s: %s' % (v['artist'], v['title']), 'utf8')
@@ -364,28 +368,32 @@ elif mode == 'jukebox':
                                          img=v['thumb'],
                                          playlist=pl)  
 
-                autoPlay()
+                if pl != None:
+                    autoPlay()
+                    mode = 'main'                
             else:
                 Addon.show_error([Addon.get_string(30037), query])
 
 elif mode == 'chart_up' or mode == 'chart_down':
     Addon.log(mode)
     chart_id = Addon.plugin_queries.get('chart_id', '')
+    chart_url = Addon.plugin_queries.get('chart_url', '')
     rev      = mode == 'chart_down'
     mode     = 'chart'    
     if chart_id:
         play   = 'officialtop40/playlists/official-uk-top-40-2013/%s' % chart_id
-        videos = muzu.get_playlist(play) 
+        #videos = muzu.get_playlist(play) 
+        videos = muzu.get_chart(chart_url)
 
         if rev:           
             videos.reverse()
 
-        pl      = Addon.get_new_playlist(xbmc.PLAYLIST_VIDEO)
-        res_dir = os.path.join(Addon.addon.getAddonInfo('path'), 'resources')
+        pl = Addon.get_new_playlist(xbmc.PLAYLIST_VIDEO)
         
         for v in videos:
+            title = unicode('%s : %s' % (v['pos'], v['title']), 'utf8')
             Addon.add_video_item(str(v['asset_id']),
-                                 {'title': v['title'],},
+                                 {'title': title,},
                                  img=v['thumb'],
                                  playlist=pl)
 
@@ -396,26 +404,27 @@ if mode == 'chart':
     chart_id  = Addon.plugin_queries.get('chart_id',  '')
     chart_url = Addon.plugin_queries.get('chart_url', '')
     if chart_id and chart_url and mode == 'chart':
-        Addon.add_directory({'mode': 'chart_up',   'chart_id' : chart_id}, 'Play 1-40')
-        Addon.add_directory({'mode': 'chart_down', 'chart_id' : chart_id}, 'Play 40-1')
-        videos = muzu.get_chart(chart_url)        
+        Addon.add_directory({'mode': 'chart_up',   'chart_id' : chart_id, 'chart_url' : chart_url}, 'Play 1-40')
+        Addon.add_directory({'mode': 'chart_down', 'chart_id' : chart_id, 'chart_url' : chart_url}, 'Play 40-1')
+        videos = muzu.get_chart(chart_url) 
 
         for v in videos:
-            title = unicode('%s (%s): %s' % (v['pos'], v['last_pos'], v['title']), 'utf8')
+            #title = unicode('%s (%s): %s' % (v['pos'], v['last_pos'], v['title']), 'utf8')
+            title = unicode('%s : %s' % (v['pos'], v['title']), 'utf8')
             Addon.add_video_item(str(v['asset_id']),
                                  {'title': title,},
                                  img=v['thumb'])            
     else:
         Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[1][0], 'chart_url': CHARTS[1][1]}, 
                             Addon.get_string(30042))
-        Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[2][0], 'chart_url': CHARTS[2][1]}, 
-                            Addon.get_string(30043))
+        #Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[2][0], 'chart_url': CHARTS[2][1]}, 
+        #                    Addon.get_string(30043))
         #Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[3][0], 'chart_url': CHARTS[3][1]}, 
         #                    Addon.get_string(30044))
-        Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[4][0], 'chart_url': CHARTS[4][1]}, 
-                            Addon.get_string(30045))
-        Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[5][0], 'chart_url': CHARTS[5][1]}, 
-                            Addon.get_string(30046))
+        #Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[4][0], 'chart_url': CHARTS[4][1]}, 
+        #                    Addon.get_string(30045))
+        #Addon.add_directory({'mode': 'chart', 'chart_id': CHARTS[5][0], 'chart_url': CHARTS[5][1]}, 
+        #                    Addon.get_string(30046))
 
 elif mode == 'list_playlists':
     Addon.log(mode) 
@@ -505,7 +514,7 @@ elif mode == 'channels':
                                          [Addon.get_string(30030),
                                           Addon.get_string(30031)])#,
                                           #Addon.get_string(30032)])
-                sort = ['views', 'recent', 'alpha'][sort]
+                sort = ['views', 'recent'][sort]
             networks = muzu.browse_networks(genre, sort, page, country=country)
             for n in networks:
                 title = '%s (%s videos)' % (n['title'], n['num_vids'])

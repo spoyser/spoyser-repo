@@ -86,7 +86,7 @@ class MuzuTv:
         #html = self.__get_html('browse/charts/chart/%s' % chart, {'country': 'gb'})
         list = html.split('<li class="top-40-video')
 
-        for item in list:           
+        for item in list: 
             try:
                 pos      = int(re.compile('<div class="top-40-position">(.+?)</div>').search(item).groups(1)[0])
                 last_pos = '-'  
@@ -105,7 +105,8 @@ class MuzuTv:
                 pass
 
             try:
-                video_id = re.compile('<a href="/.+?/.+?/(.+?)/"').search(item).groups(1)[0]
+                #video_id = re.compile('<a href="/.+?/.+?/(.+?)/"').search(item).groups(1)[0]
+                video_id = re.compile('data-id="(.+?)"').search(item).groups(1)[0]
             except:
                 video_id = ''
 
@@ -472,8 +473,8 @@ class MuzuTv:
         url = self.__build_url(path, queries) 
 
         Addon.log('Fetching URL %s' % url)
-        print "********** MUZU.TV **********"
-        print '[plugin.video.muzu.tv] Fetching URL %s' % url
+        #print "********** MUZU.TV **********"
+        #print '[plugin.video.muzu.tv] Fetching URL %s' % url
 
         response = self.__fetch(url)
         if response:

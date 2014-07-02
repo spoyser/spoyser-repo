@@ -84,7 +84,7 @@ def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
     xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
                                 isFolder=False, totalItems=total_items)
 
-def add_video_item(_url, infolabels, img='', fanart='', total_items=0, playlist=False):
+def add_video_item(_url, infolabels, img='', fanart='', total_items=0, playlist=None):
 
     #handle adding context menus
     contextMenuItems = []
@@ -100,7 +100,7 @@ def add_video_item(_url, infolabels, img='', fanart='', total_items=0, playlist=
     listitem.setInfo('video', infolabels)
     listitem.setProperty('IsPlayable', isPlayable)
     listitem.setProperty('fanart_image', fanart)
-    if playlist is not False:
+    if playlist != None:
         log('adding item: %s - %s to playlist' % (infolabels['title'], url))
         playlist.add(url, listitem)        
     else:
