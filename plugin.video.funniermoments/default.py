@@ -286,7 +286,7 @@ def Download(title, _url):
 
     try:
         import download
-        download.download(url, file)
+        download.download(url, file, TITLE, URL)
     except Exception, e:
         print TITLE + ' Error during downloading of ' + _url
         print str(e)
@@ -322,7 +322,7 @@ def DownloadPath(url):
     downloadFolder = xbmc.translatePath(downloadFolder)
 
     html   = GetHTML(url)
-    info   = re.compile('<h4 class="entry-title">(.+?)</h4>').search(html).group(1)
+    info   = re.compile('<h5 class="entry-title">(.+?)</h5>').search(html).group(1)
     series = FileSystemSafe(info.split(' - ', 1)[0])
     title  = FileSystemSafe(info.split(' - ', 1)[-1])
 
@@ -610,9 +610,6 @@ mode   = None
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass
 
-print sys.argv[2]
-print "***** MODE *********"
-print mode
 
 if mode == ALL:
     All()
