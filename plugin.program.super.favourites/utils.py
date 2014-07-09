@@ -37,7 +37,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.10'
+VERSION = '1.0.11'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -86,11 +86,6 @@ def generateMD5(text):
         pass
         
     return '0'
-
-
-#def Verify():
-#    CheckVersion()
-#    VerifyKeymaps()
 
 
 def CheckVersion():
