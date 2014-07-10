@@ -35,7 +35,7 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Super Cartoons'
-VERSION = '1.0.5'
+VERSION = '1.0.6'
 URL     = 'http://www.supercartoons.net/'
 
 
@@ -267,7 +267,8 @@ def PlayCartoon(title, image, url):
 
 def MostRecent():
     html  = GetHTML(URL)
-    match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>Cartoons</h3>').search(html).group(1)
+
+    match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
     match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
 
     for desc, img, link, title in match:
@@ -276,7 +277,7 @@ def MostRecent():
 
 def MostPopular():
     html  = GetHTML(URL)
-    match = re.compile('<h3>Best Cartoons</h3>.+?<h3>Cartoons</h3>(.+?)</div></div>').search(html).group(1)
+    match = re.compile('<h3>Best Cartoons</h3>.+?<h3>Special Selection Of Free Cartoons</h3>(.+?)</div></div>').search(html).group(1)
     match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
 
     for desc, img, link, title in match:
@@ -374,6 +375,9 @@ def Character(_url, page):
         
 
 def AddCartoon(title, img, link, desc):
+    if title.startswith(' - '):
+        title = title[3:]
+
     link = link.replace('/cartoon/', '/video/')
     link = link.replace('.html', '.mp4')
 
@@ -386,8 +390,6 @@ def AddCartoon(title, img, link, desc):
 
 
 def AddCharacter(title, img, link, desc):
-
-    print link
 
     if desc.upper().startswith('WATCH FREE'):
         desc = desc.split('. ', 1)[1]
@@ -532,7 +534,6 @@ geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addo
 
 params = get_params()
 mode   = None
-print params
 
 try:    mode = int(urllib.unquote_plus(params['mode']))
 except: pass
