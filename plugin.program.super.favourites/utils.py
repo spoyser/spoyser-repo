@@ -38,7 +38,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.12'
+VERSION = '1.0.13'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -194,26 +194,22 @@ def VerifyKeymapHot():
 
 
 def VerifyKeymapMenu():
-    keymap = xbmc.translatePath('special://profile/keymaps')
-    dest   = os.path.join(keymap, KEYMAP_MENU)
-
-    if os.path.exists(dest):
-        return False
-
     context = ADDON.getSetting('CONTEXT')  == 'true'
 
     if not context:
         DeleteKeymap(KEYMAP_MENU)
         return True
 
-    src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
-    dst = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
+    keymap = xbmc.translatePath('special://profile/keymaps')
+    src    = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
+    dst    = os.path.join(keymap, KEYMAP_MENU)
 
     try:
-        makedirs(keymap)
+        os.makedirs(keymap)
         import shutil
         shutil.copy(src, dst)
-    except:
+    except Exception, e:
+        print str(e)
         pass
 
     return True
