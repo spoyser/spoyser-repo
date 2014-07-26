@@ -23,6 +23,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import os
+import re
 
 def GetXBMCVersion():
     #xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }')
@@ -37,7 +38,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.11'
+VERSION = '1.0.12'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -115,21 +116,17 @@ def CheckVersion():
 def verifySuperSearch(replace=False):
     dst = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
 
-    if (not replace) and os.path.exists(dst):
-        return
+    if os.path.exists(dst):
+        if not replace:
+            return
 
     src = os.path.join(HOME, 'resources', 'Search', FILENAME)
 
-    try:    os.mkdir(os.path.join(xbmc.translatePath(ROOT), 'Search'))
+    try:    os.makedirs(os.path.join(xbmc.translatePath(ROOT), 'Search'))
     except: pass
 
-    f = open(src, mode='r')
-    t = f.read()
-    f.close()
-
-    f = open(dst, mode='w')
-    f.write(t)
-    f.close()
+    import shutil
+    shutil.copyfile(src, dst)
 
 
 def UpdateKeymaps():
@@ -197,7 +194,8 @@ def VerifyKeymapHot():
 
 
 def VerifyKeymapMenu():
-    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
+    keymap = xbmc.translatePath('special://profile/keymaps')
+    dest   = os.path.join(keymap, KEYMAP_MENU)
 
     if os.path.exists(dest):
         return False
@@ -212,25 +210,39 @@ def VerifyKeymapMenu():
     dst = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_MENU)
 
     try:
+        makedirs(keymap)
         import shutil
         shutil.copy(src, dst)
     except:
         pass
 
-    #f = open(src, mode='r')
-    #t = f.read()
-    #f.close()
-
-    #f = open(dst, mode='w')
-    #f.write(t)
-    #f.close()
-
     return True
 
 
+def verifyPlugin(cmd):
+    try:
+        plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
+        xbmcaddon.Addon(plugin)
+        return True
+    except:
+        pass
+
+    return False
+
+
+def verifyScript(cmd):
+    try:
+        script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
+        xbmcaddon.Addon(script)
+        return True
+    except:
+        pass
+
+    return False
+
 
 def GetFolder(title):
-    default = ROOT #ADDON.getAddonInfo('profile')
+    default = ROOT
     folder  = xbmc.translatePath(PROFILE)
 
     if not os.path.isdir(folder):
@@ -241,6 +253,21 @@ def GetFolder(title):
         return None
 
     return xbmc.translatePath(folder)
+
+
+def showBusy():
+    busy = None
+    try:
+        import xbmcgui
+        busy = xbmcgui.WindowXMLDialog('DialogBusy.xml', '')
+        busy.show()
+
+        try:    busy.getControl(10).setVisible(False)
+        except: pass
+    except:
+        busy = None
+
+    return busy
 
 
 if __name__ == '__main__':

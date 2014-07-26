@@ -91,4 +91,15 @@
 	<string id="30092">Trailer is no longer available</string>
 	<string id="30093">          Enable metadata</string>
 	<string id="30094">%s settings</string>
+	<string id="30095">Tidy up context menu keywords</string>
+	<string id="30096">Super Folders inherit thumbnail</string>
+	<string id="30097">Remove thumbnail</string>
+	<string id="30098">iSearch using %s</string>
+	<string id="30099">	Edit XBMC Favourite</string>
+	<string id="30100">None (clear current settings)</string>
+	<string id="30101">(no action)</string>
+	<string id="30102"> (open folder)</string>
+	<string id="30103">Edit iSearch item</string>
+	<string id="30104">Play using Super Favourites</string>
+	<string id="30105">Failed to play video</string>
 </strings>

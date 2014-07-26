@@ -79,8 +79,14 @@ def Clean(text):
 def PlayVideo(id):
     import xbmcgui
     import sys
+    import utils
+
+    busy = utils.showBusy()
 
     video, links = GetVideoInformation(id)
+
+    if busy:
+        busy.close()
 
     if 'best' not in video:
         return False
@@ -274,11 +280,56 @@ def RemoveAdditionalEndingDelimiter(data):
     
 ####################################################
 
-global fullAlgoCode
-global allLocalFunNamesTab
 global playerData
+global allLocalFunNamesTab
+global allLocalVarNamesTab
+
+def _extractVarLocalFuns(match):
+	varName, objBody = match.groups()
+	output = ''
+	for func in objBody.split( '},' ):
+		output += re.sub(
+			r'^([^:]+):function\(([^)]*)\)',
+			r'function %s__\1(\2,*args)' % varName,
+			func
+		) + '\n'
+	return output
 
 def _jsToPy(jsFunBody):
+    pythonFunBody = re.sub(r'var ([^=]+)={(.*?)}};', _extractVarLocalFuns, jsFunBody)
+    pythonFunBody = re.sub(r'function (\w*)\$(\w*)', r'function \1_S_\2', pythonFunBody)
+    pythonFunBody = pythonFunBody.replace('function', 'def').replace('{', ':\n\t').replace('}', '').replace(';', '\n\t').replace('var ', '')
+    pythonFunBody = pythonFunBody.replace('.reverse()', '[::-1]')
+
+    lines = pythonFunBody.split('\n')
+    for i in range(len(lines)):
+        # a.split("") -> list(a)
+        match = re.search('(\w+?)\.split\(""\)', lines[i])
+        if match:
+            lines[i] = lines[i].replace( match.group(0), 'list(' + match.group(1)  + ')')
+        # a.length -> len(a)
+        match = re.search('(\w+?)\.length', lines[i])
+        if match:
+            lines[i] = lines[i].replace( match.group(0), 'len(' + match.group(1)  + ')')
+        # a.slice(3) -> a[3:]
+        match = re.search('(\w+?)\.slice\((\w+?)\)', lines[i])
+        if match:
+            lines[i] = lines[i].replace( match.group(0), match.group(1) + ('[%s:]' % match.group(2)) )
+        # a.join("") -> "".join(a)
+        match = re.search('(\w+?)\.join\(("[^"]*?")\)', lines[i])
+        if match:
+            lines[i] = lines[i].replace( match.group(0), match.group(2) + '.join(' + match.group(1) + ')' )
+        # a.splice(b,c) -> del a[b:c]
+        match = re.search('(\w+?)\.splice\(([^,]+),([^)]+)\)', lines[i])
+        if match:
+            lines[i] = lines[i].replace( match.group(0), 'del ' + match.group(1) + '[' + match.group(2) + ':' + match.group(3) + ']' )
+
+    pythonFunBody = "\n".join(lines)
+    pythonFunBody = re.sub(r'(\w+)\.(\w+)\(', r'\1__\2(', pythonFunBody)
+    pythonFunBody = re.sub(r'([^=])(\w+)\[::-1\]', r'\1\2.reverse()', pythonFunBody)
+    return pythonFunBody
+
+def _jsToPy1(jsFunBody):
     pythonFunBody = jsFunBody.replace('function', 'def').replace('{', ':\n\t').replace('}', '').replace(';', '\n\t').replace('var ', '')
     pythonFunBody = pythonFunBody.replace('.reverse()', '[::-1]')
 
@@ -303,7 +354,8 @@ def _jsToPy(jsFunBody):
     return "\n".join(lines)
 
 def _getLocalFunBody(funName):
-    # get function body
+    # get function body 
+    funName = funName.replace('$', '\\$')
     match = re.search('(function %s\([^)]+?\){[^}]+?})' % funName, playerData)
     if match:
         return match.group(1)
@@ -316,6 +368,21 @@ def _getAllLocalSubFunNames(mainFunBody):
         funNameTab = set( match[1:] )
         return funNameTab
     return set()
+    
+def _extractLocalVarNames(mainFunBody):
+    valid_funcs = ( 'reverse', 'split', 'splice', 'slice', 'join' )
+    match = re.compile( r'[; =(,](\w+)\.(\w+)\(' ).findall( mainFunBody )
+    local_vars = []
+    for name in match:
+        if name[1] not in valid_funcs:
+            local_vars.append( name[0] )
+    return set(local_vars)
+
+def _getLocalVarObjBody(varName):
+    match = re.search( r'var %s={.*?}};' % varName, playerData )
+    if match:
+        return match.group(0)
+    return ''
 
 def DecryptSignatureNew(s, playerUrl):
     if not playerUrl.startswith('http:'):
@@ -323,14 +390,18 @@ def DecryptSignatureNew(s, playerUrl):
         
     #print "Decrypt_signature sign_len[%d] playerUrl[%s]" % (len(s), playerUrl)
 
-    global fullAlgoCode
     global allLocalFunNamesTab
+    global allLocalVarNamesTab
     global playerData
-    fullAlgoCode        = ''
+                
     allLocalFunNamesTab = []
-    playerData          = ''
+    allLocalVarNamesTab = []
+    playerData          = ''    
 
     request = urllib2.Request(playerUrl)
+    #res        = core._fetchPage({u"link": playerUrl})
+    #playerData = res["content"]
+            
     try:
         playerData = urllib2.urlopen(request).read()
         playerData = playerData.decode('utf-8', 'ignore')
@@ -338,17 +409,17 @@ def DecryptSignatureNew(s, playerUrl):
         #print str(e)
         print 'Failed to decode playerData'
         return ''
-
+        
     # get main function name 
-    match = re.search("signature=(\w+?)\([^)]\)", playerData)
+    match = re.search("signature=([$a-zA-Z]+)\([^)]\)", playerData)
     if match:
         mainFunName = match.group(1)
-        #print('Main signature function name = "%s"' % mainFunName)
     else: 
         print('Failed to get main signature function name')
         return ''
-
-    _getfullAlgoCode(mainFunName)
+        
+    _mainFunName = mainFunName.replace('$','_S_')   
+    fullAlgoCode = _getfullAlgoCode(mainFunName)    
 
     # wrap all local algo function into one function extractedSignatureAlgo()
     algoLines = fullAlgoCode.split('\n')
@@ -356,7 +427,7 @@ def DecryptSignatureNew(s, playerUrl):
         algoLines[i] = '\t' + algoLines[i]
     fullAlgoCode  = 'def extractedSignatureAlgo(param):'
     fullAlgoCode += '\n'.join(algoLines)
-    fullAlgoCode += '\n\treturn %s(param)' % mainFunName
+    fullAlgoCode += '\n\treturn %s(param)' % _mainFunName
     fullAlgoCode += '\noutSignature = extractedSignatureAlgo( inSignature )\n'
 
     # after this function we should have all needed code in fullAlgoCode
@@ -392,7 +463,9 @@ def DecryptSignatureNew(s, playerUrl):
 
 # Note, this method is using a recursion
 def _getfullAlgoCode(mainFunName, recDepth=0):
-    global fullAlgoCode
+    global playerData
+    global allLocalFunNamesTab
+    global allLocalVarNamesTab
     
     if MAX_REC_DEPTH <= recDepth:
         print '_getfullAlgoCode: Maximum recursion depth exceeded'
@@ -403,11 +476,21 @@ def _getfullAlgoCode(mainFunName, recDepth=0):
         funNames = _getAllLocalSubFunNames(funBody)
         if len(funNames):
             for funName in funNames:
+                funName_ = funName.replace('$','_S_')
                 if funName not in allLocalFunNamesTab:
+                    funBody=funBody.replace(funName,funName_)
                     allLocalFunNamesTab.append(funName)
                     #print 'Add local function %s to known functions' % mainFunName
-                    _getfullAlgoCode(funName, recDepth+1)
+                    funbody = _getfullAlgoCode(funName, recDepth+1) + "\n" + funBody
+                    
+        varNames = _extractLocalVarNames(funBody)
+        if len(varNames):
+            for varName in varNames:
+                if varName not in allLocalVarNamesTab:
+                    allLocalVarNamesTab.append(varName)
+                    funBody = _getLocalVarObjBody(varName) + "\n" + funBody
 
         # convert code from javascript to python 
         funBody = _jsToPy(funBody)
-        fullAlgoCode += '\n' + funBody + '\n'
+        return '\n' + funBody + '\n'
+    return funBody

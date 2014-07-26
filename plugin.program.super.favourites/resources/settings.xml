@@ -12,12 +12,11 @@
 	</category>
 	
 	<category label="30022">	
-		<setting id="SHOWNEW"  label="30023" type="bool"      default="true" />
-		<setting id="SHOWXBMC" label="30024" type="bool"      default="true" />
-		
+		<setting id="SHOWNEW"      label="30023" type="bool"  default="true" />
+		<setting id="SHOWXBMC"     label="30024" type="bool"  default="true" />
 		<setting id="SHOWXBMCROOT" label="30065" type="bool"  default="false" enable="eq(-1,true)"/>
-
-		<setting id="SHOWSEP"  label="30051" type="bool"      default="true" />	
+		<setting id="SHOWSEP"      label="30051" type="bool"  default="true" />			
+		<setting id="INHERIT"      label="30096" type="bool"  default="true" />	
 	</category>
 	
 	<category label="30054">	
@@ -26,6 +25,7 @@
 		<setting id="METARECOMMEND"  label="30093" type="bool"  enable="eq(-2,true)+eq(-1,true)"  default="true" />
 		<setting id="CACHERECOMMEND" label="30089" type="bool"  enable="eq(-3,true)+eq(-2,true)"  default="true" />
 		<setting id="SHOWSS_FANART"  label="30064" type="bool"  enable="eq(-4,true)"              default="true" />
+		<setting id="STRIPNUMBERS"   label="30095" type="bool"  enable="eq(-5,true)"              default="true" />
 	</category>
 	
 	<category label="30082">	
