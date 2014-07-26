@@ -8,9 +8,9 @@
         <setting id="ASK_FOLDER"    type="bool"      label="Ask for folder"                                  default="false" visible="false"/>
         <setting id="ASK_FILENAME"  type="bool"      label="Ask for filename"                                default="true"  visible="false"/>
 
-        <setting id="RESUME_INFO"    type="text"     label="Resume Info"                                     default=""      visible="true"/>
-        <setting id="RESUME_CHAPTER" type="text"     label="Resume Chapter"                                  default=""      visible="true"/>
-        <setting id="RESUME_TIME"    type="text"     label="Resume Time"                                     default=""      visible="true"/>
+        <setting id="RESUME_INFO"    type="text"     label="Resume Info"                                     default=""      visible="false"/>
+        <setting id="RESUME_CHAPTER" type="text"     label="Resume Chapter"                                  default=""      visible="false"/>
+        <setting id="RESUME_TIME"    type="text"     label="Resume Time"                                     default=""      visible="false"/>
     </category>  
     <category label="Genres">
         <setting id="VIEW"       type="labelenum" label="Sort by" values="Title|Author"          default="Title"       visible="true"/>

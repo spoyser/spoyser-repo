@@ -115,8 +115,6 @@ class Player(xbmc.Player):
         except Exception, e:
             print str(e)
 
-        #xbmc.executebuiltin('Container.Refresh')
-
 
     def updateResume(self):
         item   = self.item

@@ -27,11 +27,13 @@ import xbmcaddon
 import xbmcplugin
 import xbmcgui
 
+import quicknet
+
 
 ADDONID = 'plugin.audio.booksshouldbefree'
 ADDON   = xbmcaddon.Addon(ADDONID)
 TITLE   = 'Books Should Be Free'
-VERSION = '1.0.0'
+VERSION = '1.0.5'
 URL     = 'http://www.booksshouldbefree.com/'
 
 GENRE       = 100
@@ -78,6 +80,10 @@ def cleanSearch(text):
 
 
 def GetHTML(url):
+    return quicknet.getURL(url, maxSec=7*86400)
+
+
+def GetHTMLDirect(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Apple-iPhone/')
     response = urllib2.urlopen(req)
@@ -96,7 +102,7 @@ def Genre(_url, page):
     if requestURL == 'http://www.booksshouldbefree.com/Top_100':
         view = 'title'
         if page > 1:
-            requestURL += '/' % str(page)
+            requestURL += '/%s' % str(page)
     else:
         requestURL += '?'
 
@@ -121,35 +127,35 @@ def Genre(_url, page):
     AddDir('More...', MORE, _url, 'DefaultPlaylist.png', True, page+1)
 
 
-def GenreAuthor(html):
-    authors = html.split('<li data-role="list-divider">')
 
-    reAuthor = 'By: (.+?)</li>'
-    reBook   = '<a href="/(.+?)"  class="list-author" rel="external"><img src="/(.+?)" .+?<p class="list-title">(.+?)</p>'
+def GenreAuthor(html):
+    authors = html.split('summary="Author">')
+
+    reAuthor = '<h1>By: (.+)</h1>'
+    reBook   = '<a href="/(.+?)"><img class="cover" src="/(.+?)" alt="(.+?)"></a>.+?<p>(.+?)</td>'
+    reBook   = '<a href="/(.+?)"><img class="cover" src="/(.+?)" alt=".+?">.+?<a href=".+?">(.+?)</a>.+?<p>(.+?)</td>'
 
     for item in authors:
-        match = re.compile(reAuthor).findall(item)
-        if len(match) > 0:
-            author = match[0].split(' <font')[0]
-            author = clean(author)
+        author = re.compile(reAuthor).findall(item)
+        if len(author) > 0:
+            author = clean(author[0].split(' <font', 1)[0])
             match  = re.compile(reBook).findall(item)
-            for url, image, title in match:
-                url    = clean(url)
-                image  = clean(image)
-                title  = clean(title)
-                AddBook(title, author, URL+url, image)
-            
-             
 
-    
+            for url, image, title, summary in match:
+                url     = clean(url)
+                image   = clean(image)
+                title   = clean(title)
+                summary = clean(summary)
+                AddBook(title, author, URL+url, image, summary=summary)
+                           
 def GenreTitle(html):
-    match = re.compile('<li class="list-li"><a href="/(.+?)" class="list-link" rel="external"><img src="/(.+?)".+?<font class="title">(.+?)</font>.+?<font class="author">(.+?)</font>.+?</li>').findall(html)
+    match = re.compile('<td class="layout2-blue".+?<a href="(.+?)"><img class="layout" src="/(.+?)".?<b>(.+?)</b></a><br>(.+?)<br>').findall(html)
 
     for url, image, title, author in match:
         url    = clean(url)
-        image  = clean(image)
+        image  = clean(image.split('.jpg', 1)[0]+'.jpg')
         title  = clean(title)
-        author = clean(author)
+        author = clean(author.split('</td>', 1)[0])
         AddBook(title, author, URL+url, image)
 
 
@@ -195,10 +201,9 @@ def PlayChapter(url, name, chapter, image):
 
 def GenreMenu(url):
     html = GetHTML(url)
-    html = html.split('More Genres')[1]
-    html = html.replace('\n', '')
+    html = html.split('summary="All Genres">')[1]
     
-    match = re.compile('<a href="/(.+?)" rel="external"><div id="(.+?)" class').findall(html)
+    match = re.compile('<tr><td class="link menu"><a href="/(.+?)"><div id=".+?" class="g-s s-desk"></div>(.+?)</a></td></tr>').findall(html)
     for url, genre in match:
         AddGenre(genre.replace('_', ' '), url)
 
@@ -213,8 +218,9 @@ def Search(page, keyword):
     keyword  = urllib.quote_plus(keyword)
     start    = str((page-1) * int(nResults))
 
-    url  = 'http://www.google.com/cse?cx=partner-pub-5879764092668092%3Awdqcfbe9xi9&cof=FORID%3A10&num=' + nResults + '&q=' + keyword + '&nojs=1&start=' + start
-    html = GetHTML(url)
+    url = 'http://www.google.com/cse?cx=partner-pub-5879764092668092%3Awdqcfbe9xi9&cof=FORID%3A10&num=' + nResults + '&q=' + keyword + '&nojs=1&start=' + start
+
+    html = GetHTMLDirect(url)
     html = html.replace('\n', '')
     main = re.compile('<li>(.+?)</li>').findall(html)
     for item in main:
@@ -241,12 +247,12 @@ def Main():
 
     AddResume()
     AddSearch()
-    AddGenre('Top Books',   'Top_100')
-    AddGenre('Children',    'genre/Children')
-    AddGenre('Fiction',     'genre/Fiction')
-    AddGenre('Fantasy',     'genre/Fantasy')
-    AddGenre('Mystery',     'genre/Mystery')
-    AddGenreMenu('More...', 'genre-menu')
+    AddGenre('Top Books',     'Top_100')
+    AddGenre('Children',      'genre/Children')
+    AddGenre('Fiction',       'genre/Fiction')
+    AddGenre('Fantasy',       'genre/Fantasy')
+    AddGenre('Mystery',       'genre/Mystery')
+    AddGenreMenu('Genres...', 'genre-menu')
     
 
 def AddResume():
@@ -286,19 +292,20 @@ def AddGenreMenu(label, url):
     AddDir(label, GENREMENU, URL+url, 'DefaultPlaylist.png', True)    
 
 
-def AddBook(title, author, url, image=None):
+def AddBook(title, author, url, image=None, summary=None):
     if image:
         image = URL+image
     else:
         image = 'DefaultPlaylist.png'
-    AddDir(title, BOOK, url, image, True, extra=author) 
+
+    AddDir(title, BOOK, url, image, True, extra=author, summary=summary) 
 
 
 def AddChapter(url, title, chapter, image, contextMenu=None):
     AddDir(title, PLAYCHAPTER, url, image, False, extra=chapter, contextMenu=contextMenu)
    
 
-def AddDir(name, mode, url, image, isFolder, page=1, extra=None, keyword=None, contextMenu=None):
+def AddDir(name, mode, url, image, isFolder, page=1, extra=None, keyword=None, contextMenu=None, summary=None):
     label = name
     if extra:
         label = label + ' - ' + extra
@@ -311,18 +318,22 @@ def AddDir(name, mode, url, image, isFolder, page=1, extra=None, keyword=None, c
     u += '&page='  + str(page) 
 
     if extra:
-        u += '&extra=' + urllib.quote_plus(extra) 
+        u += '&extra=' + urllib.quote_plus(extra)
+    else:
+        extra = ''
 
     if keyword:
         u += '&keyword=' + urllib.quote_plus(keyword) 
 
     liz = xbmcgui.ListItem(label, iconImage=image, thumbnailImage=image)
 
+    #infoLabels = {}
+    #liz.setInfo(type='music', infoLabels=infoLabels)
+
     if contextMenu:
         liz.addContextMenuItems(contextMenu)
 
-    xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = isFolder)
-
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
 
 def GetDownloadPath():
@@ -452,38 +463,44 @@ except:
 if mode == BOOK:
     Book(url, name, image, extra)
 
+
 elif mode == PLAYCHAPTER:
     clearResume()
     PlayChapter(url, name, extra, image)
 
+
 elif mode == GENRE:
     Genre(url, page)
+
 
 elif mode == MORE:
     Genre(url, page)
 
+
 elif mode == GENREMENU:
     GenreMenu(url)
 
+
 elif mode == SEARCH:
     Search(page, keyword)
+
 
 elif mode == PLAYALL:
     items = menu.split('||')
     clearResume()
     PlayAll(items[0], items[1], items[2], items[3])
 
+
 elif mode == RESUME:
     PlayChapter(url, name, extra, image)
+    xbmc.executebuiltin('Container.Refresh')
 
 elif mode == RESUMEALL:
     PlayAll(url, name, extra, image)
+
 
 else:
     Main()
 
         
-try:
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-except:
-    pass
+xbmcplugin.endOfDirectory(int(sys.argv[1]))
