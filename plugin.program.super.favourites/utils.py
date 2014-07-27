@@ -38,7 +38,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.13'
+VERSION = '1.0.14'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -205,12 +205,16 @@ def VerifyKeymapMenu():
     dst    = os.path.join(keymap, KEYMAP_MENU)
 
     try:
-        os.makedirs(keymap)
+        if not os.path.isdir(keymap):
+            os.makedirs(keymap)
+    except Exception, e:
+        print 'Making folders : %s' % str(e)
+
+    try:
         import shutil
         shutil.copy(src, dst)
     except Exception, e:
-        print str(e)
-        pass
+        print 'Copying file : %s' % str(e)
 
     return True
 
