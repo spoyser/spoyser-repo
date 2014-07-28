@@ -99,6 +99,8 @@ def Clean(text):
     text = text.replace('<b>',     '')
     text = text.replace('</b>',    '')
     text = text.replace('&amp;',   '&')
+    text = text.replace('&nbsp;',  ' ')
+
     return text
 
 
@@ -239,18 +241,27 @@ def Search(page, keyword):
     start    = (page-1) * nResults
 
     url  = 'http://www.google.co.uk/search?q=site:http://www.supercartoons.net/cartoon+%s&start=%d&num=%d' % (keyword, start, nResults)
+
     html = GetHTML(url)
     next = 'Next page' in html
 
-    html = html.split('class="video_result">')
+    ignore = True
+
+    html = html.split('http://www.supercartoons.net/cartoon/')
     for item in html:
-        item  = re.compile('q=(.+?).html.+?">(.+?)</a>').findall(item)
+        if ignore:
+            ignore = False
+            continue
+
+        item  = re.compile('(.+?).html.+?>(.+?)</a>.+?<div>(.+?)<div/>').findall(item)
+
         if len(item) > 0:
-            link  = item[0][0] + '.html'
+            link  = 'http://www.supercartoons.net/cartoon/' + item[0][0] + '.html'
             title = GetSearchTitle(item[0][1])
             image = GetSearchImage(link)
+            desc  = Clean(item[0][2])
 
-            AddCartoon(title, image, link, '')
+            AddCartoon(title, image, link, desc)
 
     if next:
         AddMore(SEARCH, '', page+1, keyword)
@@ -456,7 +467,7 @@ def Download(title, url):
     
     try:
         import download
-        download.download(url, file)
+        download.download(url, file, TITLE, URL)
     except Exception, e:
         print TITLE + ' Error during downloading of ' + url
         print str(e)
@@ -600,7 +611,7 @@ else:
 
         
 try:
-    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 except:
     pass

@@ -1,3 +1,7 @@
+v1.0.7:
+  - fixed Search caused due to changes at website
+  - improved download reliability
+
 v1.0.6:
   - fixed due to changes at website
 
