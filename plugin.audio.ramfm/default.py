@@ -48,7 +48,7 @@ _REQUEST     = 200
 _LETTER      = 300
 _TRACK       = 400
 _RECORD      = 500
-_TALKSHOW    = 600
+_SLIDESHOW   = 600
 _PODCASTS    = 700
 _PLAYPODCAST = 800
 _NOWPLAYING  = 900
@@ -158,11 +158,9 @@ def StartNowPlaying():
         del app
 
 
-def StartTalkShow():
-    #path = os.path.join(ADDON.getAddonInfo('path'), 'talkshow.py')
-    #xbmc.executebuiltin('XBMC.RunScript(%s)' % path)
-    import talkshow
-    talkshow.Start()
+def StartSlideShow():
+    import slideshow
+    slideshow.Start()
 
 
 def Play():
@@ -181,7 +179,7 @@ def Play():
 
     if slideshow:
         xbmc.sleep(1000)
-        StartTalkShow()
+        StartSlideShow()
 
 
 def PlayPodcast(name, link):
@@ -270,15 +268,18 @@ def RequestLetter(letter):
 
     recent   = GetRecent(response.split('Recently Requested...')[0])
     response = response.split('Search Artist by Last Name')[1]
-    hide     = ADDON.getSetting('HIDE')=='true'
+    hide     = ADDON.getSetting('HIDE').lower() == 'true'
 
     response = response.split('<img src="http://ramfm.org/artistpic/')
 
     for item in response:
-        if 'javascript' in item:
-            addAvailable(item, recent)            
-        elif not hide:
-            addUnavailable(item)
+        try:            
+            if 'javascript' in item:
+                addAvailable(item, recent, hide)            
+            elif not hide:
+                addUnavailable(item)
+        except Exception, e:
+            print str(e)
 
 
 def addUnavailable(item):
@@ -305,7 +306,7 @@ def addUnavailable(item):
         xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = False)
         
 
-def addAvailable(item, recent):
+def addAvailable(item, recent, hide):
     match = re.compile('(.+?)" width.+?&nbsp;&nbsp;(.+?)&nbsp;-&nbsp;(.+?)<br.+?javascript:request\((.+?)\)"').findall(item)
 
     for item in match:
@@ -367,7 +368,7 @@ def Main():
     addDir(GETTEXT(30037), _RECORD,      False)
     addDir(GETTEXT(30031), _REQUEST,     True)
     addDir(GETTEXT(30038), _NOWPLAYING,  False)
-    addDir(GETTEXT(30039), _TALKSHOW,    False)
+    addDir(GETTEXT(30039), _SLIDESHOW,   False)
     addDir(GETTEXT(30040), _PODCASTS,    True)
 
     play = ADDON.getSetting('PLAY')=='true'
@@ -445,9 +446,9 @@ elif mode == _LETTER:
     except:
         pass
 
-elif mode == _TALKSHOW:
-    #if IsPlaying(GETTEXT(30041)):
-    StartTalkShow()
+elif mode == _SLIDESHOW:
+    if IsPlaying(GETTEXT(30041)):
+        StartSlideShow()
 
 
 elif mode == _TRACK:    
