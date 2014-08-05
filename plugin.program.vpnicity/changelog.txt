@@ -1,0 +1,43 @@
+v1.1.0:
+   - First public release
+
+v1.0.0b8:
+   - Added autoselect back
+
+v1.0.0b7:
+   - Added menu.py
+
+v1.0.0b6:
+  - Tidied up MacOS install
+  - Small Android fix
+
+v1.0.0b5:
+  - Fix vpn.py to work better on Android.
+
+v1.0.0b4:
+  - Further Android test
+
+v1.0.0b3:
+  - Changed name to VPNicity
+  - Moved MacOS installer to install.py
+  
+v1.0.0b2:
+  - Added ability to auto select city (based on lowest capacity)
+  - Small bit of code tidy up
+  - Can confirm that user details directly in file DO NOT work under windows
+  - Android - Connect OpenVPN through custom 'control' app.
+  - Android - Disconnect VPN in KillVPN()
+  - Android - Move platform() into utils.py
+
+v1.0.0b1:
+  - Changed versioning to beta
+  - Added icon/fanart
+  - Made certificate inline
+  - Merged code into latest version
+  - Added test Android support
+  - Requires de.blinkt.openvpn-1.apk
+  - Added MacOS support
+  - Recompiled OpenVPN (2.3.4) for MacOS with LZO Library + '--enable-password-save'
+
+v1.0.0:
+  - initial release
