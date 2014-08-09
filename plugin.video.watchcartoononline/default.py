@@ -44,6 +44,7 @@ ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Watch Cartoon Online'
 VERSION = '1.0.10'
 URL     = 'http://www.watchcartoononline.com/'
+#URL     = 'http://www.animetoon.tv/'
 
 
 SECTION  = 100

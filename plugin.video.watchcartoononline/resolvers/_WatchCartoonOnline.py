@@ -60,10 +60,10 @@ def DoResolve(url):
 
         theNet.set_user_agent('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
 
-        html  = theNet.http_POST(url, data).content
+        html  = theNet.http_POST(url, data).content.replace('\n', '').replace('\t', '')
 
         try:
-            match = re.compile('file: \'(.+)\'}').search(html).group(1).split('file: ', 1)[-1]
+            match = re.compile('file: "(.+)",.+?image').search(html).group(1)             
         except Exception, e:
             match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
 
