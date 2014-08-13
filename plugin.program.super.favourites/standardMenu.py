@@ -1,5 +1,5 @@
-
-#       Copyright (C) 2013-2014
+#
+#       Copyright (C) 2014
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -18,20 +18,7 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-import utils
-import favourite
-import os
 import xbmc
 
-ROOT     = utils.ROOT
-FILENAME = utils.FILENAME
-
-def getDefaultSearch():
-    file  = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
-    faves = favourite.getFavourites(file)
-
-    if len(faves) > 0:
-        return faves[0]
-    
-    return None
-
+xbmc.sleep(120)
+xbmc.executebuiltin('Action(ContextMenu)')

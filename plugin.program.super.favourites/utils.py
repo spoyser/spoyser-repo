@@ -25,6 +25,7 @@ import xbmcgui
 import os
 import re
 
+
 def GetXBMCVersion():
     #xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }')
 
@@ -33,12 +34,13 @@ def GetXBMCVersion():
     return int(version[0]), int(version[1]) #major, minor
 
 
+
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.14'
+VERSION = '1.0.15'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -55,6 +57,15 @@ GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
+
+
+def log(text):
+    try:
+        output = '%s V%s : %s' % (TITLE, VERSION, text)
+        #print(output)
+        xbmc.log(output, xbmc.LOGDEBUG)
+    except:
+        pass
 
 
 def DialogOK(line1, line2='', line3=''):
@@ -125,8 +136,11 @@ def verifySuperSearch(replace=False):
     try:    os.makedirs(os.path.join(xbmc.translatePath(ROOT), 'Search'))
     except: pass
 
-    import shutil
-    shutil.copyfile(src, dst)
+    try:
+        import shutil
+        shutil.copyfile(src, dst)
+    except:
+        pass
 
 
 def UpdateKeymaps():
@@ -193,7 +207,7 @@ def VerifyKeymapHot():
     return True
 
 
-def VerifyKeymapMenu():
+def VerifyKeymapMenu(): 
     context = ADDON.getSetting('CONTEXT')  == 'true'
 
     if not context:
@@ -207,14 +221,14 @@ def VerifyKeymapMenu():
     try:
         if not os.path.isdir(keymap):
             os.makedirs(keymap)
-    except Exception, e:
-        print 'Making folders : %s' % str(e)
+    except:
+        pass
 
     try:
         import shutil
         shutil.copy(src, dst)
-    except Exception, e:
-        print 'Copying file : %s' % str(e)
+    except:
+        pass
 
     return True
 
@@ -222,23 +236,25 @@ def VerifyKeymapMenu():
 def verifyPlugin(cmd):
     try:
         plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
-        xbmcaddon.Addon(plugin)
-        return True
+
+        return xbmc.getCondVisibility('System.HasAddon(%s)' % plugin) == 1
+
     except:
         pass
 
-    return False
+    return True
 
 
 def verifyScript(cmd):
     try:
         script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
-        xbmcaddon.Addon(script)
-        return True
+
+        return xbmc.getCondVisibility('System.HasAddon(%s)' % script) == 1
+
     except:
         pass
 
-    return False
+    return True
 
 
 def GetFolder(title):

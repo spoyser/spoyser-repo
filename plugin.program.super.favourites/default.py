@@ -106,6 +106,7 @@ SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 METARECOMMEND  = ADDON.getSetting('METARECOMMEND')  == 'true'
 INHERIT        = ADDON.getSetting('INHERIT')        == 'true'
+CONTENTMODE    = False
 # ---------------------------------------------------------- #
 
 
@@ -114,15 +115,6 @@ nItem = 0
 
 global separator
 separator = False
-
-
-def log(text):
-    try:
-        output = '%s V%s : %s' % (TITLE, VERSION, text)
-        print('%s V%s : %s'    % (TITLE, VERSION, text))
-        xbmc.log('%s V%s : %s' % (TITLE, VERSION, text), xbmc.LOGDEBUG)
-    except:
-        pass
 
 
 def clean(text):
@@ -196,10 +188,11 @@ def addGlobalMenuItem(menu, item):
         addon = addon.replace('plugin://', '')
         addon = addon.replace('/', '')
         addon = addon.split('?', 1)[0]
-
-        theAddon = xbmcaddon.Addon(addon)
         
-        menu.append((GETTEXT(30094) % theAddon.getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
+        if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
+            return
+        
+        menu.append((GETTEXT(30094) % xbmcaddon.Addon(addon).getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
     except:
         pass
 
@@ -350,6 +343,9 @@ def parseFile(file):
         label = fave[0]
         thumb = fave[1]
         cmd   = fave[2]
+
+        try:    fanart = urllib.unquote_plus(re.compile('sf_fanart=(.+?)_').search(cmd).group(1))
+        except: fanart = ''
       
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -358,9 +354,9 @@ def parseFile(file):
             menu.append((GETTEXT(30084), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYLIST, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
         if 'playmedia(' in cmd.lower():
-            addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu)
+            addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu, fanart=fanart)
         else:
-            addDir(label, _ACTIVATEWINDOW, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu)
+            addDir(label, _ACTIVATEWINDOW, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
 
     separator = len(faves) > 0
 
@@ -378,7 +374,7 @@ def getFolderThumb(path, isXBMC=False):
     if not INHERIT:
         return ICON
 
-    faves = favourite.getFavourites(os.path.join(path, FILENAME))   
+    faves = favourite.getFavourites(os.path.join(path, FILENAME), 1)   
 
     if len(faves) < 1:
         return ICON
@@ -1131,7 +1127,7 @@ def playCommand(cmd):
 
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
-            return xbmc.executebuiltin(cmd)
+             return xbmc.executebuiltin(cmd)
 
         if isPlaylist(cmd):
             if PLAY_PLAYLISTS:
@@ -1155,6 +1151,12 @@ def playPlaylist(cmd):
         playlist = playlist[-1][:-1]
         cmd      = 'PlayMedia(%s)' % playlist
 
+    xbmc.executebuiltin(cmd)
+
+
+def activateWindowCommandReturn(cmd):
+    if not cmd.lower().endswith(',return)'):
+        cmd = cmd[:-1] + ',return)'
     xbmc.executebuiltin(cmd)
 
 
@@ -1222,13 +1224,11 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         liz.setInfo(type='Video', infoLabels=infolabels)       
 
     if SHOWSS_FANART:
-        liz.setProperty('Fanart_Image', fanart)        
+        liz.setProperty('Fanart_Image', fanart)     
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
     #or in Python via: xbmc.getInfoLabel('ListItem.Property(Super_Favourites_Folder)')
     liz.setProperty('Super_Favourites_Folder', theFolder)
-
-    #Skin.SetString(string[,value])
 
     if not menu:
         menu = []   
@@ -1249,14 +1249,15 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         
     global nItem
     nItem += 1
+
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder, totalItems=totalItems)
 
    
-def get_params():
+def get_params(p):
     param=[]
-    paramstring=sys.argv[2]
+    paramstring=p
     if len(paramstring)>=2:
-        params=sys.argv[2]
+        params=p
         cleanedparams=params.replace('?','')
         if (params[len(params)-1]=='/'):
            params=params[0:len(params)-2]
@@ -1270,7 +1271,7 @@ def get_params():
     return param
 
 
-params = get_params()
+params = get_params(sys.argv[2])
 
 theFolder = ''
 thepath   = ''
@@ -1296,25 +1297,50 @@ except: label = ''
 try:    folder = urllib.unquote_plus(params['folder'])
 except: folder = ''
 
+try:    content = urllib.unquote_plus(params['content'])
+except: content = ''
 
 
 doRefresh   = False
 doEnd       = True
 cacheToDisc = False
 defCmd      = None
-content     = ''
-
-
-log('Started')
-log(sys.argv[2])
-log(sys.argv)
-log('Mode = %d' % mode)
+contentType = ''
 
 
 
-if len(folder) > 0:
+if len(content) > 0:   
+    folder = content
+    try:
+        if folder.lower().startswith('customsuperfavourite'):  
+            path = xbmc.getInfoLabel('Skin.String(%s.Path)' % folder)
+
+            import re
+            plugin = re.compile('.+?"(.+?)"').search(path).group(1)
+
+            prams = get_params(plugin)
+
+            try:    folder = urllib.unquote_plus(prams['folder'])
+            except: folder = ''
+    except Exception, e:
+        pass
+
+    SHOWNEW     = False
+    SHOWXBMC    = False
+    SHOWSEP     = False
+    CONTENTMODE = True
+
+
+if len(folder) > 0:   
     mode = _FOLDER
     path = os.path.join(PROFILE, folder)
+
+
+    
+utils.log(sys.argv[2])
+utils.log(sys.argv)
+utils.log('Mode = %d' % mode)
+
 
 
 if mode == _PLAYMEDIA:
@@ -1461,7 +1487,7 @@ elif mode == _SUPERSEARCH or mode == _SUPERSEARCHDEF:
     xbmc.sleep(250)
 
     if len(imdb) > 0:
-        content = 'movies'
+        contentType = 'movies'
 
 elif mode == _EDITTERM:
     keyword = urllib.unquote_plus(params['keyword'])
@@ -1485,7 +1511,7 @@ elif mode == _RECOMMEND_KEY:
 
     cacheToDisc = True
     doEnd       = True
-    content     = 'movies'
+    contentType = 'movies'
 
     recommendKey(keyword)
 
@@ -1503,7 +1529,7 @@ elif mode == _RECOMMEND_IMDB:
 
         cacheToDisc = True
         doEnd       = True
-        content     = 'movies'
+        contentType = 'movies'
 
         recommendIMDB(imdb, keyword)
 
@@ -1532,11 +1558,12 @@ if nItem < 1:
 if doRefresh:
     refresh()
 
-
 if doEnd:
-    if len(content) > 0:
-        xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    if len(contentType) > 0:
+        xbmcplugin.setContent(int(sys.argv[1]), contentType)
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
+
+
 
 if mode == _SUPERSEARCHDEF:
     import search

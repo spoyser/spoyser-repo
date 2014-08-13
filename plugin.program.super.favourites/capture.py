@@ -36,6 +36,7 @@ _PLAYTUBE     = 700
 
 def getDefaultSearch():
     import search
+
     fave = search.getDefaultSearch()
     if fave:
         return fave[0]
@@ -73,16 +74,24 @@ def clean(name):
     return name
 
 
-def doStandard():
-    window   = xbmcgui.getCurrentWindowId()
+def doStandard(useScript=True):
+    window = xbmcgui.getCurrentWindowId()
 
     if window == 12005: #video playing
+        xbmc.executebuiltin('Dialog.Close(all, true)')
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
         return
 
-    xbmc.executebuiltin('Dialog.Close(all, true)')
-    xbmc.executebuiltin('Action(ContextMenu)')    
-
+    if useScript:
+        #open menu via script to prevent animation locking up (due to bug in XBMC)
+        import utils    
+        path   = utils.HOME
+        script = os.path.join(path, 'standardMenu.py')
+        cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('menu', script, 0)
+        xbmc.executebuiltin(cmd)  
+    else:
+        xbmc.executebuiltin('Action(ContextMenu)')
+    
 
 def copyFave(name, thumb, cmd):
     import favourite
@@ -126,20 +135,27 @@ def doMenu():
     try:
         import utils
     except:
-        doStandard()
+        doStandard(useScript=False)
         return    
+
+    active = [1, 2, 25, 40, 500, 501, 502] #28 is video Playlist
+    window = xbmcgui.getCurrentWindowId()
+    utils.log('Window     : %d' % window)  
+    if window-10000 not in active:
+        doStandard(useScript=False)
+        return
 
     import contextmenu
 
     # to prevent master profile setting being used in other profiles
     if utils.ADDON.getSetting('CONTEXT') != 'true':
-        doStandard()
+        doStandard(useScript=False)
         return
 
     folder = xbmc.getInfoLabel('Container.FolderPath')
     #ignore if in Super Favourites
     if utils.ADDONID in folder:
-        doStandard()
+        doStandard(useScript=False)
         return
         
     choice   = 0
@@ -147,8 +163,7 @@ def doMenu():
     path     = xbmc.getInfoLabel('ListItem.FolderPath')
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
     name     = xbmc.getInfoLabel('ListItem.Label')
-    thumb    = xbmc.getInfoLabel('ListItem.Thumb')
-    window   = xbmcgui.getCurrentWindowId()
+    thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
@@ -166,33 +181,32 @@ def doMenu():
     #elif file:
     #    isStream = file.startswith('http://')
 
-    #print '**** Context Menu Information ****'
-    #print 'Label      : %s' % label
-    #print 'Folder     : %s' % folder 
-    #print 'Path       : %s' % path    
-    #print 'Filename   : %s' % filename
-    #print 'Name       : %s' % name    
-    #print 'Thumb      : %s' % thumb
-    #print 'Fanart     : %s' % fanart   
-    #print 'Window     : %d' % window  
-    #print 'IsPlayable : %s' % playable
-    #print 'IsFolder   : %s' % isFolder
-    #print 'File       : %s' % file
-    #print 'IsStream   : %s' % isStream
+    utils.log('**** Context Menu Information ****')
+    utils.log('Label      : %s' % label)
+    utils.log('Folder     : %s' % folder) 
+    utils.log('Path       : %s' % path) 
+    utils.log('Filename   : %s' % filename)
+    utils.log('Name       : %s' % name)    
+    utils.log('Thumb      : %s' % thumb)
+    utils.log('Fanart     : %s' % fanart)   
+    utils.log('Window     : %d' % window)  
+    utils.log('IsPlayable : %s' % playable)
+    utils.log('IsFolder   : %s' % isFolder)
+    utils.log('File       : %s' % file)
+    utils.log('IsStream   : %s' % isStream)
 
     menu = []
 
-    if (len(menu) == 0) and window == 12005: #video playing
-        if isStream:
-            menu.append(('Download  %s' % label, _DOWNLOAD))
-            menu.append(('Show Playlist',        _PLAYLIST))
-        else:
-            return doStandard()
+    #if (len(menu) == 0) and window == 12005: #video playing
+        #if isStream:
+        #    menu.append(('Download  %s' % label, _DOWNLOAD))
+        #    menu.append(('Show Playlist',        _PLAYLIST))
+        #else:
+        #    return doStandard()
         #cancel download feature for now
-        return doStandard()
+        #return doStandard()
     
-    if (len(menu) == 0) and len(path) > 0:    
-
+    if (len(menu) == 0) and len(path) > 0:
         ytID = ''
 
         if path.startswith('plugin://plugin.video.youtube') and 'videoid=' in path:
@@ -219,12 +233,19 @@ def doMenu():
     #    menu.append((utils.GETTEXT(30053), _LAUNCH_SF))
     #    menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
 
+
     if len(menu) == 0:
         doStandard()
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
     choice = contextmenu.showMenu(utils.ADDONID, menu)
+
+    if choice == _STD_SETTINGS:
+        doStandard()
+        return
+
+    xbmc.executebuiltin('Dialog.Close(all, true)')
 
     if choice == _PLAYLIST:
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
@@ -241,25 +262,32 @@ def doMenu():
             utils.DialogOK(utils.GETTEXT(30105))
     
     if choice == _STD_SETTINGS:
-        xbmc.executebuiltin('Dialog.Close(all, true)')
-        xbmc.executebuiltin('Action(ContextMenu)')    
+        doStandard()
 
     if choice == _SF_SETTINGS:
         utils.ADDON.openSettings()
 
     if choice == _ADDTOFAVES:
         if isFolder:
-            cmd =  'ActivateWindow(%d,"%s")' % (window, path)
+            cmd =  'ActivateWindow(%d,"%s' % (window, path)
         elif path.lower().startswith('script'):
             if path[-1] == '/':
                 path = path[:-1]
-            cmd = 'RunScript("%s")' % path.replace('script://', '')
+            cmd = 'RunScript("%s' % path.replace('script://', '')
         elif path.lower().startswith('videodb') and len(filename) > 0:
-            cmd = 'PlayMedia("%s")' % filename
+            cmd = 'PlayMedia("%s' % filename
         #elif path.lower().startswith('musicdb') and len(filename) > 0:
         #    cmd = 'PlayMedia("%s")' % filename
         else:
-            cmd = 'PlayMedia("%s&sf_win_id=%d_")' % (path, window)
+            cmd = 'PlayMedia("%s&sf_win_id=%d_' % (path, window)
+
+        import urllib 
+        if '?' in cmd:       
+            cmd += '&'
+        else:
+            cmd += '?'
+
+        cmd += 'sf_fanart=%s_")' % urllib.quote_plus(fanart)
 
         copyFave(name, thumb, cmd)
 
@@ -276,10 +304,13 @@ def doMenu():
         _SUPERSEARCH    =  0     #declared as  0 in default.py
         _SUPERSEARCHDEF = 10     #declared as 10 in default.py
 
-        mode  = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
-        winID = 10025 #video
+        mode    = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
+        videoID = 10025 #video
 
-        import urllib
+        if window == 10000: #don't activate on home screen, push to video
+            window = videoID
+
+        import urllib        
 
         cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, utils.ADDONID, mode, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
         activateCommand(cmd)
@@ -289,6 +320,6 @@ if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') != 'true':
     try:
         doMenu()
     except Exception, e:
-        print str(e)
+        print 'Exception in capture.py %s' % str(e)
 
     xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

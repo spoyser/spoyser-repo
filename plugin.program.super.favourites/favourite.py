@@ -47,7 +47,7 @@ def unescape(text):
     return text
 
 
-def getFavourites(file):
+def getFavourites(file, limit=10000):
     xml  = '<favourites></favourites>'
     if os.path.exists(file):  
         fav = open(file , 'r')
@@ -57,6 +57,7 @@ def getFavourites(file):
     items = []
 
     faves = re.compile('<favourite(.+?)</favourite>').findall(xml)
+
     for fave in faves:
         fave = fave.replace('&quot;', '&_quot_;')
         fave = fave.replace('\'', '"')
@@ -75,9 +76,10 @@ def getFavourites(file):
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 
-
         if isValid(cmd):
             items.append([name, thumb, cmd])
+            if len(items) > limit:
+                return items
 
     return items
 
@@ -109,11 +111,13 @@ def isValid(cmd):
     if len(cmd) == 0:
         return False
 
-    if 'plugin' in cmd and not utils.verifyPlugin(cmd):
-        return False
+    if 'plugin' in cmd:
+        if not utils.verifyPlugin(cmd):
+            return False
 
-    if 'RunScript' in cmd and not utils.verifyScript(cmd):
-        return False
+    if 'RunScript' in cmd:
+        if not utils.verifyScript(cmd):
+            return False
         
     return True
 

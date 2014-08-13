@@ -24,7 +24,6 @@ utils.CheckVersion()
 import xbmc
 import os
 
-
 class MyMonitor(xbmc.Monitor):
     def __init__(self):
         xbmc.Monitor.__init__(self)
