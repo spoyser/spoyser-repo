@@ -19,10 +19,12 @@
 #
 
 import utils
-utils.CheckVersion()
-
 import xbmc
 import os
+
+
+utils.VerifyKeymaps()
+
 
 class MyMonitor(xbmc.Monitor):
     def __init__(self):

@@ -1,6 +1,7 @@
 v1.0.16
    - programmble hotkey to launch Super Favourites
    - thumbails and fanart path now use Kodi's "special protocol" - should simplify copying to other setups
+   - Super Folders sorted alphabetically
    - added chooser.py script to allow skinners to populate skin settings with Super Favourites shortcuts - see readme
    - improved fanart handling
 
