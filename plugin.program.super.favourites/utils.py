@@ -40,7 +40,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.15'
+VERSION = '1.0.16'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -62,7 +62,7 @@ FOLDERCFG    = 'folder.cfg'
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, text)
-        #print(output)
+        print(output)
         xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
@@ -123,6 +123,9 @@ def CheckVersion():
             try:    os.makedirs(folder) 
             except: pass
 
+    showChangelog()
+
+
 
 def verifySuperSearch(replace=False):
     dst = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
@@ -144,7 +147,9 @@ def verifySuperSearch(replace=False):
 
 
 def UpdateKeymaps():
-    DeleteKeymap(KEYMAP_HOT)
+    if ADDON.getSetting('HOTKEY') != GETTEXT(30111): #i.e. not programmable
+        DeleteKeymap(KEYMAP_HOT)
+
     DeleteKeymap(KEYMAP_MENU)
     VerifyKeymaps()
 
@@ -176,20 +181,33 @@ def VerifyKeymaps():
 
 
 def VerifyKeymapHot():
+    if ADDON.getSetting('HOTKEY') == GETTEXT(30111): #i.e. programmable
+        return False
+
     dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
 
     if os.path.exists(dest):
         return False
 
-    key = ADDON.getSetting('HOTKEY').lower()
+    key = ADDON.getSetting('HOTKEY')
 
-    includeKey = key in ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'g']
+    valid = []
+    for i in range(30028, 30040):
+        valid.append(GETTEXT(i))
+    valid.append(GETTEXT(30058))
+
+    includeKey = key in valid
 
     if not includeKey:
         DeleteKeymap(KEYMAP_HOT)
         return True
 
-    cmd = '<keymap><Global><keyboard><%s>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/hot.py)</%s></keyboard></Global></keymap>'  % (key, key)
+    return WriteKeymap(key.lower(), key.lower())
+
+
+def WriteKeymap(start, end):
+    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
+    cmd  = '<keymap><Global><keyboard><%s>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/hot.py)</%s></keyboard></Global></keymap>'  % (start, end)
     
     f = open(dest, mode='w')
     f.write(cmd)
@@ -248,6 +266,7 @@ def verifyPlugin(cmd):
 def verifyScript(cmd):
     try:
         script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
+        script = script.split('/', 1)[0]
 
         return xbmc.getCondVisibility('System.HasAddon(%s)' % script) == 1
 
@@ -284,6 +303,36 @@ def showBusy():
         busy = None
 
     return busy
+
+
+def showText(heading, text):
+    id = 10147
+
+    xbmc.executebuiltin('ActivateWindow(%d)' % id)
+
+    win = xbmcgui.Window(id)
+
+    xbmc.sleep(100)
+
+    win.getControl(1).setLabel(heading)
+    win.getControl(5).setText(text)
+
+
+def showChangelog(addonID=None):
+    try:
+        if addonID:
+            ADDON = xbmcaddon.Addon(addonID)
+        else: 
+            ADDON = xbmcaddon.Addon()
+
+        f     = open(ADDON.getAddonInfo('changelog'))
+        text  = f.read()
+        title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
+
+        showText(title, text)
+
+    except:
+        pass
 
 
 if __name__ == '__main__':

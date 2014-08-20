@@ -104,12 +104,12 @@ def copyFave(name, thumb, cmd):
         return False
   
     file  = os.path.join(folder, utils.FILENAME)
-    faves = favourite.getFavourites(file)
+    #faves = favourite.getFavourites(file)
 
     #if it is already in there don't add again
-    for fave in faves:
-        if favourite.equals(fave[2], cmd):            
-            return False
+    #for fave in faves:
+    #    if favourite.equals(fave[2], cmd):            
+    #        return False
 
     fave = [name, thumb, cmd] 
   
@@ -145,7 +145,7 @@ def doMenu():
         doStandard(useScript=False)
         return
 
-    import contextmenu
+    import menus
 
     # to prevent master profile setting being used in other profiles
     if utils.ADDON.getSetting('CONTEXT') != 'true':
@@ -180,6 +180,10 @@ def doMenu():
     #    isStream = xbmc.Player().isInternetStream()
     #elif file:
     #    isStream = file.startswith('http://')
+
+    if isFolder:
+        path     = path.replace('\\', '\\\\')
+        filename = filename.replace('\\', '\\\\')
 
     utils.log('**** Context Menu Information ****')
     utils.log('Label      : %s' % label)
@@ -239,7 +243,7 @@ def doMenu():
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
-    choice = contextmenu.showMenu(utils.ADDONID, menu)
+    choice = menus.showMenu(utils.ADDONID, menu)
 
     if choice == _STD_SETTINGS:
         doStandard()
@@ -281,13 +285,8 @@ def doMenu():
         else:
             cmd = 'PlayMedia("%s&sf_win_id=%d_' % (path, window)
 
-        import urllib 
-        if '?' in cmd:       
-            cmd += '&'
-        else:
-            cmd += '?'
-
-        cmd += 'sf_fanart=%s_")' % urllib.quote_plus(fanart)
+        import favourite
+        cmd = favourite.addFanart(cmd, fanart)
 
         copyFave(name, thumb, cmd)
 
@@ -320,6 +319,7 @@ if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') != 'true':
     try:
         doMenu()
     except Exception, e:
-        print 'Exception in capture.py %s' % str(e)
+        import utils
+        utils.log('Exception in capture.py %s' % str(e))
 
     xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

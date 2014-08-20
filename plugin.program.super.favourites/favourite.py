@@ -26,6 +26,10 @@ import HTMLParser
 import utils
 
 
+HOMESPECIAL = 'special://home/'
+HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
+
+
 html_escape_table = {
     "&": "&amp;",
     '"': "&quot;",
@@ -91,9 +95,14 @@ def writeFavourites(file, faves):
 
     for fave in faves:
         try:
-            name  = 'name="%s" '  % escape(fave[0])
-            thumb = 'thumb="%s">' % escape(fave[1])
+            name  = escape(fave[0])
+            thumb = escape(fave[1])
             cmd   = escape(fave[2])
+
+            thumb = convertToHome(thumb)
+
+            name  = 'name="%s" '  % name
+            thumb = 'thumb="%s">' % thumb
 
             f.write('\n\t<favourite ')
             f.write(name)
@@ -105,6 +114,11 @@ def writeFavourites(file, faves):
 
     f.write('\n</favourites>')            
     f.close()
+
+    import xbmcgui
+    try:    count = int(xbmcgui.Window(10000).getProperty('Super_Favourites_Count'))
+    except: count = 0    
+    xbmcgui.Window(10000).setProperty('Super_Favourites_Count', str(count+1))
 
 
 def isValid(cmd):
@@ -131,25 +145,22 @@ def updateFave(file, update):
 
 
 def findFave(file, cmd):
+    cmd   = removeFanart(cmd)
     faves = getFavourites(file)
-    index = -1
-    for fave in faves:
-        index += 1
-        if fave[2] == cmd:            
-            return fave, index, len(faves)
+    for idx, fave in enumerate(faves):
+        if equals(fave[2], cmd):
+            return fave, idx, len(faves)
 
     search = os.path.join(xbmc.translatePath(utils.ROOT), 'Search', utils.FILENAME).lower()
 
     if file.lower() != search:
         return None, -1, 0
 
-    index = -1
-    for fave in faves:
-        index += 1
+    for idx, fave in enumerate(faves):
         if '[%SF%]' in fave[2]:
             test = fave[2].split('[%SF%]', 1)
             if cmd.startswith(test[0]) and cmd.endswith(test[1]):
-                return fave, index, len(faves)
+                return fave, idx, len(faves)
 
     return None, -1, 0
 
@@ -175,27 +186,36 @@ def moveFave(src, dst, fave):
     return removeFave(src, fave[2])
 
 
-def copyFave(file, copy):
-    faves = getFavourites(file)
+def copyFave(file, original):
+    faves   = getFavourites(file)
+    updated = False
 
-    #if it is already in there don't add again
-    for fave in faves:
-        if equals(fave[2], copy[2]):
-            return False
+    copy = list(original)
+    copy = removeFanart(copy[2])
 
-    faves.append(copy)
+    #if it is already in then just update it
+    for idx, fave in enumerate(faves):
+        if equals(removeFanart(fave[2]), copy):
+            updated    = True
+            faves[idx] = original
+            break
+
+    if not updated:
+        faves.append(original)
+
     writeFavourites(file, faves)
     return True
 
 
 def removeFave(file, cmd):
+    cmd = removeFanart(cmd)
     copy = []
     faves = getFavourites(file)
     for fave in faves:
-        if not equals(fave[2], cmd):
+        if not equals(removeFanart(fave[2]), cmd):
             copy.append(fave)
 
-    if len(copy) == len(faves):
+    if len(copy) == len(faves):       
         return False
 
     writeFavourites(file, copy)
@@ -235,6 +255,15 @@ def equals(fave, cmd):
     if fave == cmd:
         return True
 
+    if 'sf_fanart' in fave:
+        fave = removeFanart(fave)
+
+    if 'sf_fanart' in cmd:
+        cmd = removeFanart(cmd)
+
+    if fave == cmd:
+        return True
+
     if '[%SF%]' not in fave:
         return False
 
@@ -243,3 +272,52 @@ def equals(fave, cmd):
         return True
 
     return False
+
+
+def getFanart(cmd):
+    import urllib 
+    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
+    except: pass
+
+    cmd = urllib.unquote_plus(cmd)
+    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
+    except: pass
+
+    return ''       
+
+
+def addFanart(cmd, fanart):
+    import urllib 
+
+    cmd = removeFanart(cmd)
+
+    if cmd.endswith('")'):
+        cmd = cmd.rsplit('")', 1)[0]
+
+    if '?' in cmd:       
+        cmd += '&'
+    else:
+        cmd += '?'
+
+    cmd += 'sf_fanart=%s_")' % urllib.quote_plus(convertToHome(fanart))
+    return cmd
+
+
+def removeFanart(cmd):
+    if 'sf_fanart=' not in cmd:
+        return cmd
+
+    import re
+
+    cmd = cmd.replace('?sf_fanart=', '&sf_fanart=')
+    cmd = cmd.replace('&sf_fanart=', '&sf_fanart=X') #in case no fanart
+    cmd = re.sub('&sf_fanart=(.+?)_"\)', '")', cmd)
+
+    return cmd
+
+
+def convertToHome(image):
+    if image.startswith(HOMEFULL):
+        image = image.replace(HOMEFULL, HOMESPECIAL)
+
+    return image

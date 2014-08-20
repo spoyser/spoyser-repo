@@ -58,6 +58,8 @@ FOLDERCFG     = utils.FOLDERCFG
 
 
 # -----Addon Modes ----- #
+_IGNORE           = -10
+_MAIN             = -2
 _SUPERSEARCH      = 0
 _SUPERSEARCHDEF   = 10
 _EXTSEARCH        = 25 #used to trigger new Super Search from outside of addon
@@ -100,7 +102,7 @@ SHOWNEW        = ADDON.getSetting('SHOWNEW')        == 'true'
 SHOWXBMC       = ADDON.getSetting('SHOWXBMC')       == 'true'
 SHOWSEP        = ADDON.getSetting('SHOWSEP')        == 'true'
 SHOWSS         = ADDON.getSetting('SHOWSS')         == 'true'
-SHOWSS_FANART  = ADDON.getSetting('SHOWSS_FANART')  == 'true'
+SHOW_FANART    = ADDON.getSetting('SHOW_FANART')    == 'true'
 SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
 SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
@@ -340,12 +342,10 @@ def parseFile(file):
     text = GETTEXT(30099) if mode == _XBMC else GETTEXT(30068)
 
     for fave in faves:
-        label = fave[0]
-        thumb = fave[1]
-        cmd   = fave[2]
-
-        try:    fanart = urllib.unquote_plus(re.compile('sf_fanart=(.+?)_').search(cmd).group(1))
-        except: fanart = ''
+        label  = fave[0]
+        thumb  = fave[1]
+        cmd    = fave[2]
+        fanart = favourite.getFanart(cmd)
       
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -362,49 +362,60 @@ def parseFile(file):
 
 
 def getFolderThumb(path, isXBMC=False):
-    cfg   = os.path.join(path, FOLDERCFG)
-    thumb = getParam('ICON', cfg)
+    cfg    = os.path.join(path, FOLDERCFG)
+    thumb  = getParam('ICON', cfg)
+    fanart = getParam('FANART', cfg)
 
-    if thumb:
-        return thumb
+    if thumb and fanart:
+        return thumb, fanart
 
     if isXBMC:
-        return 'DefaultFolder.png'
+        thumb  = thumb  if (thumb  != None) else 'DefaultFolder.png'
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart    
 
     if not INHERIT:
-        return ICON
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
 
     faves = favourite.getFavourites(os.path.join(path, FILENAME), 1)   
 
     if len(faves) < 1:
-        return ICON
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
 
-    thumb = faves[0][1]
+    tFave = faves[0][1]
+    fFave = favourite.getFanart(faves[0][2])
 
-    if len(thumb) > 0:
-        return thumb
+    thumb  = thumb  if (thumb  != None) else tFave
+    fanart = fanart if (fanart != None) else fFave
 
-    return ICON
+    fanart = fanart if (fanart and len(fanart) > 0) else FANART
+
+    return thumb, fanart
 
 
 def parseFolder(folder):
     global separator
 
     show = SHOWXBMC
-    if (mode != -2 and SHOWXBMCROOT):
+    if (mode != _MAIN and SHOWXBMCROOT):
         show = False
 
     if show:
         separator = False
 
-        profile   = xbmc.translatePath(PROFILE)
-        thumbnail = getFolderThumb(profile, True)
+        thumbnail, fanart = getFolderThumb(xbmc.translatePath(PROFILE), True)
 
-        addDir(GETTEXT(30040), _XBMC, thumbnail=thumbnail, isFolder=True)
+        addDir(GETTEXT(30040), _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart)
         separator = True
 
     try:    current, dirs, files = os.walk(folder).next()
     except: return
+   
+    dirs = sorted(dirs, key=str.lower)
 
     for dir in dirs:
         path = os.path.join(current, dir)
@@ -421,12 +432,12 @@ def parseFolder(folder):
         else:
             menu.append((GETTEXT(30076), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _SECURE,   urllib.quote_plus(path), urllib.quote_plus(dir))))
 
-        thumbnail = getFolderThumb(path)
+        thumbnail, fanart = getFolderThumb(path)
 
         if colour:
             dir = '[COLOR %s]%s[/COLOR]' % (colour, dir)
 
-        addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu)
+        addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart)
 
     if len(dirs) > 0:
         separator = True
@@ -488,24 +499,24 @@ def getColour():
     if not os.path.exists(filename):
         return None
 
-    colours     = ['SF_RESET']
-    colourized  = [GETTEXT(30087)]
+    menu = [[GETTEXT(30087), 'SF_RESET']]
 
     f = open(filename, 'r')
     for line in f:
         if 'name' in line:
-            name = line.split('"')[1]
-            colours.append(name)
-            colourized.append('[COLOR %s]%s[/COLOR]' % (name, name))
+            name = line.split('"')[1]            
+            menu.append(['[COLOR %s]%s[/COLOR]' % (name, name), name])
 
-    if len(colours) == 0:
+    if len(menu) < 2:
         return None
+
+    import menus
+    option = menus.selectMenu(GETTEXT(30086), menu)
                  
-    index = xbmcgui.Dialog().select(GETTEXT(30086), colourized)
-    if index < 0:
+    if option < 0:
         return None
 
-    return colours[index]
+    return option
 
 
 def getText(title, text='', hidden=False):
@@ -554,9 +565,28 @@ def getSkinImage():
     return getImage()
 
 
+def removeFanartFolder(path):
+    folderConfig = os.path.join(path, FOLDERCFG)
+    setParam('FANART', '', folderConfig)
+    return True
+
+
 def removeThumbFolder(path):
     folderConfig = os.path.join(path, FOLDERCFG)
     setParam('ICON', '', folderConfig)
+    return True
+
+
+def fanartFolder(path):
+    image = getImage()
+
+    if not image:
+        return False
+
+    image = favourite.convertToHome(image)
+
+    folderConfig = os.path.join(path, FOLDERCFG)
+    setParam('FANART', image, folderConfig)
     return True
 
 
@@ -565,10 +595,6 @@ def thumbFolder(path):
 
     if not image:
         return False
-
-    #special case
-    if image == 'Super Favourite.png':
-        image = os.path.join(HOME, 'icon.png')
 
     folderConfig = os.path.join(path, FOLDERCFG)
     setParam('ICON', image, folderConfig)
@@ -585,6 +611,27 @@ def removeThumbFave(file, cmd):
 
     favourite.updateFave(file, fave)
     return True
+
+
+def removeFanartFave(file, cmd):
+    fave, index, nFaves = favourite.findFave(file, cmd)
+
+    fave[2] = favourite.removeFanart(cmd)
+
+    favourite.updateFave(file, fave)
+    return True
+
+
+def fanartFave(file, cmd):
+    image = getImage()
+
+    if not image:
+        return False
+
+    fave, index, nFaves = favourite.findFave(file, cmd)
+    fave[2] = favourite.addFanart(fave[2], image)
+
+    return favourite.updateFave(file, fave)
 
 
 def thumbFave(file, cmd):
@@ -622,7 +669,7 @@ def createNewFolder(current):
         utils.DialogOK('', GETTEXT(30014) % text)
         return False
 
-    os.mkdir(xbmc.translatePath(folder))
+    os.makedirs(xbmc.translatePath(folder))
     return True
 
 
@@ -645,135 +692,198 @@ def changePlaybackMode(file, cmd):
 
 
 def editFolder(path, name):
-    cfg      = os.path.join(path, FOLDERCFG)
-    thumb    = getParam('ICON', cfg)
-    hasThumb = thumb and len(thumb) > 0
+    cfg       = os.path.join(path, FOLDERCFG)
+    thumb     = getParam('ICON',   cfg)
+    fanart    = getParam('FANART', cfg)
+    hasThumb  = thumb  and len(thumb)  > 0
+    hasFanart = fanart and len(fanart) > 0
+
+    REMOVE       = 0
+    RENAME       = 1
+    CHOOSETHUMB  = 2
+    CHOOSEFANART = 3
+    REMOVETHUMB  = 4
+    REMOVEFANART = 5
+    COLOUR       = 6
 
     options = []
-    options.append(GETTEXT(30011)) #remove
-    options.append(GETTEXT(30012)) #rename
-    options.append(GETTEXT(30043)) #choose thumb
+    options.append([GETTEXT(30011), REMOVE])
+    options.append([GETTEXT(30012), RENAME])
+    options.append([GETTEXT(30043), CHOOSETHUMB])
+    options.append([GETTEXT(30107), CHOOSEFANART])
+
     if hasThumb:
-        options.append(GETTEXT(30097)) #remove thumb
-    options.append(GETTEXT(30085)) #colour
+        options.append([GETTEXT(30097), REMOVETHUMB])
 
-    option = xbmcgui.Dialog().select(name, options)
-    if option < 0:
-        return False
+    if hasFanart:
+        options.append([GETTEXT(30108), REMOVEFANART])
 
-    if option == 0:
+    options.append([GETTEXT(30085), COLOUR])
+
+    import menus
+    option = menus.selectMenu(name, options)
+
+    if option == REMOVE:
         return removeFolder(path)
 
-    if option == 1:
+    if option == RENAME:
         return renameFolder(path)
 
-    if option == 2:
+    if option == CHOOSETHUMB:
         return thumbFolder(path)
 
-    if hasThumb:
-        if option == 3:
-            return removeThumbFolder(path)
-    else:
-        option += 1
+    if option == CHOOSEFANART:
+        return fanartFolder(path)
 
-    if option == 4:
+    if option == REMOVETHUMB:
+        return removeThumbFolder(path)
+
+    if option == REMOVEFANART:
+        return removeFanartFolder(path)
+
+    if option == COLOUR:
         return colourFolder(path)
 
     return False
+    
 
 
 def editFave(file, cmd, name, thumb):
-    hasThumb = len(thumb) > 0
-    options  = []
+    fanart    = favourite.getFanart(cmd)
+    hasThumb  = len(thumb)  > 0
+    hasFanart = len(fanart) > 0
+    hasMode   = 'sf_win_id=' in cmd
 
-    options.append(GETTEXT(30041)) #0 up
-    options.append(GETTEXT(30042)) #1 down
-    options.append(GETTEXT(30007)) #2 copy
-    options.append(GETTEXT(30008)) #3 move
-    options.append(GETTEXT(30009)) #4 remove
-    options.append(GETTEXT(30010)) #5 rename
-    options.append(GETTEXT(30043)) #6 choose thumb
+    UP           = 0
+    DOWN         = 1
+    COPY         = 2
+    MOVE         = 3
+    REMOVE       = 4
+    RENAME       = 5
+    CHOOSETHUMB  = 6
+    CHOOSEFANART = 7
+    REMOVETHUMB  = 8
+    REMOVEFANART = 9
+    COLOUR       = 10
+    PLAYBACKMODE = 11
+
+    options = []
+    options.append([GETTEXT(30041), UP])
+    options.append([GETTEXT(30042), DOWN])
+    options.append([GETTEXT(30007), COPY])
+    options.append([GETTEXT(30008), MOVE])
+    options.append([GETTEXT(30009), REMOVE])
+    options.append([GETTEXT(30010), RENAME])
+    options.append([GETTEXT(30043), CHOOSETHUMB])
+    options.append([GETTEXT(30107), CHOOSEFANART])
+
     if hasThumb:
-        options.append(GETTEXT(30097)) #7 remove thumb
-    options.append(GETTEXT(30085)) #8 colour
-    if 'sf_win_id=' in cmd:
-        options.append(GETTEXT(30052)) #9 playback mode
+        options.append([GETTEXT(30097), REMOVETHUMB])
 
-    option = xbmcgui.Dialog().select(name, options)
-    if option < 0:
-        return False
+    if hasFanart:
+        options.append([GETTEXT(30108), REMOVEFANART])
 
-    if option == 0:
+    options.append([GETTEXT(30085), COLOUR])
+
+    if hasMode:
+        options.append([GETTEXT(30052), PLAYBACKMODE])
+
+    import menus
+    option = menus.selectMenu(name, options)
+
+    if option == UP:
         return favourite.shiftFave(file, cmd, up=True)
 
-    if option == 1:
+    if option == DOWN:
         return favourite.shiftFave(file, cmd, up=False)
 
-    if option == 2:
+    if option == COPY:
         return copyFave(file, cmd)
 
-    if option == 3:
+    if option == MOVE:
         return moveFave(file, cmd)
 
-    if option == 4:
+    if option == REMOVE:
         return favourite.removeFave(file, cmd)
 
-    if option == 5:
+    if option == RENAME:
         return renameFave(file, cmd)
 
-    if option == 6:
+    if option == CHOOSETHUMB:
         return thumbFave(file, cmd)
 
-    if hasThumb:
-        if option == 7:
-            return removeThumbFave(file, cmd)
-    else:
-        option += 1
+    if option == CHOOSEFANART:
+        return fanartFave(file, cmd)
 
-    if option == 8:
+    if option == REMOVETHUMB:
+        return removeThumbFave(file, cmd)
+
+    if option == REMOVEFANART:
+        return removeFanartFave(file, cmd)
+
+    if option == COLOUR:
         return colourFave(file, cmd)
 
-    if option == 9:
+    if option == PLAYBACKMODE:
         return changePlaybackMode(file, cmd)
 
     return False
 
 
 def editSearch(file, cmd, name, thumb):
-    hasThumb = len(thumb) > 0
-    options  = []
+    fanart    = favourite.getFanart(cmd)
+    hasThumb  = len(thumb) > 0
+    hasFanart = len(fanart) > 0
 
-    options.append(GETTEXT(30041)) #0 up
-    options.append(GETTEXT(30042)) #1 down
-    options.append(GETTEXT(30010)) #2 rename
-    options.append(GETTEXT(30043)) #3 choose thumb
+    UP           = 0
+    DOWN         = 1
+    RENAME       = 2
+    CHOOSETHUMB  = 3
+    CHOOSEFANART = 4
+    REMOVETHUMB  = 5
+    REMOVEFANART = 6
+    COLOUR       = 7
+
+    options = []
+    options.append([GETTEXT(30041), UP])
+    options.append([GETTEXT(30042), DOWN])
+    options.append([GETTEXT(30010), RENAME])
+    options.append([GETTEXT(30043), CHOOSETHUMB])
+    options.append([GETTEXT(30107), CHOOSEFANART])
+
     if hasThumb:
-        options.append(GETTEXT(30097)) #4 remove thumb 3
-    options.append(GETTEXT(30085)) #5 colour
+        options.append([GETTEXT(30097), REMOVETHUMB])
 
-    option = xbmcgui.Dialog().select(name, options)
-    if option < 0:
-        return False
+    if hasFanart:
+        options.append([GETTEXT(30108), REMOVEFANART])
 
-    if option == 0:
+    options.append([GETTEXT(30085), COLOUR])
+
+    import menus
+    option = menus.selectMenu(name, options)
+
+    if option == UP:
         return favourite.shiftFave(file, cmd, up=True)
 
-    if option == 1:
+    if option == DOWN:
         return favourite.shiftFave(file, cmd, up=False)
 
-    if option == 2:
+    if option == RENAME:
         return renameFave(file, cmd)
 
-    if option == 3:
+    if option == CHOOSETHUMB:
         return thumbFave(file, cmd)
 
-    if hasThumb:
-        if option == 4:
-            return removeThumbFave(file, cmd)
-    else:
-        option += 1
+    if option == CHOOSEFANART:
+        return fanartFave(file, cmd)
 
-    if option == 5:
+    if option == REMOVETHUMB:
+        return removeThumbFave(file, cmd)
+
+    if option == REMOVEFANART:
+        return removeFanartFave(file, cmd)
+
+    if option == COLOUR:
         return colourFave(file, cmd)
 
     return False
@@ -1061,7 +1171,7 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
     if len(keyword) < 1:
         return
 
-    if not SHOWSS_FANART:
+    if not SHOW_FANART:
         fanart = BLANK
 
     menu = []
@@ -1108,6 +1218,12 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
         thumb = fave[1]
         cmd   = fave[2].replace('[%SF%]', keyword)
 
+        fan = fanart
+        if SHOW_FANART:
+            fan = favourite.getFanart(cmd)
+            if len(fan) == 0:
+                fan = fanart
+
         menu = []
         menu.append((GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITTERM, keyword)))
         menu.append((GETTEXT(30103), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITSEARCH, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -1115,7 +1231,7 @@ def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
         #special fix for GlobalSearch, use local launcher (globalsearch.py) to bypass keyboard
         cmd = cmd.replace('script.globalsearch', os.path.join(HOME, 'globalsearch.py'))
 
-        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
+        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fan)
     
     return True
 
@@ -1124,21 +1240,33 @@ def playCommand(cmd):
     try:
         cmd = cmd.replace('&quot;', '')
         cmd = cmd.replace('&amp;', '&')
+        cmd = favourite.removeFanart(cmd)
 
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
              return xbmc.executebuiltin(cmd)
+
+        if cmd.startswith('RunScript'):
+            cmd = cmd.replace('?content_type=', '&content_type=')
+            cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
+            #workaround bug in Frodo that can cause lock-up
+            #when running a script favourite
+            if FRODO:
+                xbmc.executebuiltin('ActivateWindow(Home)')
 
         if isPlaylist(cmd):
             if PLAY_PLAYLISTS:
                 return playPlaylist(cmd)
 
         if 'ActivateWindow' in cmd:
-            return activateWindowCommand(cmd)
+            return activateWindowCommand(cmd)        
 
         xbmc.executebuiltin(cmd)
-    except:
-        pass
+
+    except Exception, e:
+        utils.log('Error in playCommand')
+        utils.log('Command: %s' % cmd)
+        utils.log('Error:   %s' % str(e))        
 
 
 def isPlaylist(cmd):
@@ -1214,16 +1342,18 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(thumbnail) == 0:
         thumbnail = BLANK
     if len(fanart) == 0:
-        fanart = BLANK
+        fanart = FANART
+    if fanart == BLANK:
+        fanart = FANART
 
     label = label.replace('&apos;', '\'')
 
     liz = xbmcgui.ListItem(urllib.unquote_plus(label), iconImage=thumbnail, thumbnailImage=thumbnail)
 
     if len(infolabels) > 0:
-        liz.setInfo(type='Video', infoLabels=infolabels)       
+        liz.setInfo(type='Video', infoLabels=infolabels)
 
-    if SHOWSS_FANART:
+    if SHOW_FANART:
         liz.setProperty('Fanart_Image', fanart)     
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
@@ -1277,7 +1407,7 @@ theFolder = ''
 thepath   = ''
 
 try:    mode = int(params['mode'])
-except: mode = -2
+except: mode = _MAIN
 
 try:    file = urllib.unquote_plus(params['file'])
 except: file = None
@@ -1304,12 +1434,12 @@ except: content = ''
 doRefresh   = False
 doEnd       = True
 cacheToDisc = False
-defCmd      = None
 contentType = ''
 
 
 
 if len(content) > 0:   
+    mode   = _IGNORE
     folder = content
     try:
         if folder.lower().startswith('customsuperfavourite'):  
@@ -1547,13 +1677,18 @@ elif mode == _PLAYTRAILER:
     if not yt.PlayVideo(path):
         utils.DialogOK(GETTEXT(30092))
         
-else:
+elif mode == _MAIN:
     main()
+
+else:
+    #do nothing
+    nItem = 1
 
 
 #make sure at least 1 line is showing to allow context menu to be displayed
 if nItem < 1:
     addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
+
 
 if doRefresh:
     refresh()
@@ -1562,7 +1697,6 @@ if doEnd:
     if len(contentType) > 0:
         xbmcplugin.setContent(int(sys.argv[1]), contentType)
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
-
 
 
 if mode == _SUPERSEARCHDEF:

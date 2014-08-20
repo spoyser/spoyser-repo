@@ -60,7 +60,7 @@
 	<string id="30061">Swipe Up</string>	
 	<string id="30062">Swipe Down</string>	
 	<string id="30063">Enable iRecommend</string>		
-	<string id="30064">Enable Fanart</string>
+	<string id="30064">Show fanart</string>
 	<string id="30065">          Show in root folder only</string>
 	<string id="30066">[B]iSearch - '%s'[/B] [I](Click to edit search term)[/I]</string>
 	<string id="30067">Edit Super Folder</string>
@@ -92,7 +92,7 @@
 	<string id="30093">          Enable metadata</string>
 	<string id="30094">%s settings</string>
 	<string id="30095">Tidy up context menu keywords</string>
-	<string id="30096">Super Folders inherit thumbnail</string>
+	<string id="30096">Super Folders inherit thumbnail and fanart</string>
 	<string id="30097">Remove thumbnail</string>
 	<string id="30098">iSearch using %s</string>
 	<string id="30099">	Edit XBMC Favourite</string>
@@ -102,4 +102,11 @@
 	<string id="30103">Edit iSearch item</string>
 	<string id="30104">Play using Super Favourites</string>
 	<string id="30105">Failed to play video</string>
+	<string id="30106">XBMC Favourites</string>	
+    <string id="30107">Choose fanart</string>
+    <string id="30108">Remove fanart</string>
+    <string id="30109">Timeout in %d seconds...</string>
+    <string id="30110">Press a key to assign it to the Super Favourites now</string>
+    <string id="30111">Programmable</string>
+    <string id="30112">[COLOR springgreen]Click to program hotkey[/COLOR]</string>
 </strings>
