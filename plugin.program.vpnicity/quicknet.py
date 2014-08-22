@@ -47,6 +47,8 @@ def getURLNoCache(url, agent=None):
 
 
 def getURL(url, maxSec=0, agent=None):
+    return getURLNoCache(url, agent)
+
     purgeCache()
     
     if url == None:

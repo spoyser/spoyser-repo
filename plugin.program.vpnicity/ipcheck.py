@@ -36,4 +36,6 @@ def Network():
     for ip, region, country, isp in match:
         if count <2:
             utils.dialogOK('Your Public IP Address is: ' + ip, 'Your IP Address is based in: ' + country) 
+            print 'VPNicity IP Address is:', ip
+            print 'VPNicity Country is:', country
             count = count+1

@@ -7,15 +7,22 @@
 		
 		<setting id="AUTO"      type="bool"      label="Autoselect VPNicity" default="true"  visible="true"/>		
 		
-	    <setting id="SUDO"      type="bool"      label="Use Sudo"                           default="false" enable="!eq(-1,0)+!eq(-1,1)"   option="hidden"/>
-	    <setting id="SUDOPASS"  type="text"      label="[COLOR red]Sudo Password[/COLOR]"   default=""      enable="!eq(-2,0)+!eq(-2,1)"   option="hidden"/>
+	    <setting id="SUDO"      type="bool"      label="Use Sudo"                           default="false" enable="!eq(-2,0)+!eq(-2,1)+!eq(-2,5)"   option="hidden"/>
+	    <setting id="SUDOPASS"  type="text"      label="[COLOR red]Sudo Password[/COLOR]"   default=""      enable="!eq(-3,0)+!eq(-3,1)+!eq(-3,5)"   option="hidden"/>
 		
-        <setting option="close"                  label="Install OpenVPN" type="action" action="RunScript($CWD/install.py)" enable="!eq(-3,0)+!eq(-3,1)"/>
+            <setting option="close"                  label="Install OpenVPN" type="action" action="RunScript($CWD/install.py)" enable="!eq(-4,0)+!eq(-4,1)+!eq(-4,5)"/>
 				
 		<setting id="PORT"      type="labelenum" label="Port"                values = "1194|443"        default="1194"/>
 		<setting id="TIMEOUT"   type="labelenum" label="Connection Timeout"  values = "15|30|45|60|Off" default="30"/>
 		
 		<setting id="CONTEXT"   type="bool"      label="Enable VPNicity context menu"  default="false"  visible="true"/>		
-		<setting id="VERSION"   type="text"      label="Current Version"                default="0.0.0"  visible="false"/>
+		<setting id="VERSION"   type="text"      label="Current Version"               default="0.0.0"  visible="false"/>
 	</category>
+    <category label="Maintenance">
+ 		<setting type="lsep" label="Uploads your Log to xbmclogs.com"/>
+ 		<setting label="[B]Upload Log[/B]" type="action" action="XBMC.RunScript(special://home/addons/plugin.program.vpnicity/uploadLog.py)"/>
+ 		<setting id="email" type="text" label="Email address"/>
+ 		<setting type="lsep" label="If you want to receive an email containing direct links"/>
+ 		<setting type="lsep" label="to your uploaded logs you have to set your email address"/>
+    </category>
 </settings>

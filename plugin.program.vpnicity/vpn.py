@@ -126,13 +126,16 @@ def GetBest(abrv):
     if nCities < 1:
         return None
 
-    best = cities[0]
+    import random
+    return random.choice(cities)
 
-    for city in cities:
-        if best[2] > city[2]:
-            best = city
+    #best = cities[0]
 
-    return best
+    #for city in cities:
+    #    if best[2] > city[2]:
+    #        best = city
+
+    #return best
 
     
 def GetCities(abrv):
@@ -160,8 +163,7 @@ def KillVPN(silent=False):
 
 def Run(cmdline, timeout=0):
     if utils.platform() == "android":
-        xbmc.executebuiltin( cmdline )
-        return 'Initialization Sequence Completed'
+        return RunAndroid(cmdline, timeout)
 
     #print "COMMAND - %s" % cmdline
 
@@ -208,7 +210,36 @@ def Run(cmdline, timeout=0):
     #    pass
 
     return ret
-        
+
+
+def RunAndroid(cmdline, timeout=0):
+    xbmc.executebuiltin(cmdline)
+
+    path = RESPONSE
+
+    xbmc.sleep(5000)
+
+    while timeout > 0:
+        xbmc.sleep(1000)
+        timeout -= 1
+
+        f   = open(path, mode='r')
+        ret = f.readlines()
+        f.close()
+
+        #remove first 2 lines as these may be from previous run
+        if len(ret) > 0:
+            ret = ret[1:]
+        if len(ret) > 0:
+            ret = ret[1:]
+
+        ret = ''.join(ret)
+
+        if IsEnabled(ret) or IsDisabled(ret):
+            timeout = 0
+
+    return ret
+
 
 def OpenVPN(config):
     import path
@@ -223,27 +254,25 @@ def OpenVPN(config):
     if utils.platform() == "android":
         cmdline = "StartAndroidActivity(%s,%s,%s,%s)" % \
                     ( "com.vpnicity.openvpn.control", "com.vpnicity.openvpn.control.CONNECT", "com.vpnicity.openvpn.control.PROFILE_PATH", "file://" + config )
-        timeout = 0
     else :
         cmdline  =  utils.getSudo()
         cmdline += '"' + exe + '"'
         cmdline += ' '
         cmdline += '"' + config + '"'
         cmdline  = cmdline.replace('\\', '/')
-        print '++++++++++++++++++++++++++ cmdline is...', cmdline
 
     return Run(cmdline, timeout)
 
 
 def IsEnabled(response):
-    if 'Initialization Sequence Completed' in response:
+    if ('Initialization Sequence Completed' in response) or ('SUCCESS' in response):
         return True
 
     return False
 
 
 def IsDisabled(response):
-    if 'process exiting' in response:
+    if ('process exiting' in response) or ('AUTH_FAILED' in response):
         return True
     return False
 
@@ -278,8 +307,8 @@ def VPN(label, abrv, server):
     if response:
         label = label.rsplit(' (', 1)[0]
         if IsEnabled(response):
-            if utils.platform() == "android":
-                xbmc.sleep(10000)
+            # if utils.platform() == "android":
+            #     xbmc.sleep(10000)
             utils.dialogOK('%s %s now enabled' % (label, TITLE))            
             xbmcgui.Window(10000).setProperty('VPNICITY_LABEL',  label)
             xbmcgui.Window(10000).setProperty('VPNICITY_ABRV',   abrv)
@@ -291,7 +320,7 @@ def VPN(label, abrv, server):
             if utils.platform() == "android":
                 xbmc.sleep(5000)
             utils.dialogOK('%s %s failed to start' % (label, TITLE), 'Please check your settings', 'and try again')    
-            ipcheck.Network()
+            #ipcheck.Network()
             success = False
 
     #DeleteFile(authPath)
@@ -315,7 +344,7 @@ def DeleteFile(path):
 def WriteAuthentication(path):
     CheckUsername()
 
-    user = ADDON.getSetting('USER')
+    user = ADDON.getSetting('USER') + '@vpnicity'
     pwd  = ADDON.getSetting('PASS')
 
     if user == '' and pwd == '':
@@ -356,9 +385,10 @@ def WriteConfiguration(server, dest, authPath):
 
     if utils.platform() == 'android':
         authentication = '<auth-user-pass>\r\n'               \
-                       + ADDON.getSetting('USER') + '\r\n'    \
+                       + ADDON.getSetting('USER') + '@vpnicity' + '\r\n'    \
                        + ADDON.getSetting('PASS') + '\r\n'    \
                        + '</auth-user-pass>'
+                       
     else:
         authentication = 'auth-user-pass "%s"' % authPath
 
@@ -370,7 +400,7 @@ def WriteConfiguration(server, dest, authPath):
 
 
 def CheckUsername():
-    user = ADDON.getSetting('USER')
+    user = ADDON.getSetting('USER') + '@vpnicity'
     pwd  = ADDON.getSetting('PASS')
 
     if user != '' and pwd != '':

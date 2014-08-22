@@ -91,6 +91,8 @@
 <addon id="plugin.program.vpnicity" name="VPNicity" version="1.1.0" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.requests" version="1.1.0"/>
+    <import addon="script.module.requests2" version="2.2.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>executable</provides>
