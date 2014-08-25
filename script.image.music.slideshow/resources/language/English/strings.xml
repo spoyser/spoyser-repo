@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+    <string id="30000">Music Slideshow</string>
+    <string id="30001">No music playing - Exiting</string>
+    <string id="30002">No images found for</string>
+    <string id="30003">Error - check log for info</string>
+    <string id="30004">Searching for</string>	
+	<string id="30005">Slideshow</string>
+    <string id="30006">Start slideshow automatically</string>
+    <string id="30007">Image source</string>
+</strings>
