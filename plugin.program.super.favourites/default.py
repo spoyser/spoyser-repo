@@ -108,6 +108,14 @@ SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 METARECOMMEND  = ADDON.getSetting('METARECOMMEND')  == 'true'
 INHERIT        = ADDON.getSetting('INHERIT')        == 'true'
+DEFAULT_FANART = ADDON.getSetting('DEFAULT_FANART')
+
+if DEFAULT_FANART == '1':
+    FANART = ADDON.getSetting('DEFAULT_IMAGE')
+
+if DEFAULT_FANART == '2':
+    FANART = BLANK
+
 CONTENTMODE    = False
 # ---------------------------------------------------------- #
 
@@ -1001,7 +1009,7 @@ def getTVDB(imdb):
         jsn  = json.loads(html)  
 
         thumbnail = BLANK
-        fanart    = BLANK
+        fanart    = FANART
 
         movies = jsn['movie_results']
         tvs    = jsn['tv_results']
@@ -1024,7 +1032,7 @@ def getTVDB(imdb):
     except:
         pass
 
-    return BLANK, BLANK
+    return BLANK, FANART
 
 
 def getMeta(grabber, name, type, year=None, season=None, episode=None, imdb=None):
@@ -1088,7 +1096,7 @@ def recommendIMDB(imdb, keyword):
         name      = item[1]
 
         thumbnail = BLANK
-        fanart    = BLANK
+        fanart    = FANART
 
         if METARECOMMEND:
             #thumbnail,  fanart = getTVDB(imdb)
@@ -1119,7 +1127,7 @@ def recommendKey(keyword):
         label = name + ' ' + item[2].strip()
 
         thumbnail = BLANK
-        fanart    = BLANK
+        fanart    = FANART
 
         if METARECOMMEND:
             #thumbnail,  fanart = getTVDB(imdb)
@@ -1155,7 +1163,7 @@ def externalSearch():
         xbmc.executebuiltin('XBMC.Container.Refresh(%s)' % cmd)
 
     
-def superSearch(keyword='', image=BLANK, fanart=BLANK, imdb=''):
+def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
     if len(keyword) < 1:
         kb = xbmc.Keyboard(keyword, GETTEXT(30054))
         kb.doModal()
@@ -1310,7 +1318,7 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
     
-def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart='', keyword='', imdb='', infolabels={}, totalItems=0):
+def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=FANART, keyword='', imdb='', infolabels={}, totalItems=0):
     global separator
 
     u  = sys.argv[0]
@@ -1341,10 +1349,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     if len(thumbnail) == 0:
         thumbnail = BLANK
-    if len(fanart) == 0:
-        fanart = FANART
-    if fanart == BLANK:
-        fanart = FANART
+       
 
     label = label.replace('&apos;', '\'')
 
@@ -1353,7 +1358,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(infolabels) > 0:
         liz.setInfo(type='Video', infoLabels=infolabels)
 
-    if SHOW_FANART:
+    if fanart != BLANK and SHOW_FANART:
         liz.setProperty('Fanart_Image', fanart)     
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]

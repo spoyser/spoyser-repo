@@ -23,6 +23,8 @@ import xbmcplugin
 import os
 import inspect
 
+import utils
+
 
 def getResponse(url, size):
     try:
@@ -67,10 +69,10 @@ def doDownload(url, dest, title):
     try:    resumable = 'bytes' in resp.headers['Accept-Ranges'].lower()
     except: resumable = False
     
-    #print "Download Header"
-    #print resp.headers
+    #utils.log('Download Header')
+    #utils.log(resp.headers)
     if resumable:
-        print "Download is resumable"
+        utils.log('Download is resumable')
     
     if content < 1:
         xbmcgui.Dialog().ok(title, file, 'Unknown filesize', 'Unable to download')
@@ -121,11 +123,11 @@ def doDownload(url, dest, title):
                         del c
                 
                     f.close()
-                    print '%s download complete' % (dest)
+                    utils.log('%s download complete' % (dest))
                     xbmcgui.Dialog().ok(title, dest, '' , 'Download finished')
                     return
         except Exception, e:
-            print str(e)
+            utils.log(str(e))
             error = True
             sleep = 10
             errno = 0
@@ -156,13 +158,13 @@ def doDownload(url, dest, title):
         if error:
             errors += 1
             count  += 1
-            print '%d Error(s) whilst downloading %s' % (count, dest)
+            utils.log('%d Error(s) whilst downloading %s' % (count, dest))
             xbmc.sleep(sleep*1000)
 
         if (resumable and errors > 0) or errors >= 10:
             if (not resumable and resume >= 10) or resume >= 100:
                 #Give up!
-                print '%s download canceled - too many error whilst downloading' % (dest)
+                utils.log('%s download canceled - too many error whilst downloading' % dest)
                 xbmcgui.Dialog().ok(title, dest, '' , 'Download failed')
                 return
             
@@ -171,7 +173,7 @@ def doDownload(url, dest, title):
             if resumable:
                 chunks  = []
                 #create new response
-                print 'Download resumed (%d) %s' % (resume, dest)
+                utils.log('Download resumed (%d) %s' % (resume, dest))
                 resp = getResponse(url, total)
             else:
                 #use existing response

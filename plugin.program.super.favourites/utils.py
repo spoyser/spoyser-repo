@@ -40,7 +40,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.16'
+VERSION = '1.0.17'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -312,10 +312,16 @@ def showText(heading, text):
 
     win = xbmcgui.Window(id)
 
-    xbmc.sleep(100)
-
-    win.getControl(1).setLabel(heading)
-    win.getControl(5).setText(text)
+    retry = 10
+    while (retry > 0):
+        try:
+            xbmc.sleep(10)
+            retry -= 1
+            win.getControl(1).setLabel(heading)
+            win.getControl(5).setText(text)
+            return
+        except:
+            pass
 
 
 def showChangelog(addonID=None):
