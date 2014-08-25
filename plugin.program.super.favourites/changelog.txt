@@ -1,5 +1,5 @@
 v1.0.17
-    - stopped changlog appearing inappropriately
+    - stopped changelog appearing inappropriately
     - added configurable default fanart
 
 v1.0.16
