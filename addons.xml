@@ -271,6 +271,33 @@
     </extension>
 </addon>
 
+<addon id="script.image.music.slideshow"
+       name="Music SlideShow"
+       version="1.0.0"
+       provider-name="spoyser">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>image audio</provides>
+  </extension>
+
+  <extension point="xbmc.service" library="service.py" start="startup" />
+
+  <extension point="xbmc.addon.metadata">
+    <summary>Plays a slide show of the currently playing artist.</summary>
+    <description>Whilst playing music, this addon will start a slideshow of images related to the current artist. The slideshow can be configured to automatically start when Kodi starts playing music. Images are retrieved from a number of configurable sources. Tip: Pressing "i" during a slideshow will show the music player info.</description>
+	<platform>all</platform>
+    <language>en</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <forum></forum>
+    <website></website>
+    <source>http://code.google.com/p/spoyser-repo/source/browse/#git%2Fscript.image.music.slideshow</source>
+    <email>seanpoyser at gmail dot com</email>
+  </extension>
+</addon>
+
 <addon id="script.module.beautifulsoup"
        name="BeautifulSoup"
        version="3.0.8"
