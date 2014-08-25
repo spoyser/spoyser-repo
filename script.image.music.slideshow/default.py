@@ -141,8 +141,8 @@ def GetImages(artist):
 
     #print 'Total number of images found = %d' % len(images)
 
-    if len(images) > 50:
-        images = images[:50]
+    #if len(images) > 50:
+    #    images = images[:50]
 
     random.shuffle(images)
     #print images
