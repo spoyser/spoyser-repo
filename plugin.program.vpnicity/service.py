@@ -40,7 +40,7 @@ def DeleteKeymap():
         tries -= 1 
         try: 
             os.remove(path) 
-            break 
+            return
         except: 
             xbmc.sleep(500)
 
@@ -52,8 +52,11 @@ def UpdateKeymap():
         src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP)
         dst = os.path.join(xbmc.translatePath('special://userdata/keymaps'), KEYMAP)
 
-        import shutil
-        shutil.copy(src, dst)
+        try:
+            import shutil
+            shutil.copy(src, dst)
+        except:
+            pass
 
     xbmc.sleep(1000)
     xbmc.executebuiltin('Action(reloadkeymaps)')  
