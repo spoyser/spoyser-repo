@@ -14,6 +14,13 @@
 		</remote>
 		
 		<joystick name="AppleRemote">
+			<button id="1">Up</button>
+			<button id="2">Down</button>
+			<button id="3">Left</button>
+			<button id="4">Right</button>
+			<button id="5">Select</button>
+			<button id="6">Back</button>
+			<button id="7">Fullscreen</button>
 			<button id="8">XBMC.RunScript(special://home/addons/plugin.program.vpnicity/menu.py)</button>
 	    </joystick>
 		
