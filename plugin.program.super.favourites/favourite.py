@@ -22,6 +22,7 @@ import os
 import xbmc
 import re
 import HTMLParser
+import re
 
 import utils
 
@@ -121,15 +122,37 @@ def writeFavourites(file, faves):
     xbmcgui.Window(10000).setProperty('Super_Favourites_Count', str(count+1))
 
 
+def tidy(cmd):
+    cmd = cmd.replace('&quot;', '')
+    cmd = cmd.replace('&amp;', '&')
+    cmd = removeFanart(cmd)
+    cmd = removeWinID(cmd)
+
+    if cmd.startswith('RunScript'):
+        cmd = cmd.replace('?content_type=', '&content_type=')
+        cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
+
+    if cmd.endswith('/")'):
+        cmd = cmd.replace('/")', '")')
+
+    if cmd.endswith(')")'):
+        cmd = cmd.replace(')")', ')')
+
+    return cmd
+
+
 def isValid(cmd):
     if len(cmd) == 0:
         return False
 
-    if 'plugin' in cmd:
+    cmd = tidy(cmd)
+
+    if 'plugin' in cmd:        
         if not utils.verifyPlugin(cmd):
             return False
 
     if 'RunScript' in cmd:
+        cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
         if not utils.verifyScript(cmd):
             return False
         
@@ -307,11 +330,20 @@ def removeFanart(cmd):
     if 'sf_fanart=' not in cmd:
         return cmd
 
-    import re
-
     cmd = cmd.replace('?sf_fanart=', '&sf_fanart=')
     cmd = cmd.replace('&sf_fanart=', '&sf_fanart=X') #in case no fanart
     cmd = re.sub('&sf_fanart=(.+?)_"\)', '")', cmd)
+
+    return cmd
+
+
+def removeWinID(cmd):
+    if 'sf_win_id' not in cmd:
+        return cmd
+
+    cmd = cmd.replace('?sf_win_id=', '&sf_win_id=')
+    cmd = cmd.replace('&sf_win_id=', '&sf_win_id=X') #in case no win_id
+    cmd = re.sub('&sf_win_id=(.+?)_"\)', '")', cmd)
 
     return cmd
 

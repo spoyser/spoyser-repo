@@ -33,6 +33,13 @@ class MyMonitor(xbmc.Monitor):
         self.context = utils.ADDON.getSetting('CONTEXT')  == 'true'
 
 
+    def onNotification(self, sender, method, data):
+        print "on NOTIFICATION"
+        print sender
+        print method
+        print data
+
+
     def onSettingsChanged(self):
         hotkey  = utils.ADDON.getSetting('HOTKEY')
         context = utils.ADDON.getSetting('CONTEXT')  == 'true'
@@ -50,5 +57,11 @@ monitor = MyMonitor()
 
 while (not xbmc.abortRequested):
     xbmc.sleep(1000)
+    if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
+        utils.DeleteKeymap(utils.KEYMAP_HOT)
+        utils.DeleteKeymap(utils.KEYMAP_MENU)
+        xbmc.sleep(1000)
+        xbmc.executebuiltin('Action(reloadkeymaps)')  
+
 
 del monitor

@@ -34,17 +34,26 @@ def GetXBMCVersion():
     return int(version[0]), int(version[1]) #major, minor
 
 
+def GETTEXT(id):
+    text = ADDON.getLocalizedString(id)
+    name = ADDON.getLocalizedString(30121)
+
+    if name == DISPLAY:
+        return text
+    text = text.replace(name, DISPLAY)
+    return text
+
 
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.17'
+VERSION = '1.0.18'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
-GETTEXT =  ADDON.getLocalizedString
+DISPLAY = ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
 
 
@@ -62,7 +71,7 @@ FOLDERCFG    = 'folder.cfg'
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, text)
-        print(output)
+        print output
         xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
@@ -101,30 +110,36 @@ def generateMD5(text):
 
 
 def CheckVersion():
-    prev = ADDON.getSetting('VERSION')
-    curr = VERSION
+    try:
+        prev = ADDON.getSetting('VERSION')
+        curr = VERSION
 
-    if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
-        VerifyKeymaps()
+        if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
+            VerifyKeymaps()
 
-    if prev == curr:        
-        return
+        if prev == curr:        
+            return
 
-    verifySuperSearch(replace=True)
+        verifySuperSearch(replace=True)
 
-    ADDON.setSetting('VERSION', curr)
+        ADDON.setSetting('VERSION', curr)
 
-    if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
-        verifySuperSearch(replace=False)
 
-    if prev == '0.0.0' or prev== '1.0.0':
-        folder  = xbmc.translatePath(PROFILE)
-        if not os.path.isdir(folder):
-            try:    os.makedirs(folder) 
-            except: pass
+        if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
+            verifySuperSearch(replace=False)
 
-    showChangelog()
+        if prev == '0.0.0' or prev== '1.0.0':
+            folder  = xbmc.translatePath(PROFILE)
+            if not os.path.isdir(folder):
+                try:    os.makedirs(folder) 
+                except: pass
 
+        #call showChangeLog like this to workaround bug in openElec
+        script = os.path.join(HOME, 'showChangelog.py')
+        cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)
+        xbmc.executebuiltin(cmd)
+    except Exception, e:
+        pass
 
 
 def verifySuperSearch(replace=False):
@@ -182,7 +197,7 @@ def VerifyKeymaps():
 
 def VerifyKeymapHot():
     if ADDON.getSetting('HOTKEY') == GETTEXT(30111): #i.e. programmable
-        return False
+        return False    
 
     dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
 
@@ -201,6 +216,10 @@ def VerifyKeymapHot():
     if not includeKey:
         DeleteKeymap(KEYMAP_HOT)
         return True
+
+    if isATV():
+        DialogOK(GETTEXT(30118), GETTEXT(30119))
+        return False
 
     return WriteKeymap(key.lower(), key.lower())
 
@@ -228,8 +247,9 @@ def WriteKeymap(start, end):
 def VerifyKeymapMenu(): 
     context = ADDON.getSetting('CONTEXT')  == 'true'
 
-    if not context:
-        DeleteKeymap(KEYMAP_MENU)
+    DeleteKeymap(KEYMAP_MENU)
+
+    if not context:        
         return True
 
     keymap = xbmc.translatePath('special://profile/keymaps')
@@ -276,6 +296,10 @@ def verifyScript(cmd):
     return True
 
 
+def isATV():
+    return xbmc.getCondVisibility('System.Platform.ATV2') == 1
+
+
 def GetFolder(title):
     default = ROOT
     folder  = xbmc.translatePath(PROFILE)
@@ -309,10 +333,11 @@ def showText(heading, text):
     id = 10147
 
     xbmc.executebuiltin('ActivateWindow(%d)' % id)
+    xbmc.sleep(100)
 
     win = xbmcgui.Window(id)
 
-    retry = 10
+    retry = 50
     while (retry > 0):
         try:
             xbmc.sleep(10)
@@ -329,7 +354,7 @@ def showChangelog(addonID=None):
         if addonID:
             ADDON = xbmcaddon.Addon(addonID)
         else: 
-            ADDON = xbmcaddon.Addon()
+            ADDON = xbmcaddon.Addon(ADDONID)
 
         f     = open(ADDON.getAddonInfo('changelog'))
         text  = f.read()
@@ -339,7 +364,6 @@ def showChangelog(addonID=None):
 
     except:
         pass
-
 
 if __name__ == '__main__':
     pass

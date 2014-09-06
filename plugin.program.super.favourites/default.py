@@ -116,7 +116,8 @@ if DEFAULT_FANART == '1':
 if DEFAULT_FANART == '2':
     FANART = BLANK
 
-CONTENTMODE    = False
+CONTENTMODE   = False
+ISEARCH_EMPTY = '__iSearch__'
 # ---------------------------------------------------------- #
 
 
@@ -198,6 +199,9 @@ def addGlobalMenuItem(menu, item):
         addon = addon.replace('plugin://', '')
         addon = addon.replace('/', '')
         addon = addon.split('?', 1)[0]
+
+        if addon == utils.ADDONID:
+            return
         
         if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
             return
@@ -223,16 +227,23 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
 def addToXBMC(name, thumb, cmd):
     cmd = '"%s"' % cmd
 
-    folder = '&mode=%d' % _FOLDER
-    search = '&mode=%d' % _SUPERSEARCH
-    edit   = '&mode=%d' % _EDITTERM
+    folder   = '&mode=%d' % _FOLDER
+    search   = '&mode=%d' % _SUPERSEARCH
+    edit     = '&mode=%d' % _EDITTERM
+    activate = '&mode=%d' % _ACTIVATEWINDOW   
 
-    if (folder in cmd) or (search in cmd) or (edit in cmd):
+    if (folder in cmd) or (search in cmd) or (edit in cmd) or (activate in cmd):
         cmd = cmd.replace('+', '%20')
         cmd = 'ActivateWindow(%d,%s)' % (xbmcgui.getCurrentWindowId(), cmd)
     else:
         cmd = 'PlayMedia(%s)' % cmd
 
+    if (search in cmd) and ('keyword' not in cmd):
+        replace = '%s&keyword=%s' % (search, ISEARCH_EMPTY)
+        cmd = cmd.replace(search, replace)
+        if not cmd.lower().endswith(',return)'):
+            cmd = cmd[:-1] + ',return)'
+   
     fave = [name, thumb, cmd]
 
     file = os.path.join(xbmc.translatePath('special://profile'), FILENAME)
@@ -528,7 +539,7 @@ def getColour():
 
 
 def getText(title, text='', hidden=False):
-    kb = xbmc.Keyboard(text, title)
+    kb = xbmc.Keyboard(text.strip(), title)
     kb.setHiddenInput(hidden)
     kb.doModal()
     if not kb.isConfirmed():
@@ -652,15 +663,6 @@ def thumbFave(file, cmd):
     fave[1] = image
 
     return favourite.updateFave(file, fave)
-
-
-#def updateFave(file, update):
-#    cmd = update[2]
-#    fave, index, nFaves = findFave(file, cmd)
-#
-#    removeFave(file, cmd)
-#
-#    return insertFave(file, update, index)
 
 
 def getFolder(title):
@@ -1179,6 +1181,9 @@ def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
     if len(keyword) < 1:
         return
 
+    if keyword == ISEARCH_EMPTY:
+        keyword = ''
+
     if not SHOW_FANART:
         fanart = BLANK
 
@@ -1194,7 +1199,7 @@ def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
         infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
         getMovieMenu(infolabels, menu)
 
-    addDir(GETTEXT(30066) % keyword, _EDITTERM, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, infolabels=infolabels)
+    addDir(GETTEXT(30066) % keyword.strip(), _EDITTERM, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, infolabels=infolabels)
 
     #reset menu, since adddir call will have added to it
     menu = []
@@ -1246,30 +1251,27 @@ def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
 
 def playCommand(cmd):
     try:
-        cmd = cmd.replace('&quot;', '')
-        cmd = cmd.replace('&amp;', '&')
-        cmd = favourite.removeFanart(cmd)
+        cmd = favourite.tidy(cmd)        
 
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
              return xbmc.executebuiltin(cmd)
 
-        if cmd.startswith('RunScript'):
-            cmd = cmd.replace('?content_type=', '&content_type=')
-            cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
+        if cmd.startswith('RunScript'):    
             #workaround bug in Frodo that can cause lock-up
             #when running a script favourite
             if FRODO:
                 xbmc.executebuiltin('ActivateWindow(Home)')
-
+    
         if isPlaylist(cmd):
             if PLAY_PLAYLISTS:
-                return playPlaylist(cmd)
+                return playPlaylist(cmd)      
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd)        
 
         xbmc.executebuiltin(cmd)
+
 
     except Exception, e:
         utils.log('Error in playCommand')
@@ -1350,13 +1352,15 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(thumbnail) == 0:
         thumbnail = BLANK
        
-
     label = label.replace('&apos;', '\'')
 
     liz = xbmcgui.ListItem(urllib.unquote_plus(label), iconImage=thumbnail, thumbnailImage=thumbnail)
 
     if len(infolabels) > 0:
         liz.setInfo(type='Video', infoLabels=infolabels)
+
+    if len(fanart) == 0:
+        fanart = FANART
 
     if fanart != BLANK and SHOW_FANART:
         liz.setProperty('Fanart_Image', fanart)     
@@ -1475,6 +1479,7 @@ if len(folder) > 0:
 utils.log(sys.argv[2])
 utils.log(sys.argv)
 utils.log('Mode = %d' % mode)
+utils.log('cmd  = %s' % cmd)
 
 
 
@@ -1625,7 +1630,8 @@ elif mode == _SUPERSEARCH or mode == _SUPERSEARCHDEF:
         contentType = 'movies'
 
 elif mode == _EDITTERM:
-    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = urllib.unquote_plus(params['keyword'])
+    except: keyword = ''
     editSearchTerm(keyword)
     cacheToDisc=True
     xbmc.sleep(250)

@@ -103,13 +103,7 @@ def copyFave(name, thumb, cmd):
     if not folder:
         return False
   
-    file  = os.path.join(folder, utils.FILENAME)
-    #faves = favourite.getFavourites(file)
-
-    #if it is already in there don't add again
-    #for fave in faves:
-    #    if favourite.equals(fave[2], cmd):            
-    #        return False
+    file  = os.path.join(folder, utils.FILENAME)    
 
     fave = [name, thumb, cmd] 
   
@@ -275,14 +269,14 @@ def doMenu():
         if isFolder:
             cmd =  'ActivateWindow(%d,"%s' % (window, path)
         elif path.lower().startswith('script'):
-            if path[-1] == '/':
-                path = path[:-1]
+            #if path[-1] == '/':
+            #    path = path[:-1]
             cmd = 'RunScript("%s' % path.replace('script://', '')
         elif path.lower().startswith('videodb') and len(filename) > 0:
             cmd = 'PlayMedia("%s' % filename
         #elif path.lower().startswith('musicdb') and len(filename) > 0:
         #    cmd = 'PlayMedia("%s")' % filename
-        else:
+        else:            
             cmd = 'PlayMedia("%s&sf_win_id=%d_' % (path, window)
 
         import favourite

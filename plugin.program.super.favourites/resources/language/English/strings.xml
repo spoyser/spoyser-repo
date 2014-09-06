@@ -62,7 +62,7 @@
 	<string id="30063">Enable iRecommend</string>		
 	<string id="30064">Show fanart</string>
 	<string id="30065">          Show in root folder only</string>
-	<string id="30066">[B]iSearch - '%s'[/B] [I](Click to edit search term)[/I]</string>
+	<string id="30066">[B]iSearch - %s[/B] [I](Click to edit search term)[/I]</string>
 	<string id="30067">Edit Super Folder</string>
 	<string id="30068">Edit Super Favourite</string>
 	<string id="30069">Enter password to temporarily unlock %s</string>
@@ -114,4 +114,9 @@
 	<string id="30115">Choose</string>
 	<string id="30116">None</string>
     <string id="30117">Choose default fanart</string>
+    <string id="30118">Hotkey functionality does not currently</string>	
+    <string id="30119">work on an ATV2</string>	
+    <string id="30120">UI Display name</string>	
+    <string id="30121">Kodi</string>	
+    <string id="30122">XBMC</string>	
 </strings>

@@ -72,6 +72,10 @@ def recordKey():
 
 
 def main():
+    if utils.isATV():
+        utils.DialogOK(GETTEXT(30118), GETTEXT(30119))
+        return False
+
     key = recordKey()
     if key < 1:
         return
@@ -80,6 +84,8 @@ def main():
     end   = 'key'
 
     utils.WriteKeymap(start, end)
+
+    return True
     
 if __name__ == '__main__':
     main()
