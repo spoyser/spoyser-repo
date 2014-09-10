@@ -161,7 +161,7 @@ def GetLinkIndex(resolved):
             part    = 1
             hosts.append(resolver)
 
-    index = xbmcgui.Dialog().select('Please Select Video Host', hosts)
+    index = xbmcgui.Dialog().select('Please Select Video Host', hosts)   
         
     if index < 0:
         return None
@@ -177,7 +177,7 @@ def PlayVideo(_url):
         msg = 'Unidentified Video Host'
     else:
         index    = GetLinkIndex(resolved)
-        if not index:
+        if index == None:
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xbmcgui.ListItem(''))
             return
         resolver = resolved[index][0]
