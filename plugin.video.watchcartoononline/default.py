@@ -42,9 +42,8 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Watch Cartoon Online'
-VERSION = '1.0.10'
+VERSION = '1.0.12'
 URL     = 'http://www.watchcartoononline.com/'
-#URL     = 'http://www.animetoon.tv/'
 
 
 SECTION  = 100
@@ -154,9 +153,9 @@ def GetLinkIndex(resolved):
         resolver = item[0]
 
         if resolver == current:
-            hosts[-1] = resolver + ' - Part %d' % part
+            hosts[-1] = resolver + ' # %d' % part
             part     += 1
-            hosts.append(resolver + ' - Part %d' % part)
+            hosts.append(resolver + ' # %d' % part)
         else:
             current = resolver
             part    = 1
@@ -164,6 +163,9 @@ def GetLinkIndex(resolved):
 
     index = xbmcgui.Dialog().select('Please Select Video Host', hosts)
         
+    if index < 0:
+        return None
+
     return index
 
 
@@ -175,6 +177,9 @@ def PlayVideo(_url):
         msg = 'Unidentified Video Host'
     else:
         index    = GetLinkIndex(resolved)
+        if not index:
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xbmcgui.ListItem(''))
+            return
         resolver = resolved[index][0]
         url      = resolved[index][1]
         msg      = resolved[index][2]
@@ -315,7 +320,8 @@ elif mode == SERIES:
         html = common.getHTML(url)
 
     DoSeries(html)
-    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+    try:    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+    except: pass
 
 
 elif mode == EPISODE:

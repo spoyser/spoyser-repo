@@ -25,28 +25,32 @@ import net
 
 def Resolve(html):
     try:    
-        html = html.split('.flv',   1)[0]
-        html = html.rsplit('src="', 1)[-1]
-        url  = html + '.flv'
+        #html = html1.split('.flv',   1)[0]
+        #html = html.rsplit('src="', 1)[-1]
+        #url  = html + '.flv'
 
-        url = url.split('"')[0]
+        #url = url.split('"')[0]
 
-        if 'cizgifilmlerizle' in url:
-            return DoResolve(url)
+        results = []
 
-        if 'animeuploads' in url:
-            return DoResolve(url)
+        urls = re.compile('<iframe id.+?src="(.+?)".+?</iframe>').findall(html)
+        for url in urls:
+            if 'cizgifilmlerizle' in url:
+                results.append(DoResolve(url))
 
-        if 'vid44.php' in url:
-            url = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
-            html = common.GetHTML(url)
-            url = re.compile('file: \"(.+)\",\\r  height').search(html).group(1)
-            return [[url, text]]
+            if 'animeuploads' in url:
+                results.append(DoResolve(url))
+
+            if 'vid44.php' in url:
+                url = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
+                html = common.GetHTML(url)
+                url = re.compile('file: \"(.+)\",\\r  height').search(html).group(1)
+                results.append([url, text])
 
     except:
         pass
 
-    return []
+    return results
 
 
 def DoResolve(url):
@@ -73,6 +77,6 @@ def DoResolve(url):
     except Exception, e:
         text = 'Error Resolving URL'
 
-    response = [[ret, text]]
+    response = [ret, text]
 
     return response
