@@ -43,11 +43,10 @@ monitor = MyMonitor()
 xbmcgui.Window(10000).setProperty('script.image.music.slideshow.running', 'false')
 
 while (not xbmc.abortRequested):
-    check = xbmcgui.Window(10000).getProperty('script.image.music.slideshow.running') == 'false'
+    check = (xbmcgui.Window(10000).getProperty('script.image.music.slideshow.running').lower() == 'false')
 
     if check and monitor.auto: 
         if xbmc.Player().isPlayingAudio():
-            #xbmc.executebuiltin('ActivateWindow(10025)')
             xbmc.executebuiltin('RunScript(%s)' % utils.ADDONID)
 
     xbmc.sleep(1000)

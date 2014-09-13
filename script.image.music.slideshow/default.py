@@ -42,14 +42,25 @@ import json
 if not 'load' in dir(json):
     import simplejson as json
 
-
-ADDON     = xbmcaddon.Addon(id='script.image.music.slideshow')
+ADDONID   = 'script.image.music.slideshow'
+ADDON     = xbmcaddon.Addon(id=ADDONID)
 HOME      = ADDON.getAddonInfo('path')
 ICON      = os.path.join(HOME, 'icon.png')
 GETSTRING = ADDON.getLocalizedString
+TITLE     = GETSTRING(30000)
 
 global MODULES
 MODULES = None
+
+
+
+def log(text):
+    try:
+        output = '%s : %s' % (ADDONID, text)
+        #print output
+        xbmc.log(output, xbmc.LOGDEBUG)
+    except:
+        pass
 
 def Start():
     Restart()
@@ -57,7 +68,12 @@ def Start():
 
 def Restart():
     if not xbmc.Player().isPlayingAudio():
-        xbmc.executebuiltin("XBMC.Notification("+GETSTRING(30000)+","+GETSTRING(30001)+",5000,"+ICON+")")      
+        xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30001)+",5000,"+ICON+")")      
+        Reset()
+        return
+
+    quit = False #need to work out how to tell that user has quit slideshow using stop (probably use a keymap - override STOP)
+    if quit:
         Reset()
         return
 
@@ -72,6 +88,7 @@ def Restart():
             break
         if not xbmc.Player().isPlayingAudio():
             break 
+
     Restart()
 
 
@@ -104,7 +121,7 @@ def AddImages(images):
         except:
             pass 
 
-    #print 'Adding - %d valid images ' % len(items)
+    log('Adding - %d valid images ' % len(items))
     
 
 def GetModuleImages(module, artist = None):
@@ -139,27 +156,37 @@ def GetImages(artist):
     module = ADDON.getSetting('SOURCE')
     images = GetModuleImages(module, artist)
 
-    #print 'Total number of images found = %d' % len(images)
+    log('Total number of images found = %d' % len(images))
 
     #if len(images) > 50:
     #    images = images[:50]
 
     random.shuffle(images)
-    #print images
+    #log(images)
     return images
 
 
 def Initialise():
     artist = GetArtist()
 
-    #print "Initialising slideshow for %s" % artist
+    log("Initialising slideshow for %s" % artist)
 
-    xbmc.executebuiltin("XBMC.Notification("+GETSTRING(30000)+","+GETSTRING(30004)+" "+artist.replace(',', '')+",5000,"+ICON+")")        
+    #don't do notification if playing CD - causes XBMC to lockup
+    notify = True
+    try:
+        file = xbmc.Player().getPlayingFile()
+        if file.startswith('cdda'):
+            notify = False
+    except:
+        pass
+
+    if notify:
+        xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30004)+" "+artist.replace(',', '')+",5000,"+ICON+")")        
 
     images = GetImages(artist)
 
     if not ShowImages(images):
-        xbmc.executebuiltin("XBMC.Notification("+GETSTRING(30000)+","+GETSTRING(30002)+" "+artist+",5000,"+ICON+")")
+        xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30002)+" "+artist+",5000,"+ICON+")")
         Reset()
 
         
@@ -266,12 +293,16 @@ def main():
         xbmcgui.Window(10000).setProperty('script.image.music.slideshow.running', 'true')
         xbmc.executebuiltin('ActivateWindow(10025)')
         Start()
-    except:
+    except Exception, e:        
         pass
 
     xbmcgui.Window(10000).setProperty('script.image.music.slideshow.running', 'false')
 
 
 #TestModule('AllMusic', 'Europe')
-if __name__ == '__main__':
+
+if (sys.argv[0] != ADDONID) and (not xbmc.Player().isPlayingAudio()):
+    ADDON.openSettings()
+
+elif __name__ == '__main__':
     main()
