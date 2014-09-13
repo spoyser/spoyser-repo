@@ -100,6 +100,15 @@ monitor = MyMonitor()
 
 while (not xbmc.abortRequested):
     xbmc.sleep(1000)
+    if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
+        DeleteKeymap()
+        xbmc.sleep(1000)
+        xbmc.executebuiltin('Action(reloadkeymaps)')  
+
+
+if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
+    DeleteKeymap()
+
 
 del monitor
 

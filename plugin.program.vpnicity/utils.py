@@ -54,6 +54,38 @@ def showBusy():
     return busy
 
 
+def triggerChangelog():
+    #call showChangeLog like this to workaround bug in openElec
+    script = os.path.join(HOME, 'showChangelog.py')
+    cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)
+    xbmc.executebuiltin(cmd)
+
+
+def showVideo():
+    ADDON.setSetting('VIDEO', 'true')
+    import yt    
+    yt.PlayVideo('-DpU4yOJO_I', forcePlayer=True)
+    xbmc.sleep(500)
+    while xbmc.Player().isPlaying():
+        xbmc.sleep(500)
+
+
+def checkVersion():
+    prev = ADDON.getSetting('VERSION')
+    curr = VERSION
+
+    if prev == curr:
+        return
+
+    ADDON.setSetting('VERSION', curr)
+
+    if ADDON.getSetting('VIDEO').lower() != 'true':
+        showVideo()
+
+    triggerChangelog()
+    
+
+
 def dialogOK(line1, line2='', line3=''):
     d = xbmcgui.Dialog()
     d.ok(TITLE, line1, line2 , line3)
@@ -115,6 +147,43 @@ def getSudo():
     return 'sudo '
 
 
+def showText(heading, text):
+    id = 10147
+
+    xbmc.executebuiltin('ActivateWindow(%d)' % id)
+    xbmc.sleep(100)
+
+    win = xbmcgui.Window(id)
+
+    retry = 50
+    while (retry > 0):
+        try:
+            xbmc.sleep(10)
+            retry -= 1
+            win.getControl(1).setLabel(heading)
+            win.getControl(5).setText(text)
+            return
+        except:
+            pass
+
+
+def showChangelog(addonID=None):
+    try:
+        if addonID:
+            ADDON = xbmcaddon.Addon(addonID)
+        else: 
+            ADDON = xbmcaddon.Addon(ADDONID)
+
+        f     = open(ADDON.getAddonInfo('changelog'))
+        text  = f.read()
+        title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
+
+        showText(title, text)
+
+    except:
+        pass
+
+
 def platform():
     if xbmc.getCondVisibility('system.platform.android'):
         return 'android'
@@ -128,4 +197,3 @@ def platform():
         return 'atv2'
     elif xbmc.getCondVisibility('system.platform.ios'):
         return 'ios'
-

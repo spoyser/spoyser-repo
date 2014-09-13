@@ -47,21 +47,11 @@ _COUNTRY   = 400
 _VPN       = 500
 
 
-def CheckVersion():
-    prev = ADDON.getSetting('VERSION')
-    curr = VERSION
 
-    if prev == curr:
-        return
-
-    ADDON.setSetting('VERSION', curr)
-
-    if prev == '0.0.0':
-        utils.dialogOK('Welcome to %s' % TITLE, 'Added IP Country/City Checker')
 
 
 def Main():   
-    CheckVersion()
+    utils.checkVersion()
     vpn.CheckUsername()
 
     addDir('-- Configure %s' % TITLE,   _SETTINGS,  isFolder=False)
@@ -147,7 +137,6 @@ except: pass
 
 cacheToDisc = True
 doRefresh   = False
-doEnd       = True
 
 
 if mode == _COUNTRY:
@@ -191,5 +180,4 @@ if doRefresh:
     refresh()
 
 
-if doEnd:
-    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
+xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
