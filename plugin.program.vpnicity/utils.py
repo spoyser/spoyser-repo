@@ -35,7 +35,7 @@ HOME      =  ADDON.getAddonInfo('path')
 PROFILE   =  xbmc.translatePath(ADDON.getAddonInfo('profile'))
 RESOURCES =  os.path.join(HOME, 'resources')
 TITLE     = 'VPNicity'
-VERSION   = '1.0.1'
+VERSION   = '1.0.2'
 KEYMAP    = 'vpnicity_menu.xml'
 
 
@@ -105,10 +105,18 @@ def progress(line1, line2 = '', line3 = '', hide = True):
 
 
 def hideCancelButton():
-    xbmc.sleep(250)
-    WINDOW_PROGRESS = xbmcgui.Window(10101)
-    CANCEL_BUTTON   = WINDOW_PROGRESS.getControl(10)
-    CANCEL_BUTTON.setVisible(False)
+    tries = 10
+    while tries > 0:
+        tries -=1
+
+        try:
+            xbmc.sleep(250)
+            WINDOW_PROGRESS = xbmcgui.Window(10101)
+            CANCEL_BUTTON   = WINDOW_PROGRESS.getControl(10)
+            CANCEL_BUTTON.setVisible(False)
+            return
+        except:
+            pass
 
 
 def verifyPluginsFile():
