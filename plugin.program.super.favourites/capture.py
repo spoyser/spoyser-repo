@@ -214,7 +214,7 @@ def doMenu():
             except:
                 ytID = ''
 
-        utils.verifySuperSearch()
+        #utils.verifySuperSearch()
 
         default = getDefaultSearch()
 

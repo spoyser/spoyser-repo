@@ -49,7 +49,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.19'
+VERSION = '1.0.20'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -71,7 +71,7 @@ FOLDERCFG    = 'folder.cfg'
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, str(text))
-        print output
+        #print output
         xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
