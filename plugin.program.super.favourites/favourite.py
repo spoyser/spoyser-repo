@@ -31,6 +31,9 @@ HOMESPECIAL = 'special://home/'
 HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
 
 
+SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL')  == 'true'
+
+
 html_escape_table = {
     "&": "&amp;",
     '"': "&quot;",
@@ -52,7 +55,7 @@ def unescape(text):
     return text
 
 
-def getFavourites(file, limit=10000):
+def getFavourites(file, limit=10000, validate=True):
     xml  = '<favourites></favourites>'
     if os.path.exists(file):  
         fav = open(file , 'r')
@@ -81,7 +84,7 @@ def getFavourites(file, limit=10000):
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 
-        if isValid(cmd):
+        if (not validate) or isValid(cmd):
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
@@ -147,6 +150,9 @@ def isValid(cmd):
 
     cmd = tidy(cmd)
 
+    if SHOWUNAVAIL:
+        return True
+
     if 'plugin' in cmd:        
         if not utils.verifyPlugin(cmd):
             return False
@@ -169,7 +175,7 @@ def updateFave(file, update):
 
 def findFave(file, cmd):
     cmd   = removeFanart(cmd)
-    faves = getFavourites(file)
+    faves = getFavourites(file, validate=False)
     for idx, fave in enumerate(faves):
         if equals(fave[2], cmd):
             return fave, idx, len(faves)
@@ -190,7 +196,7 @@ def findFave(file, cmd):
 
 def insertFave(file, newFave, index):
     copy = []
-    faves = getFavourites(file)
+    faves = getFavourites(file, validate=False)
     for fave in faves:
         if len(copy) == index:
             copy.append(newFave)
@@ -203,6 +209,14 @@ def insertFave(file, newFave, index):
     return True
 
 
+def addFave(file, newFave):
+    faves = getFavourites(file, validate=False)
+    faves.append(newFave)
+
+    writeFavourites(file, faves)
+    return True
+
+
 def moveFave(src, dst, fave):
     if not copyFave(dst, fave):
         return False
@@ -210,7 +224,7 @@ def moveFave(src, dst, fave):
 
 
 def copyFave(file, original):
-    faves   = getFavourites(file)
+    faves   = getFavourites(file, validate=False)
     updated = False
 
     copy = list(original)
@@ -233,7 +247,7 @@ def copyFave(file, original):
 def removeFave(file, cmd):
     cmd = removeFanart(cmd)
     copy = []
-    faves = getFavourites(file)
+    faves = getFavourites(file, validate=False)
     for fave in faves:
         if not equals(removeFanart(fave[2]), cmd):
             copy.append(fave)
@@ -263,7 +277,7 @@ def shiftFave(file, cmd, up):
 
 def renameFave(file, cmd, newName):
     copy = []
-    faves = getFavourites(file)
+    faves = getFavourites(file, validate=False)
     for fave in faves:
         if equals(fave[2], cmd):
             fave[0] = newName

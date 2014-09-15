@@ -1,6 +1,6 @@
 '''
-    Simple XBMC Download Script
-    Copyright (C) 2013 Sean Poyser (seanpoyser@gmail.com)
+    Simple XBMC Download Script - most UI stuff removed for Super Favourites download
+    Copyright (C) 2014 Sean Poyser (seanpoyser@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,17 +26,19 @@ import inspect
 import utils
 
 
-def getResponse(url, size):
+def getResponse(url, size, referrer):
     try:
         req = urllib2.Request(url)
-       
+        if len(referrer) > 0:
+            req.add_header('Referer', referrer)
+    
         if size > 0:
             size = int(size)
             req.add_header('Range', 'bytes=%d-' % size)
 
         resp = urllib2.urlopen(req, timeout=10)
         return resp
-    except:
+    except Exception, e:
         return None
 
 
@@ -50,14 +52,8 @@ def download(url, dest, title=None):
     xbmc.executebuiltin(cmd)
 
 
-def doDownload(url, dest, title):
-    file = dest.rsplit(os.sep, 1)[-1]
-
-    #workaround bug that causes Frodo to lockup when stop is called       
-    xbmc.executebuiltin('ActivateWindow(%d)' % 10025)       
-    xbmc.Player().stop()   
-    
-    resp = getResponse(url, 0)
+def doDownload(url, dest, title, referrer=''):    
+    resp = getResponse(url, 0, referrer)
     
     if not resp:
         xbmcgui.Dialog().ok(title, dest, 'Download failed', 'No response from server')
@@ -69,13 +65,11 @@ def doDownload(url, dest, title):
     try:    resumable = 'bytes' in resp.headers['Accept-Ranges'].lower()
     except: resumable = False
     
-    #utils.log('Download Header')
-    #utils.log(resp.headers)
     if resumable:
         utils.log('Download is resumable')
     
     if content < 1:
-        xbmcgui.Dialog().ok(title, file, 'Unknown filesize', 'Unable to download')
+        xbmcgui.Dialog().ok(title, dest, 'Download failed', 'Unknown filesize')
         return
     
     size = 1024 * 1024
@@ -90,9 +84,6 @@ def doDownload(url, dest, title):
     count   = 0
     resume  = 0
     sleep   = 0
-    
-    if xbmcgui.Dialog().yesno(title + ' - Confirm Download', file, 'Complete file is %dMB' % mb, 'Continue with download?', 'Confirm',  'Cancel') == 1:
-        return
                 
     f = open(dest, mode='wb')
     
@@ -105,7 +96,6 @@ def doDownload(url, dest, title):
             downloaded += len(c)
         percent = min(100 * downloaded / content, 100)
         if percent >= notify:
-            xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i)" % ( title + ' - Download Progress - ' + str(percent)+'%', dest, 10000))
             notify += 10
 
         chunk = None
@@ -124,7 +114,6 @@ def doDownload(url, dest, title):
                 
                     f.close()
                     utils.log('%s download complete' % (dest))
-                    xbmcgui.Dialog().ok(title, dest, '' , 'Download finished')
                     return
         except Exception, e:
             utils.log(str(e))
@@ -174,7 +163,7 @@ def doDownload(url, dest, title):
                 chunks  = []
                 #create new response
                 utils.log('Download resumed (%d) %s' % (resume, dest))
-                resp = getResponse(url, total)
+                resp = getResponse(url, total, referrer)
             else:
                 #use existing response
                 pass

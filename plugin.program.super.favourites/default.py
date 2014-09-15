@@ -121,6 +121,9 @@ ISEARCH_EMPTY = '__iSearch__'
 # ---------------------------------------------------------- #
 
 
+utils.CheckVersion()
+
+
 global nItem
 nItem = 0
 
@@ -141,8 +144,6 @@ def clean(text):
 
 
 def main():
-    utils.CheckVersion()
-
     addSuperSearch()
 
     profile = xbmc.translatePath(PROFILE)
@@ -157,8 +158,6 @@ def addSuperSearch():
 
     if not SHOWSS:
         return
-
-    utils.verifySuperSearch()
 
     separator = False        
     addDir(GETTEXT(30054), _SUPERSEARCH, thumbnail=SEARCH, isFolder=True)
@@ -224,17 +223,30 @@ def addFavouriteMenuItem(menu, name, thumb, cmd):
     menu.append((GETTEXT(30006), 'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s)' % (sys.argv[0], _ADDTOXBMC, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd))))
 
 
-def addToXBMC(name, thumb, cmd):
-    cmd = '"%s"' % cmd
+def getCurrentWindowId():
+    winID = xbmcgui.getCurrentWindowId()
+    tries = 10
+
+    while winID == 10000 and tries > 0:
+        xbmc.sleep(100)
+        tries -= 1
+        winID = xbmcgui.getCurrentWindowId()
+
+    return winID if winID != 10000 else 10025
+
+
+def addToXBMC(name, thumb, cmd):    
+    cmd = '"%s"' % cmd   
 
     folder   = '&mode=%d' % _FOLDER
     search   = '&mode=%d' % _SUPERSEARCH
     edit     = '&mode=%d' % _EDITTERM
-    activate = '&mode=%d' % _ACTIVATEWINDOW   
+    #activate = '&mode=%d' % _ACTIVATEWINDOW   
 
-    if (folder in cmd) or (search in cmd) or (edit in cmd) or (activate in cmd):
+    #if (folder in cmd) or (search in cmd) or (edit in cmd) or (activate in cmd):
+    if (folder in cmd) or (search in cmd) or (edit in cmd):
         cmd = cmd.replace('+', '%20')
-        cmd = 'ActivateWindow(%d,%s)' % (xbmcgui.getCurrentWindowId(), cmd)
+        cmd = 'ActivateWindow(%d,%s)' % (getCurrentWindowId(), cmd)
     else:
         cmd = 'PlayMedia(%s)' % cmd
 
@@ -1473,7 +1485,6 @@ if len(content) > 0:
 if len(folder) > 0:   
     mode = _FOLDER
     path = os.path.join(PROFILE, folder)
-
 
     
 utils.log(sys.argv[2])

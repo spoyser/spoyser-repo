@@ -309,11 +309,22 @@ def doMenu():
         activateCommand(cmd)
 
 
-if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') != 'true':
-    try:
-        doMenu()
-    except Exception, e:
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'preload':
         import utils
-        utils.log('Exception in capture.py %s' % str(e))
+        utils.log('capture script preloaded')
+        return
 
-    xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')
+    if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') == 'true':
+        return
+
+    doMenu()    
+
+
+try:        
+    main()
+except Exception, e:
+    import utils
+    utils.log('Exception in capture.py %s' % str(e))
+
+xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

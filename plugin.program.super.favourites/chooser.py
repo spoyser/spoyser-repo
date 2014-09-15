@@ -90,7 +90,6 @@ class Main:
         self._parse_argv()
         faves = self.getFaves()
         MyDialog(faves, self.PROPERTY, self.CHANGETITLE, self.PATH, self.MODE)
-
             
     def _parse_argv(self):
         try:           
@@ -99,7 +98,7 @@ class Main:
             params = {}
                     
         self.PATH        = params.get('path',     '')               
-        self.PROPERTY    = params.get('property', '')
+        self.PROPERTY    = 'OTT' #params.get('property', '')
         self.CHANGETITLE = params.get('changetitle',   '').lower() == 'true'
 
         self.MODE = 'folder' if len(self.PATH) > 0 else 'root'
@@ -281,6 +280,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
                     keyboard.doModal()
                     if (keyboard.isConfirmed()):
                         favLabel = keyboard.getText()
+
+                print "SETTING label to %s" % favLabel
                         
                 xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Path'),  favPath.decode('string-escape')))
                 xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Label'), favLabel))
@@ -288,16 +289,16 @@ class MainGui(xbmcgui.WindowXMLDialog):
                 if favIcon:
                     xbmc.executebuiltin('Skin.SetString(%s,%s)' % ('%s.%s' % (self.property, 'Icon'), favIcon))
                     
-                #if isFolder:
-                #    xbmc.executebuiltin('Skin.SetString(%s,%s)' % ('%s.%s' % (self.property, 'IsFolder'), 'true'))
-                #else:
-                #    xbmc.executebuiltin('Skin.SetString(%s,%s)' % ('%s.%s' % (self.property, 'IsFolder'), 'false'))
+                if isFolder:
+                    xbmc.executebuiltin('Skin.SetString(%s,%s)' % ('%s.%s' % (self.property, 'IsFolder'), 'true'))
+                else:
+                    xbmc.executebuiltin('Skin.SetString(%s,%s)' % ('%s.%s' % (self.property, 'IsFolder'), 'false'))
                     
             else:
                 xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % ( self.property, 'Path'))
                 xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % ( self.property, 'Label'))
                 xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % ( self.property, 'Icon'))
-                #xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % ( self.property, 'IsFolder'))
+                xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % ( self.property, 'IsFolder'))
 
             try:    count = int(xbmcgui.Window(10000).getProperty('Super_Favourites_Count'))
             except: count = 0    

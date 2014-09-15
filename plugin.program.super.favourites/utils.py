@@ -49,7 +49,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.18'
+VERSION = '1.0.19'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -70,7 +70,7 @@ FOLDERCFG    = 'folder.cfg'
 
 def log(text):
     try:
-        output = '%s V%s : %s' % (TITLE, VERSION, text)
+        output = '%s V%s : %s' % (TITLE, VERSION, str(text))
         print output
         xbmc.log(output, xbmc.LOGDEBUG)
     except:
@@ -120,13 +120,9 @@ def CheckVersion():
         if prev == curr:        
             return
 
-        verifySuperSearch(replace=True)
+        verifySuperSearch()
 
         ADDON.setSetting('VERSION', curr)
-
-
-        if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
-            verifySuperSearch(replace=False)
 
         if prev == '0.0.0' or prev== '1.0.0':
             folder  = xbmc.translatePath(PROFILE)
@@ -142,23 +138,36 @@ def CheckVersion():
         pass
 
 
-def verifySuperSearch(replace=False):
-    dst = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
-
-    if os.path.exists(dst):
-        if not replace:
-            return
-
+def verifySuperSearch():
+    dst = os.path.join(xbmc.translatePath(ROOT), 'Search')
     src = os.path.join(HOME, 'resources', 'Search', FILENAME)
 
-    try:    os.makedirs(os.path.join(xbmc.translatePath(ROOT), 'Search'))
+    try:    os.makedirs(dst)
     except: pass
 
-    try:
-        import shutil
-        shutil.copyfile(src, dst)
-    except:
-        pass
+    dst = os.path.join(dst, FILENAME)
+
+    if not os.path.exists(dst):
+        try:
+            import shutil
+            shutil.copyfile(src, dst)
+        except:
+            pass
+        return
+
+
+    import favourite
+
+    new   = favourite.getFavourites(src, validate=False)
+    line1 = GETTEXT(30123)
+    line2 = GETTEXT(30124)
+
+    for item in new:
+        fave, index, nFaves = favourite.findFave(dst, item[2])
+        if index < 0:
+            line = line1 % item[0]
+            if DialogYesNo(line1=line, line2=line2):
+                favourite.addFave(dst, item)
 
 
 def UpdateKeymaps():
@@ -171,7 +180,10 @@ def UpdateKeymaps():
         
 def DeleteKeymap(map):
     path = os.path.join(xbmc.translatePath('special://profile/keymaps'), map)
+    DeleteFile(path)
 
+
+def DeleteFile(path):
     tries = 5
     while os.path.exists(path) and tries > 0:
         tries -= 1 

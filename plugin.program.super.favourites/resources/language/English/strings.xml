@@ -118,5 +118,21 @@
     <string id="30119">work on an ATV2</string>	
     <string id="30120">UI Display name</string>	
     <string id="30121">Kodi</string>	
-    <string id="30122">XBMC</string>	
+    <string id="30122">XBMC</string>
+    <string id="30123">New iSearch item found - %s</string>
+    <string id="30124">Do you wish to import into iSearch?</string>
+    <string id="30125">Import from remote file</string>	
+    <string id="30126">Remote file</string>	
+    <string id="30127">[COLOR springgreen]Click to import Super Favourites[/COLOR]</string>
+    <string id="30128">[COLOR springgreen]Click to export Super Favourites[/COLOR]</string>
+    <string id="30129">[B]Export[/B]</string>
+    <string id="30130">Do you wish to include your Super Favourite settings?</string>
+	<string id="30131">Choose a folder to export your Super Favourites to</string>
+	<string id="30132">Super Favourites successfully exported</string>
+	<string id="30133">Super Favourites successfully imported</string>
+	<string id="30134">Choose a zipfile to import into your Super Favourites</string>
+    <string id="30135">[B]Import[/B]</string>
+	<string id="30136">Do you want to overwrite your current settings?</string>
+	<string id="30137">Failed to import Super Favourites</string>
+	<string id="30138">Show unavailable addons</string>
 </strings>
