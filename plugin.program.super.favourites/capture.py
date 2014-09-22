@@ -1,4 +1,4 @@
-﻿#
+#
 #       Copyright (C) 2014
 #       Sean Poyser (seanpoyser@gmail.com)
 #
@@ -147,14 +147,15 @@ def doMenu():
         return
 
     folder = xbmc.getInfoLabel('Container.FolderPath')
+    path  = xbmc.getInfoLabel('ListItem.FolderPath')
+
     #ignore if in Super Favourites
-    if utils.ADDONID in folder:
+    if (utils.ADDONID in folder) or (utils.ADDONID in path):
         doStandard(useScript=False)
         return
         
     choice   = 0
     label    = xbmc.getInfoLabel('ListItem.Label')
-    path     = xbmc.getInfoLabel('ListItem.FolderPath')
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
     name     = xbmc.getInfoLabel('ListItem.Label')
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
@@ -282,6 +283,9 @@ def doMenu():
         import favourite
         cmd = favourite.addFanart(cmd, fanart)
 
+        if isFolder:
+            cmd = cmd.replace('")', '",return)')
+       
         copyFave(name, thumb, cmd)
 
     if choice == _LAUNCH_SF:

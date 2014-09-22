@@ -25,7 +25,7 @@ In this instance the addon will automatically resolve the Skin setting to the co
 
 If the folder parameter is replaced with the content parameter and then used in the <content> tag of a list, e.g.
 
-<content>plugin://plugin.program.super.favourites/?content=CustomSuperFavourite1&reload=$INFO[Window(Home).Property(Super_Favourites_Count)]</content>
+<content target="video">plugin://plugin.program.super.favourites/?content=CustomSuperFavourite1&reload=$INFO[Window(Home).Property(Super_Favourites_Count)]</content>
 
 SF will create the same list but remove the "New Super Favourite", "Explore XBMC Favourites" and Separator items automatically, this is useful when using SF to automatically populate a list/widget in XBMC. The reload section will cause the list to automatically refresh if the contents change
 

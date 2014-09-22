@@ -98,16 +98,16 @@ _EDITSEARCH       = 3000
 
 
 # --------------------- Addon Settings --------------------- #
-SHOWNEW        = ADDON.getSetting('SHOWNEW')        == 'true'
-SHOWXBMC       = ADDON.getSetting('SHOWXBMC')       == 'true'
-SHOWSEP        = ADDON.getSetting('SHOWSEP')        == 'true'
-SHOWSS         = ADDON.getSetting('SHOWSS')         == 'true'
-SHOW_FANART    = ADDON.getSetting('SHOW_FANART')    == 'true'
-SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')  == 'true'
-SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')   == 'true'
-PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
-METARECOMMEND  = ADDON.getSetting('METARECOMMEND')  == 'true'
-INHERIT        = ADDON.getSetting('INHERIT')        == 'true'
+SHOWNEW        = ADDON.getSetting('SHOWNEW')           == 'true'
+SHOWXBMC       = ADDON.getSetting('SHOWXBMC')          == 'true'
+SHOWSEP        = ADDON.getSetting('SHOWSEP')           == 'true'
+SHOWSS         = ADDON.getSetting('SHOWSS')            == 'true'
+SHOW_FANART    = ADDON.getSetting('SHOW_FANART')       == 'true'
+SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')     == 'true'
+SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')      == 'true'
+PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS')    == 'true'
+METARECOMMEND  = ADDON.getSetting('METARECOMMEND')     == 'true'
+INHERIT        = ADDON.getSetting('INHERIT')           == 'true'
 DEFAULT_FANART = ADDON.getSetting('DEFAULT_FANART')
 
 if DEFAULT_FANART == '1':
@@ -235,18 +235,27 @@ def getCurrentWindowId():
     return winID if winID != 10000 else 10025
 
 
-def addToXBMC(name, thumb, cmd):    
-    cmd = '"%s"' % cmd   
+def addToXBMC(name, thumb, cmd):
+    p = get_params(cmd.replace('?', '&'))
+    try: 
+        mode = int(p['mode'])
+        if mode == _FOLDER:
+            label = urllib.unquote_plus(p['label'])
+            path  = urllib.unquote_plus(p['path'])
+            path  = favourite.convertToHome(path)
+            cmd   = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], label, _FOLDER, urllib.quote_plus(path))
+    except:
+        pass
 
+    cmd = '"%s"' % cmd   
+    
     folder   = '&mode=%d' % _FOLDER
     search   = '&mode=%d' % _SUPERSEARCH
     edit     = '&mode=%d' % _EDITTERM
-    #activate = '&mode=%d' % _ACTIVATEWINDOW   
 
-    #if (folder in cmd) or (search in cmd) or (edit in cmd) or (activate in cmd):
     if (folder in cmd) or (search in cmd) or (edit in cmd):
         cmd = cmd.replace('+', '%20')
-        cmd = 'ActivateWindow(%d,%s)' % (getCurrentWindowId(), cmd)
+        cmd = 'ActivateWindow(%d,%s,return)' % (getCurrentWindowId(), cmd)
     else:
         cmd = 'PlayMedia(%s)' % cmd
 
@@ -262,9 +271,10 @@ def addToXBMC(name, thumb, cmd):
 
     #if it is already in there don't add again
     if favourite.findFave(file, cmd)[0]:
-        return False
+        return False    
 
-    faves = favourite.getFavourites(file)
+    faves = favourite.getFavourites(file, validate=False)
+
     faves.append(fave)
 
     favourite.writeFavourites(file, faves)
@@ -1231,7 +1241,7 @@ def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
     keyword = urllib.quote_plus(keyword.replace('&', ''))  
 
     file  = os.path.join(xbmc.translatePath(ROOT), 'Search', FILENAME)
-    faves = favourite.getFavourites(file) 
+    faves = favourite.getFavourites(file, superSearch=True)    
 
     if len(faves) == 0:
         #try shipped search file
@@ -1263,11 +1273,18 @@ def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
 
 def playCommand(cmd):
     try:
-        cmd = favourite.tidy(cmd)        
-
+        cmd = favourite.tidy(cmd)  
+        
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
              return xbmc.executebuiltin(cmd)
+
+        #if in contentMode just do it
+        if contentMode:
+            xbmc.executebuiltin('ActivateWindow(Home)') #some items don't play nicely if launched from wrong window
+            if cmd.lower().startswith('activatewindow'):
+                cmd = cmd.replace('")', '",return)') #just in case return is missing                
+            return xbmc.executebuiltin(cmd)
 
         if cmd.startswith('RunScript'):    
             #workaround bug in Frodo that can cause lock-up
@@ -1361,6 +1378,9 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         if len(fanart) > 0:
             u += '&fanart=' + urllib.quote_plus(fanart)
 
+    if CONTENTMODE:
+        u += '&contentMode=true'
+
     if len(thumbnail) == 0:
         thumbnail = BLANK
        
@@ -1451,6 +1471,10 @@ except: folder = ''
 try:    content = urllib.unquote_plus(params['content'])
 except: content = ''
 
+try:    contentMode = params['contentMode'].lower() == 'true'
+except: contentMode = False
+
+
 
 doRefresh   = False
 doEnd       = True
@@ -1458,21 +1482,26 @@ cacheToDisc = False
 contentType = ''
 
 
-
 if len(content) > 0:   
     mode   = _IGNORE
     folder = content
     try:
-        if folder.lower().startswith('customsuperfavourite'):  
-            path = xbmc.getInfoLabel('Skin.String(%s.Path)' % folder)
+        path = xbmc.getInfoLabel('Skin.String(%s.Path)' % folder)
 
+        if len(path) > 0:
+            folder = ''
             import re
             plugin = re.compile('.+?"(.+?)"').search(path).group(1)
 
             prams = get_params(plugin)
 
             try:    folder = urllib.unquote_plus(prams['folder'])
-            except: folder = ''
+            except: pass
+
+            if len(folder) == 0:
+                mode = _FOLDER
+                path = PROFILE
+
     except Exception, e:
         pass
 
@@ -1486,7 +1515,7 @@ if len(folder) > 0:
     mode = _FOLDER
     path = os.path.join(PROFILE, folder)
 
-    
+
 utils.log(sys.argv[2])
 utils.log(sys.argv)
 utils.log('Mode = %d' % mode)
@@ -1495,12 +1524,15 @@ utils.log('cmd  = %s' % cmd)
 
 
 if mode == _PLAYMEDIA:
-    playCommand(cmd)
-
-
+    if not contentMode:
+        mode = _IGNORE
+        playCommand(cmd)
+ 
 elif mode == _ACTIVATEWINDOW:
-    doEnd = False
-    playCommand(cmd)
+    if not contentMode:
+        doEnd = False
+        mode  = _IGNORE
+        playCommand(cmd)
 
 
 elif mode == _PLAYLIST:
@@ -1721,7 +1753,16 @@ if doEnd:
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
 
 
-if mode == _SUPERSEARCHDEF:
+xbmc.sleep(250)
+
+
+if mode == _PLAYMEDIA:
+    playCommand(cmd)
+
+elif mode == _ACTIVATEWINDOW:
+    playCommand(cmd)
+
+elif mode == _SUPERSEARCHDEF:
     import search
     fave = search.getDefaultSearch()
     if fave:

@@ -49,7 +49,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.20'
+VERSION = '1.0.21'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -280,6 +280,10 @@ def VerifyKeymapMenu():
     except:
         pass
 
+    return True
+
+
+def verifyPlayMedia(cmd):
     return True
 
 

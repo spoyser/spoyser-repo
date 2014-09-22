@@ -82,12 +82,32 @@ def getParam(param, file):
         if line.startswith(param):
             return line.split(param, 1)[-1].strip()
     return ''
-        
+
+
+def GetFave(property, path='', changeTitle=False):
+    xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Path'))
+    xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Label'))
+    xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Icon'))
+    xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'IsFolder'))
+
+
+    Main(property, path, changeTitle)
+
+    while xbmcgui.Window(10000).getProperty('Super_Favourites_Chooser') == 'true':
+        xbmc.sleep(100)
+
+    xbmc.sleep(500)
+    return len(xbmc.getInfoLabel('Skin.String(OTT.Path)')) > 0
 
 
 class Main:
-    def __init__(self):
-        self._parse_argv()
+    def __init__(self, property=None, path='', changeTitle=False):
+        xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'true')
+        if property:
+            self.init(property, path, changeTitle)
+        else:
+            self._parse_argv()
+
         faves = self.getFaves()
         MyDialog(faves, self.PROPERTY, self.CHANGETITLE, self.PATH, self.MODE)
             
@@ -97,9 +117,18 @@ class Main:
         except:
             params = {}
                     
-        self.PATH        = params.get('path',     '')               
-        self.PROPERTY    = 'OTT' #params.get('property', '')
-        self.CHANGETITLE = params.get('changetitle',   '').lower() == 'true'
+        path        = params.get('path',     '')               
+        property    = params.get('property', '')
+        changeTitle = params.get('changetitle',   '').lower() == 'true'
+
+        self.init(property, path, changeTitle)
+
+
+    def init(self, property, path, changeTitle):
+                    
+        self.PATH        = path
+        self.PROPERTY    = property
+        self.CHANGETITLE = changeTitle
 
         self.MODE = 'folder' if len(self.PATH) > 0 else 'root'
 
@@ -175,7 +204,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
             
             listitem.setIconImage(fave[1])
             listitem.setProperty('Icon', fave[1])
-            listitem.setProperty('Path', fave[2])
+
+            cmd = fave[2]
+            if cmd.lower().startswith('activatewindow'):
+                cmd = cmd.replace('")', '",return)')
+
+            cmd = favourite.removeFanart(cmd)
+
+            listitem.setProperty('Path', cmd)
             
             if len(fave) > 3 and fave[3]:
                 listitem.setProperty('IsFolder', 'true')
@@ -221,7 +257,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
             thumb    = getFolderThumb(fullpath)
 
             listitem = xbmcgui.ListItem(path + GETTEXT(30102))
-
+                     
             listitem.setIconImage(thumb)
             listitem.setProperty('Icon',     thumb)
             listitem.setProperty('Path',     self.path)
@@ -229,14 +265,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
             self.favList.addItem(listitem)
 
-
         except Exception, e:
             pass
 
         
     def onAction(self, action):
         if action.getId() in (9, 10, 92, 216, 247, 257, 275, 61467, 61448):
-            if len(self.path) == 0:                
+            if len(self.path) == 0: 
+                xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'false')               
                 self.close()
                 return
 
@@ -272,7 +308,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
                         cmd += utils.ADDONID + '/?'
                         cmd += 'label=%s&' % urllib.quote_plus(favLabel)
                         cmd += 'folder=%s' % urllib.quote_plus(favPath)
-                        cmd += '")'
+                        cmd += '",return)'
                         favPath = cmd
                 
                 if self.changeTitle:
@@ -280,10 +316,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
                     keyboard.doModal()
                     if (keyboard.isConfirmed()):
                         favLabel = keyboard.getText()
-
-                print "SETTING label to %s" % favLabel
                         
-                xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Path'),  favPath.decode('string-escape')))
+                xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Path'),   favPath.decode('string-escape')))
                 xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Label'), favLabel))
                
                 if favIcon:
@@ -303,6 +337,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
             try:    count = int(xbmcgui.Window(10000).getProperty('Super_Favourites_Count'))
             except: count = 0    
             xbmcgui.Window(10000).setProperty('Super_Favourites_Count', str(count+1))
+            xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'false')
                 
             xbmc.sleep(300)
             self.close()
@@ -313,7 +348,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
 
     def changeFolder(self, path):
-        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property, path, self.changeTitle)
+        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property,  path, self.changeTitle)
         self.close()    
         xbmc.executebuiltin(cmd)
 

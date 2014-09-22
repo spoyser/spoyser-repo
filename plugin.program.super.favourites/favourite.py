@@ -30,8 +30,7 @@ import utils
 HOMESPECIAL = 'special://home/'
 HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
 
-
-SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL')  == 'true'
+SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 
 
 html_escape_table = {
@@ -55,7 +54,7 @@ def unescape(text):
     return text
 
 
-def getFavourites(file, limit=10000, validate=True):
+def getFavourites(file, limit=10000, validate=True, superSearch=False):
     xml  = '<favourites></favourites>'
     if os.path.exists(file):  
         fav = open(file , 'r')
@@ -84,7 +83,14 @@ def getFavourites(file, limit=10000, validate=True):
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 
-        if (not validate) or isValid(cmd):
+        add = False
+
+        if superSearch:
+            add = isValid(cmd)
+        elif (SHOWUNAVAIL) or (not validate) or isValid(cmd):
+            add = True
+
+        if add:
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
@@ -150,8 +156,9 @@ def isValid(cmd):
 
     cmd = tidy(cmd)
 
-    if SHOWUNAVAIL:
-        return True
+    if 'PlayMedia' in cmd:
+        return utils.verifyPlayMedia(cmd)
+        
 
     if 'plugin' in cmd:        
         if not utils.verifyPlugin(cmd):
@@ -346,7 +353,11 @@ def removeFanart(cmd):
 
     cmd = cmd.replace('?sf_fanart=', '&sf_fanart=')
     cmd = cmd.replace('&sf_fanart=', '&sf_fanart=X') #in case no fanart
+
     cmd = re.sub('&sf_fanart=(.+?)_"\)', '")', cmd)
+    cmd = re.sub('&sf_fanart=(.+?)_',    '',   cmd)
+
+    cmd = cmd.replace('/")', '")')
 
     return cmd
 
@@ -362,8 +373,8 @@ def removeWinID(cmd):
     return cmd
 
 
-def convertToHome(image):
-    if image.startswith(HOMEFULL):
-        image = image.replace(HOMEFULL, HOMESPECIAL)
+def convertToHome(text):
+    if text.startswith(HOMEFULL):
+        text = text.replace(HOMEFULL, HOMESPECIAL)
 
-    return image
+    return text
