@@ -35,7 +35,7 @@ HOME      =  ADDON.getAddonInfo('path')
 PROFILE   =  xbmc.translatePath(ADDON.getAddonInfo('profile'))
 RESOURCES =  os.path.join(HOME, 'resources')
 TITLE     = 'VPNicity'
-VERSION   = '1.0.2'
+VERSION   = '1.1.1'
 KEYMAP    = 'vpnicity_menu.xml'
 
 
