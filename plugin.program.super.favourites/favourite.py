@@ -319,11 +319,14 @@ def equals(fave, cmd):
 
 
 def getFanart(cmd):
+    cmd = cmd.replace(',return', '')
+
     import urllib 
     try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
     except: pass
 
     cmd = urllib.unquote_plus(cmd)
+    cmd = cmd.replace(',return', '')
     try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
     except: pass
 

@@ -1776,3 +1776,6 @@ elif mode == _SUPERSEARCHDEF:
         else:
             cmd = re.compile('"(.+?)"').search(cmd).group(1)
             xbmc.executebuiltin('XBMC.Container.Update(%s)' % cmd)
+
+
+#xbmc.executebuiltin('RunScript(script.tlbb.systemsettings,type=setlangauge)')
