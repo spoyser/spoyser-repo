@@ -34,7 +34,7 @@ HOME    = ADDON.getAddonInfo('path')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
 TITLE   = 'Funnier Moments'
-VERSION = '1.0.12'
+VERSION = '1.0.15'
 URL     = 'http://www.funniermoments.com/'
 MOBILE  = False
 
@@ -242,7 +242,7 @@ def GetRandom():
     url  = URL + 'randomizer.php'
     html = GetHTML(url, 0) 
 
-    try:    title = re.compile('title" content="Watch (.+?) Full Episode Online 4 FREE in HIGH QUALITY"').search(html).group(1)
+    try:    title = re.compile('<title>Watch (.+?) - Full Episode Online 4 FREE in HIGH QUALITY - Funnier Moments</title>').search(html).group(1)
     except: pass
 
     try:    id    = re.compile('watch.php\?vid=(.+?)"').search(html).group(1)
@@ -670,7 +670,6 @@ elif mode == SEARCH:
 
 else:
     Main()
-
         
 try:
     #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
