@@ -670,6 +670,7 @@ def fanartFave(file, cmd):
         return False
 
     fave, index, nFaves = favourite.findFave(file, cmd)
+
     fave[2] = favourite.addFanart(fave[2], image)
 
     return favourite.updateFave(file, fave)
@@ -1746,6 +1747,7 @@ if nItem < 1:
 
 if doRefresh:
     refresh()
+
 
 if doEnd:
     if len(contentType) > 0:

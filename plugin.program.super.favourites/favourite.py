@@ -252,9 +252,10 @@ def copyFave(file, original):
 
 
 def removeFave(file, cmd):
-    cmd = removeFanart(cmd)
-    copy = []
+    cmd   = removeFanart(cmd)
+    copy  = []
     faves = getFavourites(file, validate=False)
+
     for fave in faves:
         if not equals(removeFanart(fave[2]), cmd):
             copy.append(fave)
@@ -336,17 +337,26 @@ def getFanart(cmd):
 def addFanart(cmd, fanart):
     import urllib 
 
+    hasReturn = False
+    if cmd.endswith(',return)'):
+        hasReturn = True
+        cmd = cmd.replace(',return', '')
+
     cmd = removeFanart(cmd)
 
     if cmd.endswith('")'):
         cmd = cmd.rsplit('")', 1)[0]
 
-    if '?' in cmd:       
+    if '?' in cmd:   
         cmd += '&'
     else:
         cmd += '?'
 
     cmd += 'sf_fanart=%s_")' % urllib.quote_plus(convertToHome(fanart))
+
+    if hasReturn:
+        cmd = cmd.replace(')', ',return)')
+
     return cmd
 
 
@@ -357,8 +367,9 @@ def removeFanart(cmd):
     cmd = cmd.replace('?sf_fanart=', '&sf_fanart=')
     cmd = cmd.replace('&sf_fanart=', '&sf_fanart=X') #in case no fanart
 
-    cmd = re.sub('&sf_fanart=(.+?)_"\)', '")', cmd)
-    cmd = re.sub('&sf_fanart=(.+?)_',    '',   cmd)
+    cmd = re.sub('&sf_fanart=(.+?)_"\)', '")',               cmd)
+    cmd = re.sub('&sf_fanart=(.+?)_",return\)', '",return)', cmd)
+    cmd = re.sub('&sf_fanart=(.+?)_',    '',                 cmd)
 
     cmd = cmd.replace('/")', '")')
 

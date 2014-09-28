@@ -49,7 +49,7 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.22'
+VERSION = '1.0.23'
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
@@ -323,7 +323,7 @@ def GetFolder(title):
     if not os.path.isdir(folder):
         os.makedirs(folder) 
 
-    folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, default)
+    folder = xbmcgui.Dialog().browse(3, title, 'video', '', False, False, default)
     if folder == default:
         return None
 
