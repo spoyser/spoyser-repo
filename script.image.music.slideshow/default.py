@@ -57,7 +57,7 @@ MODULES = None
 def log(text):
     try:
         output = '%s : %s' % (ADDONID, text)
-        #print output
+        print output
         xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
@@ -67,9 +67,11 @@ def Start():
 
 
 def Restart():
+    Reset()
+
     if not xbmc.Player().isPlayingAudio():
         xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30001)+",5000,"+ICON+")")      
-        Reset()
+        #Reset()
         return
 
     quit = False #need to work out how to tell that user has quit slideshow using stop (probably use a keymap - override STOP)
@@ -185,20 +187,22 @@ def Initialise():
 
     images = GetImages(artist)
 
-    if not ShowImages(images):
-        xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30002)+" "+artist+",5000,"+ICON+")")
+    if not ShowImages(images, artist):
         Reset()
 
         
-def ShowImages(images):  
+def ShowImages(images, artist):  
     xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Playlist.Clear", "params": {"playlistid":2}, "id": 1}')
     if len(images) == 0:
+        xbmc.executebuiltin("XBMC.Notification("+TITLE+","+GETSTRING(30002)+" "+artist+",5000,"+ICON+")")
         return False
 
     while len(images) > 5:
         AddImages(images[:5])
+        if artist != GetArtist():
+            return True
         if not DoPlaylist():
-            return False
+            return True
         images = images[5:]
 
     AddImages(images)
@@ -301,7 +305,8 @@ def main():
 
 #TestModule('AllMusic', 'Europe')
 
-if (sys.argv[0] != ADDONID) and (not xbmc.Player().isPlayingAudio()):
+
+if not xbmc.Player().isPlayingAudio():
     ADDON.openSettings()
 
 elif __name__ == '__main__':
