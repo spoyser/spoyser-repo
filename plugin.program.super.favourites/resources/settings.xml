@@ -23,6 +23,8 @@
 		<setting id="SHOWUNAVAIL"    label="30138" type="bool"      default="false" />
 		<setting id="INHERIT"        label="30096" type="bool"      default="true"  />	
         <setting id="SHOW_FANART"    label="30064" type="bool"      default="true"  />
+		<setting id="SHOWIMPORT"     label="30139" type="bool"      default="false"  />
+		<setting id="SHOWIMPORTROOT" label="30065" type="bool"      default="false" enable="eq(-1,true)" visible="eq(-1,true)"/>
         <setting id="DEFAULT_FANART" label="30113" type="enum"      default="30114" lvalues="30114|30115|30116"/>
         <setting id="DEFAULT_IMAGE"  label="30117" type="file"      default=""      enable="eq(-1,1)" visible="eq(-1,1)"/>		
 		
@@ -46,8 +48,8 @@
 		
 		<setting id="REMOTE"   label="30125" type="bool"                           default="false" />
 		<setting id="LOCATION" label="30126" type="text"      enable="eq(-1,true)" default="" visible="eq(-1,true)"/>
-		<setting               label="30127" type="action"    action="RunScript($CWD/import.py,True)"  option="close" />
-		<setting               label="30128" type="action"    action="RunScript($CWD/import.py,False)" option="close" />
+		<setting               label="30127" type="action"    action="RunScript($CWD/importer.py,True)"  option="close" />
+		<setting               label="30128" type="action"    action="RunScript($CWD/importer.py,False)" option="close" />
 		
 		<setting type="sep" visible="true" />				
 	</category>

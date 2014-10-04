@@ -95,20 +95,29 @@ _RECOMMEND_KEY    = 2700
 _RECOMMEND_IMDB   = 2800
 _PLAYTRAILER      = 2900
 _EDITSEARCH       = 3000
+_IMPORT           = 3100
 
 
 # --------------------- Addon Settings --------------------- #
 SHOWNEW        = ADDON.getSetting('SHOWNEW')           == 'true'
 SHOWXBMC       = ADDON.getSetting('SHOWXBMC')          == 'true'
+SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')      == 'true'
+SHOWIMPORT     = ADDON.getSetting('SHOWIMPORT')        == 'true'
+SHOWIMPORTROOT = ADDON.getSetting('SHOWIMPORTROOT')    == 'true'
 SHOWSEP        = ADDON.getSetting('SHOWSEP')           == 'true'
 SHOWSS         = ADDON.getSetting('SHOWSS')            == 'true'
 SHOW_FANART    = ADDON.getSetting('SHOW_FANART')       == 'true'
 SHOWRECOMMEND  = ADDON.getSetting('SHOWRECOMMEND')     == 'true'
-SHOWXBMCROOT   = ADDON.getSetting('SHOWXBMCROOT')      == 'true'
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS')    == 'true'
 METARECOMMEND  = ADDON.getSetting('METARECOMMEND')     == 'true'
 INHERIT        = ADDON.getSetting('INHERIT')           == 'true'
+REMOTE         = ADDON.getSetting('REMOTE')            == 'true'
 DEFAULT_FANART = ADDON.getSetting('DEFAULT_FANART')
+
+if REMOTE:
+    LOCATION = len(ADDON.getSetting('LOCATION')) > 0
+else:
+    LOCATION = False
 
 if DEFAULT_FANART == '1':
     FANART = ADDON.getSetting('DEFAULT_IMAGE')
@@ -451,6 +460,20 @@ def parseFolder(folder):
         thumbnail, fanart = getFolderThumb(xbmc.translatePath(PROFILE), True)
 
         addDir(GETTEXT(30040), _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart)
+        separator = True
+
+
+    show = SHOWIMPORT and LOCATION
+    if (mode != _MAIN and SHOWIMPORTROOT):
+        show = False
+
+    if show:
+        separator = False
+
+        thumbnail = 'DefaultFile.png'
+        fanart    = ''
+
+        addDir(GETTEXT(30125), _IMPORT, thumbnail=thumbnail, isFolder=False, fanart=fanart)
         separator = True
 
     try:    current, dirs, files = os.walk(folder).next()
@@ -1688,6 +1711,10 @@ elif mode == _SECURE:
 
 elif mode == _UNSECURE:
     doRefresh = removeLock(path, name)
+
+elif mode == _IMPORT:
+    import importer
+    importer.doImport()
 
 
 elif mode == _RECOMMEND_KEY:

@@ -49,12 +49,13 @@ ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 ROOT    =  ADDON.getSetting('FOLDER')
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
-VERSION = '1.0.23'
+VERSION =  ADDON.getAddonInfo('version')
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY = ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
+
 
 
 KEYMAP_HOT  = 'super_favourites_hot.xml'
@@ -88,6 +89,13 @@ def DialogYesNo(line1, line2='', line3='', noLabel=None, yesLabel=None):
         return d.yesno(TITLE + ' - ' + VERSION, line1, line2 , line3) == True
     else:
         return d.yesno(TITLE + ' - ' + VERSION, line1, line2 , line3, noLabel, yesLabel) == True
+
+
+def Progress(title, line1 = '', line2 = '', line3 = ''):
+    dp = xbmcgui.DialogProgress()
+    dp.create(title, line1, line2, line3)
+    dp.update(0)
+    return dp
 
 
 def generateMD5(text):
@@ -323,7 +331,7 @@ def GetFolder(title):
     if not os.path.isdir(folder):
         os.makedirs(folder) 
 
-    folder = xbmcgui.Dialog().browse(3, title, 'video', '', False, False, default)
+    folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, default)
     if folder == default:
         return None
 

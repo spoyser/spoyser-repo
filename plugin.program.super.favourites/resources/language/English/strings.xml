@@ -135,4 +135,7 @@
 	<string id="30136">Do you want to overwrite your current settings?</string>
 	<string id="30137">Failed to import Super Favourites</string>
 	<string id="30138">Show unavailable addons</string>
+	<string id="30139">Show import remote file</string>	
+	<string id="30140">Importing %s from</string>
+	<string id="30141">Please wait, this may take a while.</string>
 </strings>
