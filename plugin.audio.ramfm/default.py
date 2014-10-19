@@ -182,7 +182,10 @@ def Play():
         StartSlideShow()
 
 
+
 def PlayPodcast(name, link):
+    link = link.split('"')[0]
+
     thumbnail = ICON#'DefaultPlaylist.png'
         
     liz = xbmcgui.ListItem(name, iconImage = thumbnail, thumbnailImage = thumbnail)
