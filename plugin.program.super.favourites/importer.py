@@ -142,6 +142,8 @@ def doZipfile(outputFile, includeSettings=True):
         local = local[-1]
 
         # add directory (this is needed for empty dirs)
+        if local.lower() == 'cache':
+            continue
         zip.write(root, local)
 
         for file in files:    
@@ -186,6 +188,8 @@ def extractAll(filename, dp, location):
             elif filename.lower().startswith('super favourites'):
                 zin.extract(item, ROOT)
             elif filename.lower().startswith('search'):
+                zin.extract(item, ROOT)
+            elif filename.lower().startswith('pl'):
                 zin.extract(item, ROOT)
             else:
                 zin.extract(item, PROFILE)

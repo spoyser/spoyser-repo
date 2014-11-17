@@ -56,6 +56,8 @@ SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY = ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
 
+DEBUG   = ADDON.getSetting('DEBUG') == 'true'
+
 
 
 KEYMAP_HOT  = 'super_favourites_hot.xml'
@@ -72,8 +74,11 @@ FOLDERCFG    = 'folder.cfg'
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, str(text))
-        #print output
-        xbmc.log(output, xbmc.LOGDEBUG)
+        
+        if DEBUG:
+            xbmc.log(output)
+        else:
+            xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
 
@@ -336,6 +341,45 @@ def GetFolder(title):
         return None
 
     return xbmc.translatePath(folder)
+
+
+def Clean(name):
+    import re
+    name   = re.sub('\([0-9)]*\)', '', name)
+
+    items = name.split(']')
+    name  = ''
+
+    for item in items:
+        if len(item) == 0:
+            continue
+
+        item += ']'
+        item  = re.sub('\[[^)]*\]', '', item)
+
+        if len(item) > 0:
+            name += item
+
+    name  = name.replace('[', '')
+    name  = name.replace(']', '')
+    name  = name.strip()
+
+    while True:
+        length = len(name)
+        name = name.replace('  ', ' ')
+        if length == len(name):
+            break
+
+    return name
+
+
+
+#Remove Tags method from
+#http://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
+
+TAG_RE = re.compile('<.*?>')
+def RemoveTags(html):
+    return TAG_RE.sub('', html)
 
 
 def showBusy():

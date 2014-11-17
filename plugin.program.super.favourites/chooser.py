@@ -124,8 +124,7 @@ class Main:
         self.init(property, path, changeTitle)
 
 
-    def init(self, property, path, changeTitle):
-                    
+    def init(self, property, path, changeTitle):          
         self.PATH        = path
         self.PROPERTY    = property
         self.CHANGETITLE = changeTitle
@@ -209,7 +208,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
             if cmd.lower().startswith('activatewindow'):
                 cmd = cmd.replace('")', '",return)')
 
-            cmd = favourite.removeFanart(cmd)
+            cmd = favourite.removeSFOptions(cmd)
 
             listitem.setProperty('Path', cmd)
             
@@ -254,7 +253,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
         try:
             fullpath = os.path.join(utils.PROFILE, self.path)
-            thumb    = getFolderThumb(fullpath)
+            thumb    = getFolderThumb(fullpath) if self.mode != 'root' else ICON
 
             listitem = xbmcgui.ListItem(path + GETTEXT(30102))
                      
@@ -266,6 +265,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
             self.favList.addItem(listitem)
 
         except Exception, e:
+            print str(e)
             pass
 
         

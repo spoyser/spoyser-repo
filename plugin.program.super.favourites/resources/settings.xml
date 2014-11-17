@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="30070">	
+	    <setting id="DEBUG"       label="30154" type="bool"      default="false" />
 		<setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30121|30122"/>
 		<setting id="FOLDER"      label="30056" type="folder"    default="special://profile/addon_data/plugin.program.super.favourites/" />
 		
@@ -17,33 +18,38 @@
 	
 	<category label="30022">	
 		<setting id="SHOWNEW"        label="30023" type="bool"      default="true"  />
-		<setting id="SHOWXBMC"       label="30024" type="bool"      default="true"  />
-		<setting id="SHOWXBMCROOT"   label="30065" type="bool"      default="false" enable="eq(-1,true)" visible="eq(-1,true)"/>
+		<setting id="SHOWXBMC"       label="30024" type="bool"      default="true"  />		
 		<setting id="SHOWSEP"        label="30051" type="bool"      default="true"  />			
 		<setting id="SHOWUNAVAIL"    label="30138" type="bool"      default="false" />
 		<setting id="INHERIT"        label="30096" type="bool"      default="true"  />	
         <setting id="SHOW_FANART"    label="30064" type="bool"      default="true"  />
-		<setting id="SHOWIMPORT"     label="30139" type="bool"      default="false"  />
-		<setting id="SHOWIMPORTROOT" label="30065" type="bool"      default="false" enable="eq(-1,true)" visible="eq(-1,true)"/>
         <setting id="DEFAULT_FANART" label="30113" type="enum"      default="30114" lvalues="30114|30115|30116"/>
         <setting id="DEFAULT_IMAGE"  label="30117" type="file"      default=""      enable="eq(-1,1)" visible="eq(-1,1)"/>		
+		<setting id="SHOWIMPORT"     label="30139" type="bool"      default="false"  />
 		
 		<setting type="sep" visible="true" />
 	</category>
 	
 	<category label="30054">	
-		<setting id="SHOWSS"         label="30055" type="bool"                                    default="true" />
-		<setting id="SHOWRECOMMEND"  label="30063" type="bool"  enable="eq(-1,true)"              default="true" />
-		<setting id="METARECOMMEND"  label="30093" type="bool"  enable="eq(-2,true)+eq(-1,true)"  default="true" visible="eq(-2,true)+eq(-1,true)"/>
-		<setting id="CACHERECOMMEND" label="30089" type="bool"  enable="eq(-3,true)+eq(-2,true)"  default="true" visible="eq(-3,true)+eq(-2,true)"/>
-		<setting id="STRIPNUMBERS"   label="30095" type="bool"  enable="eq(-4,true)"              default="true" />
+		<setting id="SHOWSS"          label="30055" type="bool"                                    default="true" />
+		<setting id="SHOWRECOMMEND"   label="30063" type="bool"  enable="eq(-1,true)"              default="true" visible="eq(-1,true)"/>
+		<setting id="METARECOMMEND"   label="30093" type="bool"  enable="eq(-2,true)+eq(-1,true)"  default="true" visible="eq(-2,true)+eq(-1,true)"/>
+        <setting id="SYNOPSRECOMMEND" label="30157" type="bool"  enable="eq(-3,true)+eq(-2,true)"  default="true" visible="eq(-3,true)+eq(-2,true)"/>
+		<setting id="CACHERECOMMEND"  label="30089" type="bool"  enable="eq(-4,true)+eq(-3,true)"  default="true" visible="eq(-4,true)+eq(-3,true)"/>
+		<setting id="STRIPNUMBERS"    label="30095" type="bool"  enable="eq(-5,true)"              default="true" visible="eq(-5,true)"/>
 		
 		<setting type="sep" visible="true" />
 	</category>
 	
+	<category label="30151">
+			<setting id="SHOWIPLAY"             label="30145" type="bool" default="true" />
+			<setting id="COPY_PLAYLISTS"        label="30149" type="bool" default="false" />
+			<setting id="ALLOW_PLAYLIST_DELETE" label="30152" type="bool" default="false" />
+	</category>
+	
 	<category label="30082">	
-		<setting id="PLAY_PLAYLISTS" label="30083" type="bool"                        default="true" />
-		
+		<setting id="PLAY_PLAYLISTS" label="30083" type="bool" default="true" />
+				
 		<setting type="sep" visible="true" />
 		
 		<setting id="REMOTE"   label="30125" type="bool"                           default="false" />

@@ -44,36 +44,6 @@ def getDefaultSearch():
     return ''
 
 
-def clean(name):
-    import re
-    name   = re.sub('\([0-9)]*\)', '', name)
-
-    items = name.split(']')
-    name  = ''
-
-    for item in items:
-        if len(item) == 0:
-            continue
-
-        item += ']'
-        item  = re.sub('\[[^)]*\]', '', item)
-
-        if len(item) > 0:
-            name += item
-
-    name  = name.replace('[', '')
-    name  = name.replace(']', '')
-    name  = name.strip()
-
-    while True:
-        length = len(name)
-        name = name.replace('  ', ' ')
-        if length == len(name):
-            break
-
-    return name
-
-
 def doStandard(useScript=True):
     window = xbmcgui.getCurrentWindowId()
 
@@ -130,7 +100,12 @@ def doMenu():
         import utils
     except:
         doStandard(useScript=False)
-        return    
+        return  
+
+    DEBUG = utils.ADDON.getSetting('DEBUG') == 'true'
+    if DEBUG:
+        window = xbmcgui.getCurrentWindowId()
+        utils.DialogOK('Current Window ID %d' % window)  
 
     active = [1, 2, 25, 40, 500, 501, 502] #28 is video Playlist
     window = xbmcgui.getCurrentWindowId()
@@ -217,14 +192,15 @@ def doMenu():
 
         #utils.verifySuperSearch()
 
-        default = getDefaultSearch()
-
         menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
         menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
-        menu.append((utils.GETTEXT(30054), _SEARCH))
 
-        if len(default) > 0:
-            menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
+        if utils.ADDON.getSetting('SHOWSS') == 'true':
+            menu.append((utils.GETTEXT(30054), _SEARCH))
+
+            default = getDefaultSearch()
+            if len(default) > 0:
+                menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
 
         menu.append((utils.GETTEXT(30048), _STD_SETTINGS))
 
@@ -267,6 +243,7 @@ def doMenu():
         utils.ADDON.openSettings()
 
     if choice == _ADDTOFAVES:
+        import favourite
         if isFolder:
             cmd =  'ActivateWindow(%d,"%s' % (window, path)
         elif path.lower().startswith('script'):
@@ -278,9 +255,9 @@ def doMenu():
         #elif path.lower().startswith('musicdb') and len(filename) > 0:
         #    cmd = 'PlayMedia("%s")' % filename
         else:            
-            cmd = 'PlayMedia("%s&sf_win_id=%d_' % (path, window)
+            cmd = 'PlayMedia("%s")' % path
+            cmd = favourite.updateSFOption(cmd, 'winID', window)
 
-        import favourite
         cmd = favourite.addFanart(cmd, fanart)
 
         if isFolder:
@@ -293,7 +270,7 @@ def doMenu():
 
     if choice == _SEARCH or choice == _SEARCHDEF:
         if utils.ADDON.getSetting('STRIPNUMBERS') == 'true':
-            name = clean(name)
+            name = utils.Clean(name)
 
         thumb  = thumb  if len(thumb)  > 0 else 'null'
         fanart = fanart if len(fanart) > 0 else 'null'

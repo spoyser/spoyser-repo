@@ -79,7 +79,7 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
         try:    cmd   = fave.rsplit('>', 1)[-1]
         except: cmd = ''
 
-        name  = name.replace( '&_quot_;', '"')
+        name  = utils.Clean(name.replace( '&_quot_;', '"'))
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 
@@ -91,11 +91,32 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
             add = True
 
         if add:
+            cmd = upgradeCmd(cmd)
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
 
     return items
+
+
+def upgradeCmd(cmd):
+    fanart = _getFanart(cmd)
+    winID  = _getWinID(cmd)
+
+    cmd = _removeFanart(cmd)
+    cmd = _removeWinID(cmd)
+
+    options = {}
+    if fanart:
+        options['fanart'] = fanart
+
+    if winID > -1:
+        options['winID'] = winID
+
+    if len(options) > 0:
+        cmd = updateSFOptions(cmd, options)
+
+    return cmd
 
 
 def writeFavourites(file, faves):
@@ -134,8 +155,7 @@ def writeFavourites(file, faves):
 def tidy(cmd):
     cmd = cmd.replace('&quot;', '')
     cmd = cmd.replace('&amp;', '&')
-    cmd = removeFanart(cmd)
-    cmd = removeWinID(cmd)
+    cmd = removeSFOptions(cmd)
 
     if cmd.startswith('RunScript'):
         cmd = cmd.replace('?content_type=', '&content_type=')
@@ -181,8 +201,9 @@ def updateFave(file, update):
 
 
 def findFave(file, cmd):
-    cmd   = removeFanart(cmd)
+    cmd   = removeSFOptions(cmd)
     faves = getFavourites(file, validate=False)
+
     for idx, fave in enumerate(faves):
         if equals(fave[2], cmd):
             return fave, idx, len(faves)
@@ -204,6 +225,8 @@ def findFave(file, cmd):
 def insertFave(file, newFave, index):
     copy = []
     faves = getFavourites(file, validate=False)
+
+
     for fave in faves:
         if len(copy) == index:
             copy.append(newFave)
@@ -235,11 +258,11 @@ def copyFave(file, original):
     updated = False
 
     copy = list(original)
-    copy = removeFanart(copy[2])
+    copy = removeSFOptions(copy[2])
 
     #if it is already in then just update it
     for idx, fave in enumerate(faves):
-        if equals(removeFanart(fave[2]), copy):
+        if equals(removeSFOptions(fave[2]), copy):
             updated    = True
             faves[idx] = original
             break
@@ -252,12 +275,12 @@ def copyFave(file, original):
 
 
 def removeFave(file, cmd):
-    cmd   = removeFanart(cmd)
+    cmd   = removeSFOptions(cmd)
     copy  = []
     faves = getFavourites(file, validate=False)
 
     for fave in faves:
-        if not equals(removeFanart(fave[2]), cmd):
+        if not equals(removeSFOptions(fave[2]), cmd):
             copy.append(fave)
 
     if len(copy) == len(faves):       
@@ -300,11 +323,8 @@ def equals(fave, cmd):
     if fave == cmd:
         return True
 
-    if 'sf_fanart' in fave:
-        fave = removeFanart(fave)
-
-    if 'sf_fanart' in cmd:
-        cmd = removeFanart(cmd)
+    fave = removeSFOptions(fave)
+    cmd  = removeSFOptions(cmd)
 
     if fave == cmd:
         return True
@@ -319,22 +339,24 @@ def equals(fave, cmd):
     return False
 
 
-def getFanart(cmd):
-    cmd = cmd.replace(',return', '')
-
-    import urllib 
-    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
-    except: pass
-
-    cmd = urllib.unquote_plus(cmd)
-    cmd = cmd.replace(',return', '')
-    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
-    except: pass
-
-    return ''       
-
-
 def addFanart(cmd, fanart):
+    return updateSFOption(cmd, 'fanart', convertToHome(fanart))
+
+
+def updateSFOption(cmd, option, value):
+    options = getSFOptions(cmd)
+
+    options[option] = value
+
+    return updateSFOptions(cmd, options)
+
+    
+def updateSFOptions(cmd, options):
+    cmd = removeSFOptions(cmd)
+
+    if len(options) == 0:
+        return cmd
+
     import urllib 
 
     hasReturn = False
@@ -342,17 +364,23 @@ def addFanart(cmd, fanart):
         hasReturn = True
         cmd = cmd.replace(',return', '')
 
-    cmd = removeFanart(cmd)
-
     if cmd.endswith('")'):
         cmd = cmd.rsplit('")', 1)[0]
 
+    suffix = '?'
     if '?' in cmd:   
-        cmd += '&'
-    else:
-        cmd += '?'
+        suffix = '&'
 
-    cmd += 'sf_fanart=%s_")' % urllib.quote_plus(convertToHome(fanart))
+    values = ''
+    for key in options.keys():
+        value = str(options[key])
+        if len(value) > 0:
+            values += '%s=%s&' % (key, value)
+        
+    if len(values) > 0:
+        cmd += suffix + 'sf_options=%s_options_sf")' % urllib.quote_plus(values)
+    else:
+        cmd += '")'
 
     if hasReturn:
         cmd = cmd.replace(')', ',return)')
@@ -360,7 +388,68 @@ def addFanart(cmd, fanart):
     return cmd
 
 
-def removeFanart(cmd):
+def getSFOptions(cmd):
+    import urllib 
+
+    try:    options = urllib.unquote_plus(re.compile('sf_options=(.+?)_options_sf').search(cmd).group(1))
+    except: return {}
+
+    return get_params(options)
+
+
+def removeSFOptions(cmd):
+    if 'sf_options=' not in cmd:
+        return cmd
+
+    cmd = cmd.replace('?sf_options=', '&sf_options=')
+
+    cmd = re.sub('&sf_options=(.+?)_options_sf"\)', '")',               cmd)
+    cmd = re.sub('&sf_options=(.+?)_options_sf",return\)', '",return)', cmd)
+    cmd = re.sub('&sf_options=(.+?)_options_sf',    '',                 cmd)
+
+    cmd = cmd.replace('/")', '")')
+
+    return cmd
+
+
+def convertToHome(text):
+    if text.startswith(HOMEFULL):
+        text = text.replace(HOMEFULL, HOMESPECIAL)
+
+    return text
+
+
+def getFanart(cmd):
+    return getOption(cmd, 'fanart')
+
+
+def getOption(cmd, option):
+    options = getSFOptions(cmd)
+
+    try:    return options[option]
+    except: return ''
+
+
+def get_params(p):
+    param=[]
+    paramstring=p
+    if len(paramstring)>=2:
+        params=p
+        cleanedparams=params.replace('?','')
+        if (params[len(params)-1]=='/'):
+           params=params[0:len(params)-2]
+        pairsofparams=cleanedparams.split('&')
+        param={}
+        for i in range(len(pairsofparams)):
+            splitparams={}
+            splitparams=pairsofparams[i].split('=')
+            if (len(splitparams))==2:
+                param[splitparams[0]]=splitparams[1]
+    return param
+
+
+#used only during upgrade process
+def _removeFanart(cmd):
     if 'sf_fanart=' not in cmd:
         return cmd
 
@@ -376,7 +465,25 @@ def removeFanart(cmd):
     return cmd
 
 
-def removeWinID(cmd):
+#used only during upgrade process
+def _getFanart(cmd):
+    cmd = cmd.replace(',return', '')
+
+    import urllib 
+    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
+    except: pass
+
+    cmd = urllib.unquote_plus(cmd)
+    cmd = cmd.replace(',return', '')
+
+    try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
+    except: pass
+
+    return ''       
+
+
+#used only during upgrade process
+def _removeWinID(cmd):
     if 'sf_win_id' not in cmd:
         return cmd
 
@@ -387,8 +494,12 @@ def removeWinID(cmd):
     return cmd
 
 
-def convertToHome(text):
-    if text.startswith(HOMEFULL):
-        text = text.replace(HOMEFULL, HOMESPECIAL)
+#used only during upgrade process
+def _getWinID(cmd):
+    if 'sf_win_id' not in cmd:
+        return -1
 
-    return text
+    try:    return int(re.compile('sf_win_id=(.+?)_').search(cmd).group(1))
+    except: pass
+
+    return -1

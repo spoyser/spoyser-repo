@@ -35,7 +35,7 @@ def checkCacheDir():
         os.makedirs(CacheDir)
 
 
-def getURLNoCache(url, agent=None):
+def getURLNoCache(url, agent=None, tidy=True):
     req = urllib2.Request(url)
     if agent:
         req.add_header('User-Agent', agent)
@@ -43,10 +43,14 @@ def getURLNoCache(url, agent=None):
     response = urllib2.urlopen(req)
     html     = response.read()
     response.close()
-    return html.replace('\r', '').replace('\n', '').replace('\t', '')
+
+    if tidy:
+        html = html.replace('\r', '').replace('\n', '').replace('\t', '')
+
+    return html
 
 
-def getURL(url, maxSec=0, agent=None):
+def getURL(url, maxSec=0, agent=None, tidy=True):
     purgeCache()
     
     if url == None:
@@ -58,7 +62,7 @@ def getURL(url, maxSec=0, agent=None):
         if (time.time() - timestamp) <= maxSec:
             return getCachedData(url)
 			
-    data = getURLNoCache(url, agent)
+    data = getURLNoCache(url, agent, tidy)
     addToCache(url, data)
     return data
 
