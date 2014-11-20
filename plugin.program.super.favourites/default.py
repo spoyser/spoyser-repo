@@ -1458,11 +1458,11 @@ def addItems(playlist):
         else:
             thumb = 'DefaultFile.png'
 
+        title = favourite.unescape(title).strip()
+
         menu.append((GETTEXT(30047), 'XBMC.RunPlugin(%s?mode=%d&path=%s&label=%s&thumb=%s)' % (sys.argv[0], _COPYPLAYLISTITEM, urllib.quote_plus(path), urllib.quote_plus(title), urllib.quote_plus(thumb))))
 
         isPlayable = xbmcgui.getCurrentWindowId() != 10001
-
-        title = favourite.unescape(title)
 
         addDir(title, _PLAYLISTITEM, path=path, thumbnail=thumb, isFolder=False, menu=menu, totalItems=nItem, isPlayable=isPlayable)
 
@@ -1526,22 +1526,27 @@ def getPlaylist():
 
 
 def iPlaylistURLBrowse():
-    text = getText(GETTEXT(30153), 'http://')
+    valid = False
+    text  = 'http://'
 
-    if not text:
-        return False
+    while not valid:
+        text = getText(GETTEXT(30153), text)
 
-    if text == 'http://':
-        return
+        if not text:
+            return False
 
-    try:    html = quicknet.getURL(text, maxSec=600, tidy=False)
-    except: html = ''
+        if text == 'http://':
+            return
 
-    items = parsePlaylist(html.split('\n'))
-    if len(items) == 0:
-        utils.DialogOK(GETTEXT(30155), text)
-        return False
+        try:    html = quicknet.getURL(text, maxSec=600, tidy=False)
+        except: html = ''
 
+        items = parsePlaylist(html.split('\n'))
+        valid = len(items) > 0
+
+        if not valid:
+            utils.DialogOK(GETTEXT(30155), text)
+        
     name = getText(GETTEXT(30156))
 
     if not name:
@@ -2294,10 +2299,16 @@ else:
 #make sure at least 1 line is showing to allow context menu to be displayed
 if nItem < 1:
     if mode == _IPLAY:
-        #browse
         menu = []
+
+        #browse
         cmd  = '%s?mode=%d' % (sys.argv[0], _PLAYLISTBROWSE)
         menu.append((GETTEXT(30148), 'XBMC.Container.Update(%s)' % cmd))
+
+        #browse for URL
+        cmd = '%s?mode=%d' % (sys.argv[0], _URLPLAYLIST)
+        menu.append((GETTEXT(30153), 'XBMC.Container.Update(%s)' % cmd))
+
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False, menu=menu)
     else:
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
