@@ -79,7 +79,8 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
         try:    cmd   = fave.rsplit('>', 1)[-1]
         except: cmd = ''
 
-        name  = utils.Clean(name.replace( '&_quot_;', '"'))
+        #name  = utils.Clean(name.replace( '&_quot_;', '"'))
+        name  = name.replace( '&_quot_;', '"')
         thumb = thumb.replace('&_quot_;', '"')
         cmd   = cmd.replace(  '&_quot_;', '"')
 

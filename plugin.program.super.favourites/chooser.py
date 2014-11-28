@@ -31,13 +31,14 @@ import urllib
 import utils
 import favourite
 
-ADDON     = utils.ADDON
-HOME      = utils.HOME
-PROFILE   = utils.PROFILE
-FILENAME  = utils.FILENAME
-FOLDERCFG = utils.FOLDERCFG
-ADDONID   = utils.ADDONID
-ICON      = utils.ICON
+ADDON       = utils.ADDON
+HOME        = utils.HOME
+PROFILE     = utils.PROFILE
+FILENAME    = utils.FILENAME
+FOLDERCFG   = utils.FOLDERCFG
+ADDONID     = utils.ADDONID
+ICON        = utils.ICON
+DISPLAYNAME = ADDON.getSetting('DISPLAYNAME') 
 
 INHERIT   = ADDON.getSetting('INHERIT') == 'true'
 GETTEXT   = ADDON.getLocalizedString
@@ -229,7 +230,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
             fullpath = 'special://profile/'
             thumb    = ''
 
-            listitem = xbmcgui.ListItem(GETTEXT(30106))
+            label    = GETTEXT(30106) % DISPLAYNAME
+            listitem = xbmcgui.ListItem(label)
 
             listitem.setIconImage(thumb)
             listitem.setProperty('Icon',     thumb)

@@ -409,9 +409,6 @@ def parseFile(file):
 
     text = GETTEXT(30099) % DISPLAYNAME if mode == _XBMC else GETTEXT(30068)
 
-    #need to remove decoration from text
-    #faves = sorted(faves)
-
     for fave in faves:
         label  = fave[0]
         thumb  = fave[1]
@@ -1643,7 +1640,6 @@ def iPlayCopyToSF(path, title, thumb):
 
     file = os.path.join(folder, FILENAME)
     favourite.copyFave(file, copy)
-
 
 
 def superSearch(keyword='', image=BLANK, fanart=FANART, imdb=''):
