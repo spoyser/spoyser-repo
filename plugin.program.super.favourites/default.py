@@ -34,6 +34,7 @@ import json
 import favourite
 import quicknet
 import utils
+import cache
 
 ADDONID  = utils.ADDONID
 ADDON    = utils.ADDON
@@ -350,14 +351,25 @@ def removeLock(path,name):
     return True
 
 
-def unlocked(path):
-    folderConfig = os.path.join(path, FOLDERCFG)
-    lock = getParam('LOCK', folderConfig)
+def unlocked(path, lock=None):
+    if not lock:
+        folderConfig = os.path.join(path, FOLDERCFG)
+        lock = getParam('LOCK', folderConfig)
+
     if not lock:
         return True
 
-    import cache
     if cache.exists(path):
+        return True
+
+    return False
+
+
+def unlock(path):
+    folderConfig = os.path.join(path, FOLDERCFG)
+    lock = getParam('LOCK', folderConfig)
+
+    if unlocked(path, lock):
         return True
     
     md5 = checkPassword(path, lock)
@@ -443,6 +455,11 @@ def getFolderThumb(path, isXBMC=False):
         return thumb, fanart    
 
     if not INHERIT:
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
+
+    if not unlocked(path):
         thumb  = thumb  if (thumb  != None) else ICON
         fanart = fanart if (fanart != None) else FANART
         return thumb, fanart
@@ -1783,16 +1800,18 @@ def playPlaylist(cmd):
 
 
 def playMedia(original):
-    cmd = favourite.tidy(original)
+    cmd = favourite.tidy(original).replace(',', '') #remove spurious commas
     
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
+
 
     if mode == PLAYMEDIA_MODE:
         xbmc.executebuiltin(cmd)
         return
 
     plugin = re.compile('"(.+?)"').search(cmd).group(1)
+
 
     if len(plugin) < 1:
         xbmc.executebuiltin(cmd)
@@ -1887,7 +1906,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
        
     label = label.replace('&apos;', '\'')
 
-    liz = xbmcgui.ListItem(urllib.unquote_plus(label), iconImage=thumbnail, thumbnailImage=thumbnail)
+    liz = xbmcgui.ListItem(label, iconImage=thumbnail, thumbnailImage=thumbnail)
 
     if isPlayable:
         liz.setProperty('IsPlayable', 'true')
@@ -2056,7 +2075,7 @@ elif mode == _FOLDER:
     thepath   = xbmc.translatePath(path)
     theFolder = label
 
-    if unlocked(thepath):
+    if unlock(thepath):
         if mode != _MAIN:
             addNewFolderItem(thepath)
         parseFolder(thepath)
@@ -2074,7 +2093,7 @@ elif mode == _RENAMEFOLDER:
 
 
 elif mode == _EDITFOLDER:
-    if unlocked(path):
+    if unlock(path):
         doRefresh = editFolder(path, name)
 
 

@@ -168,6 +168,18 @@ def verifySuperSearch():
             pass
         return
 
+    try:
+        #fix 1 channel
+        ch1 = open(dst, 'r')
+        xml = ch1.read()
+        ch1.close()
+
+        xml = xml.replace('1channel/?mode=7000', '1channel/?mode=Search')
+        ch1 = open(dst, 'w')
+        ch1.write(xml)            
+        ch1.close()
+    except:
+        pass
 
     import favourite
 

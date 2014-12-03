@@ -147,6 +147,9 @@ class Main:
         if self.MODE != 'xbmc':        
             try:    
                 current, dirs, files = os.walk(self.FULLPATH).next()
+
+                dirs = sorted(dirs, key=str.lower)
+
                 for dir in dirs:
                     path = os.path.join(self.FULLPATH, dir)
                 
