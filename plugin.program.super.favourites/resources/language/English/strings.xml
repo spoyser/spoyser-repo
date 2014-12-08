@@ -153,4 +153,7 @@
 	<string id="30155">No valid M3U playlist found at</string>	
 	<string id="30156">Please enter a name for this playlist</string>	
 	<string id="30157">          Show synopsis</string>	
+	<string id="30158">Menu style</string>
+	<string id="30159">Menu</string>
+	<string id="30160">Dialog</string>
 </strings>

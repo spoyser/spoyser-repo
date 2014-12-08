@@ -66,6 +66,8 @@ RUNPLUGIN_MODE      = 2
 PLAYLIST_EXT = '.m3u'
 
 DISPLAYNAME = ADDON.getSetting('DISPLAYNAME') 
+if not DISPLAYNAME:
+    DISPLAYNAME = 'Kodi'
 
 # -----Addon Modes ----- #
 _IGNORE           = -10

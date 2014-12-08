@@ -214,7 +214,14 @@ def doMenu():
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
-    choice = menus.showMenu(utils.ADDONID, menu)
+
+    dialog = utils.ADDON.getSetting('CONTEXT_STYLE') == '1'
+
+    if dialog:
+        choice = menus.selectMenu(utils.TITLE, menu)
+    else:
+        choice = menus.showMenu(utils.ADDONID, menu)
+
 
     if choice == _STD_SETTINGS:
         doStandard()

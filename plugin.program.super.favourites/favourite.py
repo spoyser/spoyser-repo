@@ -76,7 +76,7 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
         try:    thumb = re.compile('thumb="(.+?)"').findall(fave)[0]
         except: thumb = ''
 
-        try:    cmd   = fave.rsplit('>', 1)[-1]
+        try:    cmd   = fave.split('>', 1)[-1]
         except: cmd = ''
 
         #name  = utils.Clean(name.replace( '&_quot_;', '"'))
