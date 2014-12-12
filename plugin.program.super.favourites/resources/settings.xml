@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="30070">	
-	    <setting id="DEBUG"       label="30154" type="bool"      default="false" />
+    <category label="30070">		    
 		<setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30122|30121"/>
 		<setting id="FOLDER"      label="30056" type="folder"    default="special://profile/addon_data/plugin.program.super.favourites/" />
 		
@@ -17,6 +16,8 @@
 		<setting id="CONTEXT"       label="30050" type="bool" default="false" />
 		<setting id="CONTEXT_STYLE" label="30158" type="enum" lvalues="30159|30160" />
 		
+		<setting type="sep" visible="true" />
+		<setting id="DEBUG"       label="30154" type="bool"      default="false" />
 		<setting type="sep" visible="true" />
 	</category>
 	

@@ -31,7 +31,7 @@ def GetXBMCVersion():
 
     version = xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')
     version = version.split('.')
-    return int(version[0]), int(version[1]) #major, minor
+    return int(version[0]), int(version[1]) #major, minor eg, 13.9.902
 
 
 def GETTEXT(id):
@@ -66,6 +66,7 @@ KEYMAP_MENU = 'super_favourites_menu.xml'
 MAJOR, MINOR = GetXBMCVersion()
 FRODO        = (MAJOR == 12) and (MINOR < 9)
 GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
+HELIX        = (MAJOR == 14) or (MAJOR == 13 and MINOR == 9)
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'

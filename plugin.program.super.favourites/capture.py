@@ -107,7 +107,7 @@ def doMenu():
         window = xbmcgui.getCurrentWindowId()
         utils.DialogOK('Current Window ID %d' % window)  
 
-    active = [1, 2, 25, 40, 500, 501, 502] #28 is video Playlist
+    active = [1, 2, 25, 40, 500, 501, 502, 601]
     window = xbmcgui.getCurrentWindowId()
     utils.log('Window     : %d' % window)  
     if window-10000 not in active:
@@ -220,7 +220,7 @@ def doMenu():
     if dialog:
         choice = menus.selectMenu(utils.TITLE, menu)
     else:
-        choice = menus.showMenu(utils.ADDONID, menu)
+        choice = menus.showMenu(utils.ADDONID, menu, utils.HELIX)
 
 
     if choice == _STD_SETTINGS:
@@ -313,6 +313,7 @@ try:
     main()
 except Exception, e:
     import utils
+    print 'Exception in capture.py %s' % str(e)
     utils.log('Exception in capture.py %s' % str(e))
 
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

@@ -53,6 +53,7 @@ GETTEXT  = utils.GETTEXT
 TITLE    = utils.TITLE
 FRODO    = utils.FRODO
 GOTHAM   = utils.GOTHAM
+HELIX    = utils.HELIX
 
 FILENAME      = utils.FILENAME
 FOLDERCFG     = utils.FOLDERCFG
@@ -1774,7 +1775,8 @@ def playCommand(originalCmd):
                 return playPlaylist(cmd)      
 
         if 'ActivateWindow' in cmd:
-            return activateWindowCommand(cmd) 
+            return activateWindowCommandReturn(cmd)
+            #return activateWindowCommand(cmd) 
 
         if 'PlayMedia' in cmd:
             return playMedia(originalCmd)

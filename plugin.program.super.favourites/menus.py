@@ -36,11 +36,14 @@ ACTION_DOWN  = 4
 
 class ContextMenu(xbmcgui.WindowXMLDialog):
 
-    def __new__(cls, addonID, menu):
-        return super(ContextMenu, cls).__new__(cls, 'contextmenu.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
+    def __new__(cls, addonID, menu, helix):
+        if helix:
+            return super(ContextMenu, cls).__new__(cls, 'contextmenu_helix.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
+        else:
+            return super(ContextMenu, cls).__new__(cls, 'contextmenu.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
         
 
-    def __init__(self, addonID, menu):
+    def __init__(self, addonID, menu, helix):
         super(ContextMenu, self).__init__()
         self.menu = menu
 
@@ -89,8 +92,8 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
         pass
 
 
-def showMenu(addonID, menu):
-    menu = ContextMenu(addonID, menu)
+def showMenu(addonID, menu, helix=False):
+    menu = ContextMenu(addonID, menu, helix)
     menu.doModal()
     params = menu.params
     del menu
