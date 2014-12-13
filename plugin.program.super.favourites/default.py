@@ -1775,8 +1775,8 @@ def playCommand(originalCmd):
                 return playPlaylist(cmd)      
 
         if 'ActivateWindow' in cmd:
-            return activateWindowCommandReturn(cmd)
-            #return activateWindowCommand(cmd) 
+            #return activateWindowCommandReturn(cmd)
+            return activateWindowCommand(cmd) 
 
         if 'PlayMedia' in cmd:
             return playMedia(originalCmd)
