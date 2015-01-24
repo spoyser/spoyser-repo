@@ -18,6 +18,8 @@
 #
 
 import xbmc
+import xbmcgui
+import xbmcaddon
 import os
 import geturllib
 import re
@@ -130,3 +132,50 @@ def GetRandomDay(_url, year, month):
         pass
     
     return current
+
+
+def showText(heading, text, waitForClose=False):
+    id = 10147
+
+    xbmc.executebuiltin('ActivateWindow(%d)' % id)
+    xbmc.sleep(100)
+
+    win = xbmcgui.Window(id)
+
+    print "WE ARE HERE 2"
+
+    retry = 50
+    while (retry > 0):
+        try:
+            print "SHOW TEXT"
+            print text
+            xbmc.sleep(10)
+            win.getControl(1).setLabel(heading)
+            win.getControl(5).setText(text)
+            retry = 0
+        except:
+            retry -= 1
+
+    if waitForClose:
+        while xbmc.getCondVisibility('Window.IsVisible(%d)' % id) == 1:
+            xbmc.sleep(50)
+
+
+def showChangelog(addonID=None):
+    try:
+        if addonID:
+            ADDON = xbmcaddon.Addon(addonID)
+        else: 
+            ADDON = xbmcaddon.Addon(ADDONID)
+
+        f     = open(ADDON.getAddonInfo('changelog'))
+        text  = f.read()
+        title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
+
+        print "WE ARE HERE 1"
+        print title
+        print text
+        showText(title, text)
+
+    except Exception, e:
+        pass

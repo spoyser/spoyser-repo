@@ -3,7 +3,7 @@ import xbmcgui
 import xbmc
 import xbmcaddon
 import re
-import common
+import utils
 
 from threading import Timer 
 
@@ -21,11 +21,13 @@ ACTION_DOWN  = 4
 CTRL_STRIP    = 5001
 CTRL_PREFETCH = 5002
 CTRL_PREV     = 5003
-CTRL_NEXT     = 5004
+CTRL_PREV_BTN = 5004
+CTRL_NEXT     = 5005
+CTRL_NEXT_BTN = 5006
 
 
-ADDONID = common.ADDONID
-URL     = common.URL
+ADDONID = utils.ADDONID
+URL     = utils.URL
 ADDON   = xbmcaddon.Addon(ADDONID)
 
 
@@ -46,14 +48,14 @@ class Display(xbmcgui.WindowXMLDialog):
         self.Clear()
 
         if self.slideshow:
-            url = common.GetRandomURL(self.url)
+            url = utils.GetRandomURL(self.url)
         else:
             isCurrent = ADDON.getSetting('DISPLAY') == '0'
 
             if isCurrent:
-                url = common.GetCurrentURL(self.url)
+                url = utils.GetCurrentURL(self.url)
             else:
-                url = common.GetRandomURL(self.url)
+                url = utils.GetRandomURL(self.url)
 
         self.UpdateImage(url)
 
@@ -97,10 +99,10 @@ class Display(xbmcgui.WindowXMLDialog):
             
                                  
     def onClick(self, controlId):
-        if controlId == CTRL_PREV:
+        if controlId == CTRL_PREV_BTN:
             self.Previous()
 
-        if controlId == CTRL_NEXT:
+        if controlId == CTRL_NEXT_BTN:
             self.Next()
 
 
@@ -122,36 +124,51 @@ class Display(xbmcgui.WindowXMLDialog):
         if self.next:
             self.UpdateImage(URL + self.next)
 
-        self.UpdateImage(common.GetRandomURL(self.url))
+        self.UpdateImage(utils.GetRandomURL(self.url))
 
 
     def UpdateImage(self, url):
+        print "CURRENT URL"
+        print url
         self.Clear()
 
-        html  = common.GetHTML(url)
+        #html  = utils.GetHTML(url)
+        html  = utils.GetHTML(url, useCache=True, timeout=86400/2)
         html  = html.replace('\n', '')
         html  = html.split('<p >')[-1]
-        match = re.compile('(.+?)</p>.+?<img alt=".+?" src="(.+?)".+?<strong>(.+?)</strong>(.+?)</span>').findall(html)
+
+        match = re.compile('<p><a class="feature-title " href=".+?">(.+?)</a></p>.+?<img alt=".+?" src="(.+?)".+?<strong>(.+?)</strong>(.+?)</span>').findall(html)
 
         self.title  = match[0][0]
         self.image  = match[0][1]
-        self.author = match[0][2]
-        self.date   = match[0][3]
+        self.date   = match[0][2]
+        self.author = match[0][3]
 
-        if 'revious' in html:
-           self.previous = re.compile('<span class="archiveText"><a href="(.+?)">&lt').search(html).groups(1)[0]
+        try:
+           self.previous = re.compile('btn-archive-older"><a href="(.+?)">&lt').search(html).groups(1)[0]
+        except:
+            pass
 
-        if 'ext &gt' in html:
-           self.next = re.compile('<span class="archiveText"><a href=".+?">&lt.+?<a href="(.+?)"').search(html).groups(1)[0]
+        try:
+           self.next = re.compile('btn-archive-newer"><a href="(.+?)">Newer').search(html).groups(1)[0]
+        except Exception, e:
+           print "EEEEEEEEEEE"
+           print str(e)
+           print html
+           pass  
+
+        print "IMAGES"
+        print self.previous
+        print self.next                                  
         
         if self.image:
             self.setControlImage(CTRL_STRIP, self.image)
 
         #pre-fetch previous and next images
         if self.previous:
-            self.setControlImage(CTRL_PREFETCH, self.getImage(common.GetHTML(URL + self.previous)))
+            self.setControlImage(CTRL_PREFETCH, self.getImage(utils.GetHTML(URL + self.previous)))
         if self.next:
-            self.setControlImage(CTRL_PREFETCH, self.getImage(common.GetHTML(URL + self.next)))
+            self.setControlImage(CTRL_PREFETCH, self.getImage(utils.GetHTML(URL + self.next)))
 
         self.UpdateControls()
 
@@ -185,7 +202,9 @@ class Display(xbmcgui.WindowXMLDialog):
 
     def UpdateControls(self):
         try:
-            self.getControl(CTRL_PREV).setVisible((not self.slideshow) and (self.previous != None))
-            self.getControl(CTRL_NEXT).setVisible((not self.slideshow) and (self.next     != None))            
+            self.getControl(CTRL_PREV).setVisible(    (not self.slideshow) and (self.previous != None))
+            self.getControl(CTRL_PREV_BTN).setVisible((not self.slideshow) and (self.previous != None))
+            self.getControl(CTRL_NEXT).setVisible(    (not self.slideshow) and (self.next     != None))  
+            self.getControl(CTRL_NEXT_BTN).setVisible((not self.slideshow) and (self.next     != None))
         except Exception, e:
             pass

@@ -27,18 +27,18 @@ import xbmcplugin
 import xbmcgui
 import os
 import display
-import common
+import utils
 import random
 
-ADDONID  = common.ADDONID
-URL      = common.URL
+ADDONID  = utils.ADDONID
+URL      = utils.URL
 ADDON    = xbmcaddon.Addon(ADDONID)
 HOME     = ADDON.getAddonInfo('path')
-TITLE    = 'Comic Strips'
-VERSION  = '1.0.2'
-ICON     =  os.path.join(HOME, 'icon.png')
-#FANART   =  os.path.join(HOME, 'fanart.jpg')
-ARTWORK = os.path.join(HOME, 'resources', 'artwork')
+TITLE    = ADDON.getAddonInfo('name')
+VERSION  = ADDON.getAddonInfo('version')
+ICON     = os.path.join(HOME, 'icon.png')
+ARTWORK  = os.path.join(HOME, 'resources', 'artwork')
+#FANART  = os.path.join(HOME, 'fanart.jpg')
 
 
 SECTION   = 100
@@ -55,9 +55,10 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if prev == '0.0.0':
-        d = xbmcgui.Dialog()
-        d.ok(TITLE + ' - ' + VERSION, 'Welcome to Comic Strips', '' , 'Hope you enjoy [COLOR FFFF0000]:-)[/COLOR]')
+    #call showChangeLog like this to workaround bug in openElec
+    script = os.path.join(HOME, 'showChangelog.py')
+    cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)
+    xbmc.executebuiltin(cmd)
 
 
 def Clean(text):
@@ -85,7 +86,7 @@ def Main():
 
 def Section(url):
     url  = URL + '/explore/' + url
-    html = common.GetHTML(url, timeout=43200) #1/2 a day
+    html = utils.GetHTML(url, timeout=43200) #1/2 a day
     #html = html.replace('a href="/explore', '') 
 
     match = re.compile('<li>(.+?)</li>').findall(html)

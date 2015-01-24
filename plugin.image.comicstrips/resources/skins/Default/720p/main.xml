@@ -36,27 +36,48 @@
             <width>1</width>
             <height>1</height>
         </control> 
+		 
+		<control type="button" id="5004">
+			<description>Previous Button</description>
+			<posx>5</posx>
+			<posy>670</posy>
+			<width>45</width>
+			<height>45</height> 
+			<texturefocus border="5">floor_buttonFO.png</texturefocus>
+			<texturenofocus border="5">floor_button.png</texturenofocus>
+			<visible>system.getbool(input.enablemouse)</visible>			
+		</control>
 
-        <control type="button" id="5003">
-            <description>Previous</description>
-            <posx>0</posx>
-            <posy>670</posy>
-            <width>50</width>
-            <height>50</height> 
-            <texturenofocus>left.png</texturenofocus>
-            <texturefocus>left.png</texturefocus>
-         </control>
+		<control type="image" id="5003">
+			<description>Previous Arrow</description>
+			<posx>10</posx>
+			<posy>675</posy>
+			<width>35</width>
+			<height>35</height> 
+			<texture>left.png</texture>
+			<visible>system.getbool(input.enablemouse)</visible>			
+		</control>
+		 
+		<control type="button" id="5006">
+			<description>Next Button</description>
+			<posx>1230</posx>
+			<posy>670</posy>
+			<width>45</width>
+			<height>45</height> 
+			<texturefocus border="5">floor_buttonFO.png</texturefocus>
+			<texturenofocus border="5">floor_button.png</texturenofocus>
+			<visible>system.getbool(input.enablemouse)</visible>			
+		</control>
 
-         <control type="button" id="5004">
-            <description>Next</description>
-            <posx>1230</posx>
-            <posy>670</posy>
-            <width>50</width>
-            <height>50</height> 
-            <texturenofocus>right.png</texturenofocus>
-            <texturefocus>right.png</texturefocus>
-         </control>
-
-    </controls>
-
+		<control type="image" id="5005">
+			<description>Next Arrow</description>
+			<posx>1235</posx>
+			<posy>675</posy>
+			<width>35</width>
+			<height>35</height> 
+			<texture>right.png</texture>
+			<visible>system.getbool(input.enablemouse)</visible>			
+		</control>
+	</controls>
+	
 </window>
