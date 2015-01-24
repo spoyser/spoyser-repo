@@ -29,8 +29,9 @@ import random
 
 URL      = 'http://www.gocomics.com'
 ADDONID  = 'plugin.image.comicstrips'
+CACHE    = xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache'))
 
-geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
+geturllib.SetCacheDir(CACHE)
 
 def GetHTML(url, useCache = True, timeout=604800): #1 week
     if useCache:
@@ -142,13 +143,9 @@ def showText(heading, text, waitForClose=False):
 
     win = xbmcgui.Window(id)
 
-    print "WE ARE HERE 2"
-
     retry = 50
     while (retry > 0):
         try:
-            print "SHOW TEXT"
-            print text
             xbmc.sleep(10)
             win.getControl(1).setLabel(heading)
             win.getControl(5).setText(text)
@@ -172,9 +169,6 @@ def showChangelog(addonID=None):
         text  = f.read()
         title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
 
-        print "WE ARE HERE 1"
-        print title
-        print text
         showText(title, text)
 
     except Exception, e:

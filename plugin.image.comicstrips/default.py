@@ -55,6 +55,11 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
+    if curr == '1.0.4':
+        import shutil
+        try:    shutil.rmtree(utils.CACHE)
+        except: pass
+
     #call showChangeLog like this to workaround bug in openElec
     script = os.path.join(HOME, 'showChangelog.py')
     cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)

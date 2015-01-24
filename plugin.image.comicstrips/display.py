@@ -128,8 +128,6 @@ class Display(xbmcgui.WindowXMLDialog):
 
 
     def UpdateImage(self, url):
-        print "CURRENT URL"
-        print url
         self.Clear()
 
         #html  = utils.GetHTML(url)
@@ -152,14 +150,7 @@ class Display(xbmcgui.WindowXMLDialog):
         try:
            self.next = re.compile('btn-archive-newer"><a href="(.+?)">Newer').search(html).groups(1)[0]
         except Exception, e:
-           print "EEEEEEEEEEE"
-           print str(e)
-           print html
            pass  
-
-        print "IMAGES"
-        print self.previous
-        print self.next                                  
         
         if self.image:
             self.setControlImage(CTRL_STRIP, self.image)
