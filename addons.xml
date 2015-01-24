@@ -18,7 +18,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.booksshouldbefree" name="Books Should Be Free" version="1.0.5" provider-name="spoyser">
+<addon id="plugin.audio.booksshouldbefree" name="Books Should Be Free" version="1.0.6" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
@@ -52,7 +52,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.image.comicstrips" name="Comic Strips" version="1.0.2" provider-name="spoyser">
+<addon id="plugin.image.comicstrips" name="Comic Strips" version="1.0.3" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
