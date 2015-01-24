@@ -1,6 +1,24 @@
-# Copyright (C) 2013 
-# Sean Poyser (seanpoyser@gmail.com)
+
 #
+#       Copyright (C) 2014-2015
+#       Sean Poyser (seanpoyser@gmail.com)
+#
+#  This Program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This Program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with XBMC; see the file COPYING.  If not, write to
+#  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#  http://www.gnu.org/copyleft/gpl.html
+#
+
 
 import xbmc
 import xbmcgui
@@ -136,28 +154,18 @@ class Player(xbmc.Player):
    
     def onPlayBackStarted(self):
         self.currChapter = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
-        #print "***********B A F************"
-        print "onPlayBackStarted(self):"
         self.updateResume()
 
 
     def onPlayBackPaused(self):
-        #print "***********B A F************"
-        #print "onPlayBackPause(self):"
         self.updateResume()
 
 
     def onPlayBackResumed(self):
         pass
-        #print "***********B A F************"
-        #print "onPlayBackResumed(self):"
 
 
     def onPlayBackEnded(self):
-        #print "***********B A F************"
-        #print "onPlayBackEnded(self):"
-        #print xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
-        #print len(xbmc.PlayList(xbmc.PLAYLIST_MUSIC))
         posn = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
         if posn < 0:
             self.loop = False
@@ -167,37 +175,21 @@ class Player(xbmc.Player):
 
 
     def onPlayBackStopped(self):     
-        #print "***********B A F************"
-        #print "onPlayBackStopped(self):"
-        #print xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
-        #print len(xbmc.PlayList(xbmc.PLAYLIST_MUSIC))
         self.loop = False
         self.updateResume()
 
 
     def onPlayBackSeek(self, time, seekOffset):
         pass
-        #print "***********B A F************"
-        #print "onPlayBackSeek(self, time, seekOffset):"
-        #print time
-        #print seekOffset
 
 
     def onPlayBackSeekChapter(self, chapter):
         pass
-        #print "***********B A F************"
-        #print "onPlayBackSeek(self, chapter):"
-        #print chapter
 
 
     def onPlayBackSpeedChanged(self, speed):
         pass
-        #print "***********B A F************"
-        #print "onPlayBackSeek(self, speed):"
-        #print speed
 
 
     def onQueueNextItem(self):
         pass
-        #print "***********B A F************"
-        #print "onQueueNextItem(self):"

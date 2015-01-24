@@ -1,6 +1,6 @@
 
 #
-#      Copyright (C) 2013 Sean Poyser
+#      Copyright (C) 2013-2015 Sean Poyser
 #
 #  This Program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,23 +18,27 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-import urllib
-import urllib2
-
-import re
 import xbmc
 import xbmcaddon
 import xbmcplugin
 import xbmcgui
 
+import urllib
+import urllib2
+
+import re
+import os
+
 import quicknet
 
 
+URL     = 'http://www.booksshouldbefree.com/'
 ADDONID = 'plugin.audio.booksshouldbefree'
 ADDON   = xbmcaddon.Addon(ADDONID)
-TITLE   = 'Books Should Be Free'
-VERSION = '1.0.5'
-URL     = 'http://www.booksshouldbefree.com/'
+TITLE   = ADDON.getAddonInfo('name')
+VERSION = ADDON.getAddonInfo('version')
+HOME    = ADDON.getAddonInfo('path')
+
 
 GENRE       = 100
 GENREMENU   = 200
@@ -56,9 +60,10 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if curr == '1.0.0':
-        d = xbmcgui.Dialog()
-        d.ok(TITLE + ' - ' + VERSION, 'Welcome to Books Should Be Free', 'Free public domain audiobooks')
+    #call showChangeLog like this to workaround bug in openElec
+    script = os.path.join(HOME, 'showChangelog.py')
+    cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)
+    xbmc.executebuiltin(cmd)
 
 
 def clean(text):
@@ -69,13 +74,12 @@ def clean(text):
     text = text.replace('&#39;',   '\'')
     text = text.replace('<b>',     '')
     text = text.replace('</b>',    '')
-    return text
 
-
-def cleanSearch(text):
-    text = clean(text)
+    text = text.replace('- Free at Loyal Books',  '')
+    text = text.replace('- Free at Loyal ...',    '')
     text = text.replace('- Books Should Be Free', '')
     text = text.replace('- Books ...',            '')
+    text = text.replace('- Free at ...',          '')
     return text
 
 
@@ -164,7 +168,7 @@ def Book(_url, title, image, author):
     html = GetHTML(_url)
     html = html.replace('\n', '')
 
-    match = re.compile('new Playlist\((.+?)]').findall(html)
+    match = re.compile('new Playlist\((.+?)],').findall(html)
     if len(match) < 1:
         AddDir('No Audio Book Available', 0, '', 'DefaultPlaylist.png', True)
         return
@@ -226,7 +230,6 @@ def Search(page, keyword):
     for item in main:
         match = re.compile('<a class="l" href="(.+?)" onmousedown=.+?target="_top">(.+?)</a>').findall(item)
         for url, title in match:
-            title = cleanSearch(title)
             AddBook(title, None, url)
 
     keyword = urllib.unquote_plus(keyword)
@@ -306,6 +309,7 @@ def AddChapter(url, title, chapter, image, contextMenu=None):
    
 
 def AddDir(name, mode, url, image, isFolder, page=1, extra=None, keyword=None, contextMenu=None, summary=None):
+    name = clean(name)
     label = name
     if extra:
         label = label + ' - ' + extra
