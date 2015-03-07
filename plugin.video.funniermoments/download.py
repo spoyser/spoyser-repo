@@ -55,7 +55,9 @@ def getResponse(url, size, referrer):
 
         resp = urllib2.urlopen(req, timeout=10)
         return resp
-    except:
+    except Exception, e:
+        print 'Funnier Moments - Error in getResponse'
+        print str(e)
         return None
 
 
@@ -77,7 +79,7 @@ def doDownload(url, dest, title, referrer):
     #print "Download Header"
     #print resp.headers
     if resumable:
-        print "Download is resumable"
+        print "Funnier Moments - Download is resumable"
     
     if content < 1:
         xbmcgui.Dialog().ok(title, file, 'Unknown filesize', 'Unable to download')
@@ -128,7 +130,7 @@ def doDownload(url, dest, title, referrer):
                         del c
                 
                     f.close()
-                    print '%s download complete' % (dest)
+                    print 'Funnier Moments - %s download complete' % (dest)
                     xbmcgui.Dialog().ok(title, dest, '' , 'Download finished')
                     return
         except Exception, e:
@@ -163,13 +165,13 @@ def doDownload(url, dest, title, referrer):
         if error:
             errors += 1
             count  += 1
-            print '%d Error(s) whilst downloading %s' % (count, dest)
+            print 'Funnier Moments - %d Error(s) whilst downloading %s' % (count, dest)
             xbmc.sleep(sleep*1000)
 
         if (resumable and errors > 0) or errors >= 10:
             if (not resumable and resume >= 10) or resume >= 100:
                 #Give up!
-                print '%s download canceled - too many error whilst downloading' % (dest)
+                print 'Funnier Moments - %s download canceled - too many error whilst downloading' % (dest)
                 xbmcgui.Dialog().ok(title, dest, '' , 'Download failed')
                 return
             
@@ -178,7 +180,7 @@ def doDownload(url, dest, title, referrer):
             if resumable:
                 chunks  = []
                 #create new response
-                print 'Download resumed (%d) %s' % (resume, dest)
+                print 'Funnier Moments - Download resumed (%d) %s' % (resume, dest)
                 resp = getResponse(url, total, referrer)
             else:
                 #use existing response
