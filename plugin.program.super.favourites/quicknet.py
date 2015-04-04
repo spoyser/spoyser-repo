@@ -26,13 +26,26 @@ import urllib2
 import xbmc
 import utils
 
-CacheDir  = xbmc.translatePath(os.path.join(utils.ADDON.getAddonInfo('profile'), 'cache'))
+CacheDir  = xbmc.translatePath(os.path.join(utils.ADDON.getAddonInfo('profile'), 'c'))
 CacheSize = 100
 
 
+def clearCache():
+    try:
+        import shutil
+        shutil.rmtree(CacheDir)
+        while os.path.isdir(CacheDir):
+            xbmc.sleep(50)
+        checkCacheDir()
+    except: pass
+
+
 def checkCacheDir():
-    if not os.path.isdir(CacheDir):
-        os.makedirs(CacheDir)
+    try:
+        if not os.path.isdir(CacheDir):
+            os.makedirs(CacheDir)
+    except:
+        pass
 
 
 def getURLNoCache(url, agent=None, tidy=True):
@@ -58,9 +71,9 @@ def getURL(url, maxSec=0, agent=None, tidy=True):
 
     if maxSec > 0:
         timestamp = getTimestamp(url)
-    if timestamp > 0:
-        if (time.time() - timestamp) <= maxSec:
-            return getCachedData(url)
+        if timestamp > 0:
+            if (time.time() - timestamp) <= maxSec:
+                return getCachedData(url)
 			
     data = getURLNoCache(url, agent, tidy)
     addToCache(url, data)

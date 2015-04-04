@@ -7,7 +7,7 @@
 #  the Free Software Foundation; either version 2, or (at your option)
 #  any later version.
 #
-#  This Program is distributed in the hope that it will be useful,
+#  This Progr`am is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 #  GNU General Public License for more details.
@@ -353,13 +353,13 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
 
     def changeFolder(self, path):
-        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property,  path, self.changeTitle)
+        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property,   urllib.quote_plus(path),  self.changeTitle)
         self.close()    
         xbmc.executebuiltin(cmd)
 
         
 def MyDialog(faves, property, changeTitle, path, mode):
-    w = MainGui('DialogSelect.xml', HOME, faves=faves, property=property, changeTitle=changeTitle, path=path, mode=mode)
+    w = MainGui('DialogSelect.xml', HOME, faves=faves, property=property, changeTitle=changeTitle, path=urllib.unquote_plus(path), mode=mode)
     w.doModal()
     del w
 

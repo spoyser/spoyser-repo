@@ -26,6 +26,10 @@ import os
 utils.VerifyKeymaps()
 
 
+if utils.ADDON.getSetting('AUTOSTART') == 'true':
+    utils.LaunchSF()
+
+
 class MyMonitor(xbmc.Monitor):
     def __init__(self):
         xbmc.Monitor.__init__(self)

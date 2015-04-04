@@ -26,6 +26,9 @@ import os
 
 import utils
 
+global CHANGELOG
+CHANGELOG = None
+
 
 ADDON    = utils.ADDON
 ADDONID  = utils.ADDONID
@@ -62,15 +65,19 @@ def doImport():
 
             if not filename:
                 return False
+
             success = _doImportFromLocal(filename)
 
         if success:
             utils.DialogOK(GETTEXT(30133))
+            if CHANGELOG:
+                utils.showText(TITLE, CHANGELOG, True)               
             return True
     except:
         pass
 
     utils.DialogOK(GETTEXT(30137))
+    return False
 
 
 def _doImportFromRemote():
@@ -165,6 +172,9 @@ def doZipfile(outputFile, includeSettings=True):
 
         
 def extractAll(filename, dp, location):
+    global CHANGELOG
+    CHANGELOG = None
+
     zin = zipfile.ZipFile(filename, 'r')
 
     source  = ROOT
@@ -185,6 +195,17 @@ def extractAll(filename, dp, location):
             if filename == 'settings.xml':
                 if utils.DialogYesNo(GETTEXT(30135), line2='', line3=GETTEXT(30136), noLabel=None, yesLabel=None):
                     zin.extract(item, HOME)
+            elif filename == 'changelog.txt':
+                try:
+                    zin.extract(item, ROOT)      
+                    filename  = os.path.join(ROOT, filename)
+                    file      = open(filename , 'r')
+                    CHANGELOG = file.read()
+                    file.close()
+                    utils.DeleteFile(filename)
+                except Exception, e:
+                    print str(e)
+                    pass
             elif filename.lower().startswith('super favourites'):
                 zin.extract(item, ROOT)
             elif filename.lower().startswith('search'):

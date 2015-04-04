@@ -1,5 +1,5 @@
 #
-#       Copyright (C) 2014
+#       Copyright (C) 2014-2015
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -123,6 +123,10 @@ def generateMD5(text):
     return '0'
 
 
+def LaunchSF():
+    xbmc.executebuiltin('ActivateWindow(videos,plugin://%s)' % ADDONID)
+
+
 def CheckVersion():
     try:
         prev = ADDON.getSetting('VERSION')
@@ -135,6 +139,10 @@ def CheckVersion():
             return
 
         verifySuperSearch()
+
+        src = os.path.join(xbmc.translatePath(ROOT), 'cache')
+        dst = os.path.join(xbmc.translatePath(ROOT), 'C')
+        renameFolder(src, dst)
 
         ADDON.setSetting('VERSION', curr)
 
@@ -152,8 +160,20 @@ def CheckVersion():
         pass
 
 
+def renameFolder(src, dst):
+    if not os.path.exists(src):
+        return
+
+    os.rename(src, dst)
+
+
 def verifySuperSearch():
-    dst = os.path.join(xbmc.translatePath(ROOT), 'Search')
+    src = os.path.join(xbmc.translatePath(ROOT), 'Search')
+    dst = os.path.join(xbmc.translatePath(ROOT), 'S')
+
+    renameFolder(src, dst)
+
+    dst = os.path.join(xbmc.translatePath(ROOT), 'S')
     src = os.path.join(HOME, 'resources', 'Search', FILENAME)
 
     try:    os.makedirs(dst)
@@ -170,12 +190,15 @@ def verifySuperSearch():
         return
 
     try:
-        #fix 1 channel
+        #patch any changes
         ch1 = open(dst, 'r')
         xml = ch1.read()
         ch1.close()
 
         xml = xml.replace('1channel/?mode=7000', '1channel/?mode=Search')
+        xml = xml.replace('plugin.video.genesis/?action=actors_movies', 'plugin.video.genesis/?action=people_movies')
+        xml = xml.replace('plugin.video.genesis/?action=actors_shows',  'plugin.video.genesis/?action=people_shows')
+
         ch1 = open(dst, 'w')
         ch1.write(xml)            
         ch1.close()
@@ -223,8 +246,11 @@ def DeleteFile(path):
 def VerifyKeymaps():
     reload = False
 
-    if VerifyKeymapHot():  reload = True
-    if VerifyKeymapMenu(): reload = True
+    if VerifyKeymapHot():
+        reload = True
+
+    if VerifyKeymapMenu():
+        reload = True
 
     if not reload:
         return
@@ -282,17 +308,20 @@ def WriteKeymap(start, end):
     return True
 
 
-def VerifyKeymapMenu(): 
+def VerifyKeymapMenu():
     context = ADDON.getSetting('CONTEXT')  == 'true'
 
-    DeleteKeymap(KEYMAP_MENU)
-
-    if not context:        
+    if not context:
+        DeleteKeymap(KEYMAP_MENU)
         return True
 
     keymap = xbmc.translatePath('special://profile/keymaps')
-    src    = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
     dst    = os.path.join(keymap, KEYMAP_MENU)
+
+    if os.path.exists(dst):
+        return False
+
+    src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
 
     try:
         if not os.path.isdir(keymap):
@@ -356,6 +385,37 @@ def GetFolder(title):
     return xbmc.translatePath(folder)
 
 
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+    }
+
+
+def escape(text):
+    return ''.join(html_escape_table.get(c,c) for c in text)
+
+
+def unescape(text):
+    text = text.replace('&amp;',  '&')
+    text = text.replace('&quot;', '"')
+    text = text.replace('&apos;', '\'')
+    text = text.replace('&gt;',   '>')
+    text = text.replace('&lt;',   '<')
+    return text
+
+
+def fix(text):
+    ret = ''
+    for ch in text:
+        if ord(ch) < 128:
+            ret += ch
+    return ret
+
+
+
 def Clean(name):
     import re
     name   = re.sub('\([0-9)]*\)', '', name)
@@ -410,7 +470,7 @@ def showBusy():
     return busy
 
 
-def showText(heading, text):
+def showText(heading, text, waitForClose=False):
     id = 10147
 
     xbmc.executebuiltin('ActivateWindow(%d)' % id)
@@ -422,12 +482,15 @@ def showText(heading, text):
     while (retry > 0):
         try:
             xbmc.sleep(10)
-            retry -= 1
             win.getControl(1).setLabel(heading)
             win.getControl(5).setText(text)
-            return
+            retry = 0
         except:
-            pass
+            retry -= 1
+
+    if waitForClose:
+        while xbmc.getCondVisibility('Window.IsVisible(%d)' % id) == 1:
+            xbmc.sleep(50)
 
 
 def showChangelog(addonID=None):

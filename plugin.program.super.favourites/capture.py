@@ -107,7 +107,7 @@ def doMenu():
         window = xbmcgui.getCurrentWindowId()
         utils.DialogOK('Current Window ID %d' % window)  
 
-    active = [1, 2, 25, 40, 500, 501, 502, 601]
+    active = [0, 1, 2, 25, 40, 500, 501, 502, 601]
     window = xbmcgui.getCurrentWindowId()
     utils.log('Window     : %d' % window)  
     if window-10000 not in active:
@@ -204,9 +204,10 @@ def doMenu():
 
         menu.append((utils.GETTEXT(30048), _STD_SETTINGS))
 
-    #elif window == 10000: #Home screen
-    #    menu.append((utils.GETTEXT(30053), _LAUNCH_SF))
-    #    menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
+    elif window == 10000: #Home screen
+        #menu.append((utils.GETTEXT(30053), _LAUNCH_SF))
+        #menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
+        pass
 
 
     if len(menu) == 0:
@@ -273,7 +274,7 @@ def doMenu():
         copyFave(name, thumb, cmd)
 
     if choice == _LAUNCH_SF:
-        xbmc.executebuiltin('ActivateWindow(programs,plugin://%s)' % utils.ADDONID)
+        utils.LaunchSF()
 
     if choice == _SEARCH or choice == _SEARCHDEF:
         if utils.ADDON.getSetting('STRIPNUMBERS') == 'true':
@@ -298,10 +299,10 @@ def doMenu():
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == 'preload':
-        import utils
-        utils.log('capture script preloaded')
-        return
+    #if len(sys.argv) > 1 and sys.argv[1] == 'preload':
+    #    import utils
+    #    utils.log('capture script preloaded')
+    #    return
 
     if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') == 'true':
         return
@@ -316,4 +317,5 @@ except Exception, e:
     print 'Exception in capture.py %s' % str(e)
     utils.log('Exception in capture.py %s' % str(e))
 
+xbmc.sleep(1000)
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

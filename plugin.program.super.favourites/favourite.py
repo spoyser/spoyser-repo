@@ -1,5 +1,5 @@
 
-#       Copyright (C) 2013-2014
+#       Copyright (C) 2013-2015
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 import os
 import xbmc
 import re
-import HTMLParser
 import re
 
 import utils
@@ -33,28 +32,10 @@ HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
 SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 
 
-html_escape_table = {
-    "&": "&amp;",
-    '"': "&quot;",
-    "'": "&apos;",
-    ">": "&gt;",
-    "<": "&lt;",
-    }
-
-def escape(text):
-    return ''.join(html_escape_table.get(c,c) for c in text)
-
-
-def unescape(text):
-    text = text.replace('&amp;',  '&')
-    text = text.replace('&quot;', '"')
-    text = text.replace('&apos;', '\'')
-    text = text.replace('&gt;',   '>')
-    text = text.replace('&lt;',   '<')
-    return text
-
-
 def getFavourites(file, limit=10000, validate=True, superSearch=False):
+    import xbmcgui
+
+    file = xbmc.translatePath(file)
     xml  = '<favourites></favourites>'
     if os.path.exists(file):  
         fav = open(file , 'r')
@@ -68,8 +49,9 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
     for fave in faves:
         fave = fave.replace('&quot;', '&_quot_;')
         fave = fave.replace('\'', '"')
-        fave = unescape(fave)
+        fave = utils.unescape(fave)
 
+        fave = fave.replace('name=""', '')
         try:    name = re.compile('name="(.+?)"').findall(fave)[0]
         except: name = ''
 
@@ -93,6 +75,15 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
 
         if add:
             cmd = upgradeCmd(cmd)
+
+            if cmd.startswith('PlayMedia'):
+                option = 'mode'
+                try:                        
+                    mode = int(favourite.getOption(cmd, option))
+                except:
+                    win  = xbmcgui.getCurrentWindowId()
+                    cmd  = updateSFOption(cmd, 'winID', win)
+
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
@@ -121,15 +112,16 @@ def upgradeCmd(cmd):
 
 
 def writeFavourites(file, faves):
+    file = xbmc.translatePath(file)
     f = open(file, mode='w')
 
     f.write('<favourites>')
 
     for fave in faves:
         try:
-            name  = escape(fave[0])
-            thumb = escape(fave[1])
-            cmd   = escape(fave[2])
+            name  = utils.escape(fave[0])
+            thumb = utils.escape(fave[1])
+            cmd   = utils.escape(fave[2])
 
             thumb = convertToHome(thumb)
 
@@ -195,9 +187,20 @@ def isValid(cmd):
 
 def updateFave(file, update):
     cmd = update[2]
+
     fave, index, nFaves = findFave(file, cmd)
    
     removeFave(file, cmd)
+    return insertFave(file, update, index)
+
+
+def replaceFave(file, update, oldCmd):
+    fave, index, nFaves = findFave(file, oldCmd)
+
+    if index < 0:
+        return addFave(file, update)
+   
+    removeFave(file, oldCmd)
     return insertFave(file, update, index)
 
 
