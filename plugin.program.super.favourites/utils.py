@@ -56,7 +56,7 @@ SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY = ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
 
-DEBUG   = ADDON.getSetting('DEBUG') == 'true'
+DEBUG   = True #ADDON.getSetting('DEBUG') == 'true'
 
 
 

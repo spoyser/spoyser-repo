@@ -111,10 +111,11 @@ class Main:
 
         faves = self.getFaves()
         MyDialog(faves, self.PROPERTY, self.CHANGETITLE, self.PATH, self.MODE)
-            
+        
+    
     def _parse_argv(self):
         try:           
-            params = dict(arg.split('=') for arg in sys.argv[1].split('&' ))          
+            params = dict(arg.split('=') for arg in sys.argv[1].split('&'))          
         except:
             params = {}
                     
@@ -122,10 +123,12 @@ class Main:
         property    = params.get('property', '')
         changeTitle = params.get('changetitle',   '').lower() == 'true'
 
+        path = path.replace('SF_AMP_SF', '&')
+
         self.init(property, path, changeTitle)
 
 
-    def init(self, property, path, changeTitle):          
+    def init(self, property, path, changeTitle): 
         self.PATH        = path
         self.PROPERTY    = property
         self.CHANGETITLE = changeTitle
@@ -137,6 +140,8 @@ class Main:
             self.FULLPATH = xbmc.translatePath(self.PATH)
         else:                
             self.FULLPATH = xbmc.translatePath(os.path.join(utils.PROFILE, self.PATH))
+
+        self.FULLPATH = urllib.unquote_plus(self.FULLPATH)
 
                 
     def getFaves(self):
@@ -270,7 +275,6 @@ class MainGui(xbmcgui.WindowXMLDialog):
             self.favList.addItem(listitem)
 
         except Exception, e:
-            print str(e)
             pass
 
         
@@ -353,7 +357,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
 
     def changeFolder(self, path):
-        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property,   urllib.quote_plus(path),  self.changeTitle)
+        path = path.replace('&', 'SF_AMP_SF')
+        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property, path, self.changeTitle)
         self.close()    
         xbmc.executebuiltin(cmd)
 

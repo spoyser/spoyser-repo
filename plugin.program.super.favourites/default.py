@@ -457,7 +457,7 @@ def parseFile(file):
         cmd    = fave[2]
         fanart = favourite.getFanart(cmd)
 
-        manualUnset = cmd.startswith(MANUAL_CMD)
+        manualUnset = MANUAL_CMD in cmd
   
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -1022,19 +1022,17 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     if type < 0:
         return False
 
-    allowEmpty  = False
     windowID    = '-1'
     originalID  = ''
     if type == ACTIVATEWINDOW_MODE:
         windowID, originalID = getWindowID(cmd, name)
-        allowEmpty = True
             
     if windowID == '0':
         return False
 
     newCmd = ''
 
-    manualUnset = cmd.startswith(MANUAL_CMD)
+    manualUnset = MANUAL_CMD in cmd
 
     title = GETTEXT(30170) % name
  
@@ -1046,7 +1044,6 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
         if _cmd.lower().startswith('activatewindow'):
             if cmd == originalID:
                 cmd = ''
-                allowEmpty = True
             else:
                 cmd = cmd.split(',', 1)[-1].strip()            
 
@@ -1065,7 +1062,7 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
         if cmd.lower() == 'return':
             cmd = ''
 
-        newCmd = getText(title, cmd, allowEmpty=allowEmpty)
+        newCmd = getText(title, cmd, allowEmpty=True)
 
     if newCmd == None:
         return False
@@ -1080,21 +1077,23 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     return favourite.replaceFave(file, fave, _cmd)
 
 
-def buildManualFave(type, cmd=None, windowID='-1'):
-    fullCmd = ''
-    if type == PLAYMEDIA_MODE:
-        fullCmd = 'PlayMedia("%s")' % cmd
-
-    elif type == ACTIVATEWINDOW_MODE:
+def buildManualFave(type, cmd, windowID='-1'):   
+    if type == ACTIVATEWINDOW_MODE:
         if cmd:
-            fullCmd = 'ActivateWindow(%s,"%s",return)' % (windowID, cmd) 
+            return 'ActivateWindow(%s,"%s",return)' % (windowID, cmd) 
         else:
-            fullCmd = 'ActivateWindow(%s,return)' % (windowID) 
+            return 'ActivateWindow(%s,return)' % (windowID) 
+
+    if len(cmd) == 0:
+        return getDefaultManualCmd()
+
+    if type == PLAYMEDIA_MODE:
+        return 'PlayMedia("%s")' % cmd
 
     elif type == RUNPLUGIN_MODE:
-        fullCmd = 'RunScript("%s")' % cmd
+        return 'RunScript("%s")' % cmd
 
-    return fullCmd
+    return getDefaultManualCmd()
 
 
 def getWindowID(cmd, name):
@@ -1152,14 +1151,18 @@ def manualAdd(folder):
     if name == None:
         return False
 
-    id = int(ADDON.getSetting('MANUAL_ID'))
-    ADDON.setSetting('MANUAL_ID', str(id+1))
-
-    cmd   = MANUAL_CMD + str(id)
+    cmd   = getDefaultManualCmd()
     thumb = ''
 
     file  = os.path.join(folder, FILENAME)
     return manualEdit(file, cmd, name, thumb, editName=False)
+
+
+def getDefaultManualCmd():
+    id = int(ADDON.getSetting('MANUAL_ID'))
+    ADDON.setSetting('MANUAL_ID', str(id+1))
+
+    return MANUAL_CMD + str(id)
 
 
 def editSearch(file, cmd, name, thumb):
@@ -2266,7 +2269,8 @@ except: content = ''
 try:    contentMode = params['contentMode'].lower() == 'true'
 except: contentMode = False
 
-
+print "WE ARE HERE"
+print sys.argv
 
 doRefresh   = False
 doEnd       = True
@@ -2634,7 +2638,6 @@ if nItem < 1:
 
 if doRefresh:
     refresh()
-
 
 
 if doEnd:
