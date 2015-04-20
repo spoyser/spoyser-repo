@@ -24,9 +24,10 @@ import urllib
 
 import utils
 import favourite
+import sfile
 
 ROOT     = utils.ROOT
-FILEPATH = os.path.join(xbmc.translatePath(ROOT), 'H')
+FILEPATH = os.path.join(ROOT, 'H')
 FILENAME = os.path.join(FILEPATH, utils.FILENAME)
 
 
@@ -56,7 +57,7 @@ def contains(keyword):
 def add(keyword, image, fanart):
     if not exists():
         try:
-            os.makedirs(FILEPATH)
+            sfile.makedirs(FILEPATH)
         except:
             pass    
 

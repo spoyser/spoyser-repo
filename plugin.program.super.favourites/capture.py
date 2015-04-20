@@ -1,5 +1,5 @@
 #
-#       Copyright (C) 2014
+#       Copyright (C) 2014-
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -181,17 +181,6 @@ def doMenu():
         #return doStandard()
     
     if (len(menu) == 0) and len(path) > 0:
-        ytID = ''
-
-        if path.startswith('plugin://plugin.video.youtube') and 'videoid=' in path:
-            try:
-                ytID = path.rsplit('videoid=', 1)[-1][0:11]
-                menu.append((utils.GETTEXT(30104), _PLAYTUBE))
-            except:
-                ytID = ''
-
-        #utils.verifySuperSearch()
-
         menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
         menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
 
@@ -237,12 +226,6 @@ def doMenu():
     #    import download
     #    download.download(file, 'c:\\temp\\file.mpg', 'Super Favourites')
 
-    if choice == _PLAYTUBE:
-        if len(ytID) != 11:
-            return
-        import yt    
-        if not yt.PlayVideo(ytID):
-            utils.DialogOK(utils.GETTEXT(30105))
     
     if choice == _STD_SETTINGS:
         doStandard()
@@ -299,11 +282,6 @@ def doMenu():
 
 
 def main():
-    #if len(sys.argv) > 1 and sys.argv[1] == 'preload':
-    #    import utils
-    #    utils.log('capture script preloaded')
-    #    return
-
     if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') == 'true':
         return
 
@@ -314,7 +292,6 @@ try:
     main()
 except Exception, e:
     import utils
-    print 'Exception in capture.py %s' % str(e)
     utils.log('Exception in capture.py %s' % str(e))
 
 xbmc.sleep(1000)

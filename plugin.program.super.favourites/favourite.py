@@ -25,6 +25,8 @@ import re
 
 import utils
 
+import sfile
+
 
 HOMESPECIAL = 'special://home/'
 HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
@@ -35,12 +37,9 @@ SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 def getFavourites(file, limit=10000, validate=True, superSearch=False):
     import xbmcgui
 
-    file = xbmc.translatePath(file)
     xml  = '<favourites></favourites>'
-    if os.path.exists(file):  
-        fav = open(file , 'r')
-        xml = fav.read()
-        fav.close()
+    if sfile.exists(file):
+        xml = sfile.read(file)
 
     items = []
 
@@ -112,8 +111,7 @@ def upgradeCmd(cmd):
 
 
 def writeFavourites(file, faves):
-    file = xbmc.translatePath(file)
-    f = open(file, mode='w')
+    f = sfile.file(file, 'w')
 
     f.write('<favourites>')
 

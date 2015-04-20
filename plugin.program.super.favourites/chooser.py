@@ -1,5 +1,5 @@
 
-#       Copyright (C) 2013-2014
+#       Copyright (C) 2013-
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import urllib
 
 import utils
 import favourite
+import sfile
 
 ADDON       = utils.ADDON
 HOME        = utils.HOME
@@ -45,7 +46,6 @@ GETTEXT   = ADDON.getLocalizedString
 
 
 def getFolderThumb(path):
-    path  = xbmc.translatePath(path)
     cfg   = os.path.join(path, FOLDERCFG)
     thumb = getParam('ICON', cfg)
 
@@ -73,9 +73,7 @@ def getParam(param, file):
     try:
         config = []
         param  = param.upper() + '='
-        f      = open(file, 'r')
-        config = f.readlines()
-        f.close()
+        config = sfile.readlines(file)
     except:
         return ''
 

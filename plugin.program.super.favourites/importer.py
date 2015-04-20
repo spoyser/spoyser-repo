@@ -25,6 +25,7 @@ import zipfile
 import os
 
 import utils
+import sfile
 
 global CHANGELOG
 CHANGELOG = None
@@ -32,9 +33,8 @@ CHANGELOG = None
 
 ADDON    = utils.ADDON
 ADDONID  = utils.ADDONID
-HOME     = xbmc.translatePath(ADDON.getAddonInfo('profile'))
-ROOT     = xbmc.translatePath(utils.ROOT)
-PROFILE  = xbmc.translatePath(utils.PROFILE)
+HOME     = xbmc.translatePath(ADDON.getAddonInfo('profile')) #has to be a real path
+ROOT     = utils.ROOT
 REMOTE   = ADDON.getSetting('REMOTE').lower() == 'true'
 LOCATION = ADDON.getSetting('LOCATION')
 TITLE    = utils.TITLE
@@ -135,7 +135,11 @@ def doExport():
 def doZipfile(outputFile, includeSettings=True):
     zip = None
 
-    source  = ROOT
+    source  = os.path.join(HOME, 'Temp')
+    if sfile.exists(source):
+        sfile.rmtree(source)
+    sfile.copytree(ROOT, source)
+
     relroot = os.path.abspath(os.path.join(source, os.pardir))
 
     for root, dirs, files in os.walk(source):
@@ -149,7 +153,7 @@ def doZipfile(outputFile, includeSettings=True):
         local = local[-1]
 
         # add directory (this is needed for empty dirs)
-        if local.lower() == 'cache':
+        if local.lower() == 'c':
             continue
         zip.write(root, local)
 
@@ -170,6 +174,8 @@ def doZipfile(outputFile, includeSettings=True):
 
         zip.write(filename, arcname)
 
+    sfile.rmtree(source)
+
         
 def extractAll(filename, dp, location):
     global CHANGELOG
@@ -177,8 +183,10 @@ def extractAll(filename, dp, location):
 
     zin = zipfile.ZipFile(filename, 'r')
 
-    source  = ROOT
-    relroot = os.path.abspath(os.path.join(source, os.pardir))
+    relroot = os.path.abspath(os.path.join(ROOT, os.pardir))
+
+    root    = os.path.join(HOME, 'Temp')
+    profile = os.path.join(root, 'Super Favourites')
 
     try:
         nItem = float(len(zin.infolist()))
@@ -197,29 +205,31 @@ def extractAll(filename, dp, location):
                     zin.extract(item, HOME)
             elif filename == 'changelog.txt':
                 try:
-                    zin.extract(item, ROOT)      
-                    filename  = os.path.join(ROOT, filename)
-                    file      = open(filename , 'r')
-                    CHANGELOG = file.read()
-                    file.close()
+                    zin.extract(item, root)      
+                    filename  = os.path.join(root, filename)
+                    CHANGELOG = sfile.read(filename)
                     utils.DeleteFile(filename)
                 except Exception, e:
-                    print str(e)
-                    pass
+                    utils.log('Changelog error in extractAll')
+                    utils.log(e)
             elif filename.lower().startswith('super favourites'):
-                zin.extract(item, ROOT)
-            elif filename.lower().startswith('search'):
-                zin.extract(item, ROOT)
+                zin.extract(item, root)
+            elif filename.lower().startswith('s'):
+                zin.extract(item, root)
+            elif filename.lower().startswith('h'):
+                zin.extract(item, root)
             elif filename.lower().startswith('pl'):
-                zin.extract(item, ROOT)
+                zin.extract(item, root)
             else:
-                zin.extract(item, PROFILE)
+                zin.extract(item, profile)
 
     except Exception, e:
         utils.log('Error whilst unzipping %s' % location)
         utils.log(e)
         return False
 
+    sfile.copytree(root, ROOT)
+    sfile.rmtree(root)
     return True
 
 

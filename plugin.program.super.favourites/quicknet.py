@@ -25,27 +25,21 @@ import urllib2
 
 import xbmc
 import utils
+import sfile
 
-CacheDir  = xbmc.translatePath(os.path.join(utils.ADDON.getAddonInfo('profile'), 'c'))
+CacheDir  = os.path.join(utils.ADDON.getAddonInfo('profile'), 'c')
 CacheSize = 100
 
 
 def clearCache():
-    try:
-        import shutil
-        shutil.rmtree(CacheDir)
-        while os.path.isdir(CacheDir):
-            xbmc.sleep(50)
-        checkCacheDir()
-    except: pass
+    sfile.rmtree(CacheDir)
+    while sfile.exists(CacheDir):
+        xbmc.sleep(50)
+    checkCacheDir()
 
 
 def checkCacheDir():
-    try:
-        if not os.path.isdir(CacheDir):
-            os.makedirs(CacheDir)
-    except:
-        pass
+    sfile.makedirs(CacheDir)
 
 
 def getURLNoCache(url, agent=None, tidy=True):
@@ -84,9 +78,8 @@ def getTimestamp(url):
     cacheKey  = createKey(url)
     cachePath = os.path.join(CacheDir, cacheKey)
 
-    if os.path.isfile(cachePath):
-        try:    return os.path.getmtime(cachePath)
-        except: pass
+    try:    return sfile.mtime(cachePath)
+    except: pass
 
     return 0
 
@@ -94,10 +87,7 @@ def getTimestamp(url):
 def getCachedData(url):
     cacheKey  = createKey(url)
     cachePath = os.path.join(CacheDir, cacheKey)
-    f         = file(cachePath, 'r')
-
-    data = f.read()
-    f.close()
+    data      = sfile.read(cachePath)
 
     return data
 
@@ -107,7 +97,7 @@ def addToCache(url, data):
 
     cacheKey  = createKey(url)
     cachePath = os.path.join(CacheDir, cacheKey)
-    f         = file(cachePath, 'w')
+    f         = sfile.file(cachePath, 'w')
 
     f.write(data)
     f.close()
@@ -125,19 +115,18 @@ def createKey(url):
 
         
 def purgeCache():
-    files  = glob.glob(os.path.join(CacheDir, '*'))
+    files   = sfile.glob(CacheDir)
     nFiles = len(files)
 
     try:
         while nFiles > gCacheSize:            
             oldestFile = getOldestFile(files)
-            path       = os.path.join(CacheDir, oldestFile)
  
-            while os.path.exists(path):
-                try:    os.remove(path)
+            while sfile.exists(oldestFile):
+                try:    sfile.remove(oldestFile)
                 except: pass
 
-            files  = glob.glob(os.path.join(CacheDir, '*'))
+            files  = sfile.glob(CacheDir)
             nFiles = len(files)
     except:
         pass
@@ -148,11 +137,11 @@ def getOldestFile(files):
         return None
     
     now    = time.time()
-    oldest = files[0], now - os.path.getctime(files[0])
+    oldest = (files[0], now - sfile.ctime(files[0]))
 
     for f in files[1:]:
-        age = now - os.path.getctime(f)
+        age = now - sfile.ctime(f)
         if age > oldest[1]:
-            oldest = f, age
+            oldest = (f, age)
 
     return oldest[0]

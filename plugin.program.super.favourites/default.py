@@ -1,5 +1,5 @@
 #
-#       Copyright (C) 2014
+#       Copyright (C) 2014-
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@ import favourite
 import history
 import utils
 import cache
+import sfile
 
 
 ADDONID  = utils.ADDONID
@@ -183,7 +184,7 @@ def clean(text):
 def main():
     addMainItems()
 
-    parseFolder(xbmc.translatePath(PROFILE))
+    parseFolder(PROFILE)
 
 
 def addSuperSearch():
@@ -325,7 +326,7 @@ def addToXBMC(name, thumb, cmd,  keyword):
    
     fave = [name, thumb, cmd]
 
-    file = os.path.join(xbmc.translatePath('special://profile'), FILENAME)
+    file = os.path.join('special://profile', FILENAME)
 
     #if it is already in there don't add again
     if favourite.findFave(file, cmd)[0]:
@@ -441,7 +442,7 @@ def checkPassword(path, lock=None):
 
 
 def showXBMCFolder():
-    file = os.path.join(xbmc.translatePath('special://profile'), FILENAME)
+    file = os.path.join('special://profile', FILENAME)
     parseFile(file)
 
 
@@ -535,15 +536,13 @@ def addMainItems():
         addDir(label, _IPLAY, thumbnail=thumbnail, isFolder=True, fanart=fanart)
         separator = True
 
-
-    profile = xbmc.translatePath(PROFILE)
-    addNewFolderItem(profile)
+    addNewFolderItem(PROFILE)
 
 
     if SHOWXBMC:
         separator = False
 
-        thumbnail, fanart = getFolderThumb(xbmc.translatePath(PROFILE), True)
+        thumbnail, fanart = getFolderThumb(PROFILE, True)
 
         label = GETTEXT(30040) % DISPLAYNAME
         addDir(label, _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart)
@@ -562,11 +561,15 @@ def addMainItems():
 
 
 def parseFolder(folder):
+    folder = folder
     global separator
 
     #addMainItems()
 
-    try:    current, dirs, files = os.walk(folder).next()
+    #try:    current, dirs, files = os.walk(folder).next()
+    #except: return
+
+    try:    current, dirs, files = sfile.walk(folder)
     except: return
    
     dirs = sorted(dirs, key=str.lower)
@@ -604,10 +607,8 @@ def getParam(param, file):
     try:
         config = []
         param  = param.upper() + '='
-        f      = open(file, 'r')
-        config = f.readlines()
-        f.close()
-    except:
+        config = sfile.readlines(file)
+    except Exception, e:
         return None
 
     for line in config:
@@ -624,9 +625,7 @@ def setParam(param, value, file):
     config = []
     try:
         param  = param.upper() + '='
-        f      = open(file, 'r')
-        config = f.readlines()
-        f.close()
+        config = sfile.readlines(file)
     except:
         pass
         
@@ -639,7 +638,7 @@ def setParam(param, value, file):
     if len(value) > 0:
         copy.append(param + value)
 
-    f = open(file, 'w')
+    f = sfile.file(file, 'w')
 
     for line in copy:
         f.write(line)
@@ -650,12 +649,12 @@ def setParam(param, value, file):
 def getColour():
     filename = os.path.join(HOME, 'resources', 'colours', 'Color.xml')
 
-    if not os.path.exists(filename):
+    if not sfile.exists(filename):
         return None
 
     menu = [[GETTEXT(30087), 'SF_RESET']]
 
-    f = open(filename, 'r')
+    f = sfile.readlines(filename)
     for line in f:
         if 'name' in line:
             name = line.split('"')[1]            
@@ -706,8 +705,8 @@ def getSkinImage():
 
     items = ['Super Favourite']
 
-    if os.path.exists(icon):
-        f = open(icon, 'r')
+    if sfile.exists(icon):
+        f = sfile.file(icon, 'r')
         for line in f:
             items.append(line.strip())
         f.close()
@@ -812,11 +811,11 @@ def createNewFolder(current):
         return False
 
     folder = os.path.join(current, text)
-    if os.path.exists(folder):
+    if sfile.exists(folder):
         utils.DialogOK('', GETTEXT(30014) % text)
         return False
 
-    os.makedirs(xbmc.translatePath(folder))
+    sfile.makedirs(folder)
     return True
 
 
@@ -1259,11 +1258,7 @@ def removeFolder(path):
     if not utils.DialogYesNo(GETTEXT(30016) % label, GETTEXT(30017), GETTEXT(30018)):
         return False
 
-    try:
-        import shutil    
-        shutil.rmtree(path)
-    except:
-        pass
+    sfile.rmtree(path)
     return True
 
 
@@ -1543,9 +1538,8 @@ def iPlay():
 
     nItems = 0
 
-    folder = os.path.join(xbmc.translatePath(ROOT), 'PL')
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
+    folder = os.path.join(ROOT, 'PL')
+    sfile.makedirs(folder)
 
     #parse SF folder
     nItems += addPlaylistItems(parsePlaylistFolder(folder), 'DefaultMusicVideos.png', delete=True)
@@ -1564,7 +1558,7 @@ def iPlay():
     nItems += addPlaylistItems(items, delete=True)
 
     #parse Kodi folders    
-    folder  = xbmc.translatePath('special://profile/playlists')
+    folder  = 'special://profile/playlists'
     nItems += addPlaylistItems(parsePlaylistFolder(os.path.join(folder, 'video')), 'DefaultMovies.png',      delete=ALLOW_PLAYLIST_DELETE)
     nItems += addPlaylistItems(parsePlaylistFolder(os.path.join(folder, 'music')), 'DefaultMusicSongs.png',  delete=ALLOW_PLAYLIST_DELETE)
     nItems += addPlaylistItems(parsePlaylistFolder(os.path.join(folder, 'mixed')), 'DefaultMusicVideos.png', delete=ALLOW_PLAYLIST_DELETE)
@@ -1583,11 +1577,13 @@ def addPlaylistItems(items, thumbnail='DefaultMovies.png', delete=False):
 
         #browse
         cmd = '%s?mode=%d' % (sys.argv[0], _PLAYLISTBROWSE)
-        menu.append((GETTEXT(30148), 'XBMC.Container.Update(%s)' % cmd))
+        #menu.append((GETTEXT(30148), 'XBMC.Container.Update(%s)' % cmd))
+        menu.append((GETTEXT(30148), 'XBMC.RunPlugin(%s)' % cmd))
 
         #browse for URL
         cmd = '%s?mode=%d' % (sys.argv[0], _URLPLAYLIST)
-        menu.append((GETTEXT(30153), 'XBMC.Container.Update(%s)' % cmd))
+        #menu.append((GETTEXT(30153), 'XBMC.Container.Update(%s)' % cmd))
+        menu.append((GETTEXT(30153), 'XBMC.RunPlugin(%s)' % cmd))
 
         menu.append((GETTEXT(30084), 'XBMC.PlayMedia(%s)' % path))
 
@@ -1604,7 +1600,7 @@ def addPlaylistItems(items, thumbnail='DefaultMovies.png', delete=False):
 
 def iPlaylistDelete(path):
     #delete from SF list of Playlists
-    folder    = os.path.join(xbmc.translatePath(ROOT), 'PL')
+    folder    = os.path.join(ROOT, 'PL')
     file      = os.path.join(folder, FILENAME)
     playlists = favourite.getFavourites(file, validate=False)
     updated   = []
@@ -1617,7 +1613,7 @@ def iPlaylistDelete(path):
         favourite.writeFavourites(file, updated)
         return True
 
-    if os.path.exists(path):
+    if sfile.exists(path):
         utils.DeleteFile(path)
         return True
 
@@ -1652,13 +1648,10 @@ def iPlaylistURL(url):
 
 
 def iPlaylistFile(path):
-    path = xbmc.translatePath(path)
-    if not os.path.exists(path):
+    if sfile.exists(path):
         return iPlaylistURL(path)
 
-    f        = open(path , 'r')
-    playlist = f.readlines()
-    f.close()
+    playlist = sfile.readlines(path)
 
     return addItems(playlist)
 
@@ -1693,7 +1686,7 @@ def addItems(playlist):
         
 
 def parsePlaylistFolder(folder):
-    try:    current, dirs, files = os.walk(folder).next()
+    try:    current, dirs, files = sfile.walk(folder)
     except: return []
 
     items = []
@@ -1760,7 +1753,7 @@ def iPlaylistURLBrowse():
         if text == 'http://':
             return
 
-        try:    html = quicknet.getURL(text, maxSec=600, tidy=False)
+        try:    html = quicknet.getURL(text, maxSec=0, tidy=False)
         except: html = ''
 
         items = parsePlaylist(html.split('\n'))
@@ -1776,8 +1769,8 @@ def iPlaylistURLBrowse():
 
     if COPY_PLAYLISTS:
         name += '.m3u'
-        file  = os.path.join(xbmc.translatePath(ROOT), 'PL', name)
-        f = open(file, mode='w')
+        file  = os.path.join(ROOT, 'PL', name)
+        f = sfile.file(file, 'w')
         f.write(html)
         f.close()
         return True
@@ -1795,9 +1788,8 @@ def iPlaylistBrowse():
     if not playlist:
         return False
 
-    folder = os.path.join(xbmc.translatePath(ROOT), 'PL')
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
+    folder = os.path.join(ROOT, 'PL')
+    sfile.makedirs(folder)
 
     if COPY_PLAYLISTS:
         try:
@@ -1815,9 +1807,8 @@ def iPlaylistBrowse():
 
 
 def addPlaylistToSF(name, cmd, thumb):
-    folder = os.path.join(xbmc.translatePath(ROOT), 'PL')
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
+    folder = os.path.join(ROOT, 'PL')
+    sfile.makedirs(folder)
 
     file  = os.path.join(folder, FILENAME)
 
@@ -1963,12 +1954,12 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         
     keyword = urllib.quote_plus(keyword.replace('&', ''))  
 
-    file  = os.path.join(xbmc.translatePath(ROOT), 'S', FILENAME)
+    file  = os.path.join(ROOT, 'S', FILENAME)
     faves = favourite.getFavourites(file, superSearch=True)    
 
     if len(faves) == 0:
         #try shipped search file
-        file = os.path.join(xbmc.translatePath(HOME), 'resources', 'Search', FILENAME)
+        file = os.path.join(HOME, 'resources', 'Search', FILENAME)
         faves = favourite.getFavourites(file) 
 
     for fave in faves:
@@ -2192,8 +2183,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     #special case
     if mode == _XBMC:
-        profile = xbmc.translatePath(PROFILE)
-        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(profile))))
+        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(PROFILE))))
 
     ignoreFave = False
     if mode == _NEWFOLDER:
@@ -2269,8 +2259,6 @@ except: content = ''
 try:    contentMode = params['contentMode'].lower() == 'true'
 except: contentMode = False
 
-print "WE ARE HERE"
-print sys.argv
 
 doRefresh   = False
 doEnd       = True
@@ -2349,7 +2337,7 @@ elif mode == _XBMC:
 
 
 elif mode == _FOLDER:
-    thepath   = xbmc.translatePath(path)
+    thepath   = path
     theFolder = label
 
     if unlock(thepath):
@@ -2554,10 +2542,10 @@ elif mode == _PLAYLISTITEM:
 
 
 elif mode == _PLAYLISTBROWSE:
-    #doRefresh = iPlaylistBrowse()
-    doRefresh = False
-    doEnd     = False
-    iPlaylistBrowse()
+    doRefresh = iPlaylistBrowse()
+    #doRefresh = False
+    #doEnd     = False
+    #iPlaylistBrowse()
 
 
 elif mode == _DELETEPLAYLIST:
@@ -2578,7 +2566,6 @@ elif mode == _COPYPLAYLISTITEM:
 
 elif mode == _URLPLAYLIST:
     doRefresh = iPlaylistURLBrowse()
-    doEnd  
 
 
 elif mode == _HISTORYSHOW:

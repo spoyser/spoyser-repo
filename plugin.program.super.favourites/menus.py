@@ -50,7 +50,6 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
 
         
     def onInit(self):
-    
         for i in range(5):
             self.getControl(5001+i).setVisible(False)
             

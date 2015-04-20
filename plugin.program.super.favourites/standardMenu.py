@@ -20,5 +20,5 @@
 
 import xbmc
 
-xbmc.sleep(120)
+xbmc.sleep(150)
 xbmc.executebuiltin('Action(ContextMenu)')

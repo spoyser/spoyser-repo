@@ -24,6 +24,7 @@ import xbmcaddon
 import xbmcgui
 import os
 import re
+import sfile
 
 
 def GetXBMCVersion():
@@ -53,10 +54,10 @@ VERSION =  ADDON.getAddonInfo('version')
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
-DISPLAY = ADDON.getSetting('DISPLAYNAME')
+DISPLAY =  ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
 
-DEBUG   = True #ADDON.getSetting('DEBUG') == 'true'
+DEBUG   = ADDON.getSetting('DEBUG') == 'true'
 
 
 
@@ -140,68 +141,50 @@ def CheckVersion():
 
         verifySuperSearch()
 
-        src = os.path.join(xbmc.translatePath(ROOT), 'cache')
-        dst = os.path.join(xbmc.translatePath(ROOT), 'C')
-        renameFolder(src, dst)
+        src = os.path.join(ROOT, 'cache')
+        dst = os.path.join(ROOT, 'C')
+        sfile.rename(src, dst)
 
         ADDON.setSetting('VERSION', curr)
 
-        if prev == '0.0.0' or prev== '1.0.0':
-            folder  = xbmc.translatePath(PROFILE)
-            if not os.path.isdir(folder):
-                try:    os.makedirs(folder) 
-                except: pass
+        if prev == '0.0.0' or prev == '1.0.0':
+            sfile.makedirs(PROFILE) 
 
         #call showChangeLog like this to workaround bug in openElec
         script = os.path.join(HOME, 'showChangelog.py')
         cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('changelog', script, 0)
         xbmc.executebuiltin(cmd)
-    except Exception, e:
+    except:
         pass
 
 
-def renameFolder(src, dst):
-    if not os.path.exists(src):
-        return
-
-    os.rename(src, dst)
-
-
 def verifySuperSearch():
-    src = os.path.join(xbmc.translatePath(ROOT), 'Search')
-    dst = os.path.join(xbmc.translatePath(ROOT), 'S')
+    src = os.path.join(ROOT, 'Search')
+    dst = os.path.join(ROOT, 'S')
 
-    renameFolder(src, dst)
+    sfile.rename(src, dst)
 
-    dst = os.path.join(xbmc.translatePath(ROOT), 'S')
+    dst = os.path.join(ROOT, 'S')
     src = os.path.join(HOME, 'resources', 'Search', FILENAME)
 
-    try:    os.makedirs(dst)
+    try:    sfile.makedirs(dst)
     except: pass
 
     dst = os.path.join(dst, FILENAME)
 
-    if not os.path.exists(dst):
-        try:
-            import shutil
-            shutil.copyfile(src, dst)
-        except:
-            pass
-        return
+    sfile.copy(src, dst)
 
     try:
         #patch any changes
-        ch1 = open(dst, 'r')
-        xml = ch1.read()
-        ch1.close()
+        xml = sfile.read(dst)
 
         xml = xml.replace('1channel/?mode=7000', '1channel/?mode=Search')
         xml = xml.replace('plugin.video.genesis/?action=actors_movies', 'plugin.video.genesis/?action=people_movies')
         xml = xml.replace('plugin.video.genesis/?action=actors_shows',  'plugin.video.genesis/?action=people_shows')
 
-        ch1 = open(dst, 'w')
-        ch1.write(xml)            
-        ch1.close()
+        f = sfile.file(dst, 'w')
+        f.write(xml)            
+        f.close()
     except:
         pass
 
@@ -228,17 +211,16 @@ def UpdateKeymaps():
 
         
 def DeleteKeymap(map):
-    path = os.path.join(xbmc.translatePath('special://profile/keymaps'), map)
+    path = os.path.join('special://profile/keymaps', map)
     DeleteFile(path)
 
 
 def DeleteFile(path):
     tries = 5
-    while os.path.exists(path) and tries > 0:
+    while sfile.exists(path) and tries > 0:
         tries -= 1 
         try: 
-            os.remove(path) 
-            break 
+            sfile.remove(path) 
         except: 
             xbmc.sleep(500)
 
@@ -263,9 +245,9 @@ def VerifyKeymapHot():
     if ADDON.getSetting('HOTKEY') == GETTEXT(30111): #i.e. programmable
         return False    
 
-    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
+    dest = os.path.join('special://profile/keymaps', KEYMAP_HOT)
 
-    if os.path.exists(dest):
+    if sfile.exists(dest):
         return False
 
     key = ADDON.getSetting('HOTKEY')
@@ -289,18 +271,18 @@ def VerifyKeymapHot():
 
 
 def WriteKeymap(start, end):
-    dest = os.path.join(xbmc.translatePath('special://profile/keymaps'), KEYMAP_HOT)
+    dest = os.path.join('special://profile/keymaps', KEYMAP_HOT)
     cmd  = '<keymap><Global><keyboard><%s>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/hot.py)</%s></keyboard></Global></keymap>'  % (start, end)
     
-    f = open(dest, mode='w')
+    f = sfile.file(dest, 'w')
     f.write(cmd)
     f.close()
     xbmc.sleep(1000)
 
     tries = 4
-    while not os.path.exists(dest) and tries > 0:
+    while not sfile.exists(dest) and tries > 0:
         tries -= 1
-        f = open(dest, mode='w')
+        f = sfile.file(dest, 'w')
         f.write(t)
         f.close()
         xbmc.sleep(1000)
@@ -315,25 +297,17 @@ def VerifyKeymapMenu():
         DeleteKeymap(KEYMAP_MENU)
         return True
 
-    keymap = xbmc.translatePath('special://profile/keymaps')
+    keymap = 'special://profile/keymaps'
     dst    = os.path.join(keymap, KEYMAP_MENU)
 
-    if os.path.exists(dst):
+    if sfile.exists(dst):
         return False
 
     src = os.path.join(HOME, 'resources', 'keymaps', KEYMAP_MENU)
 
-    try:
-        if not os.path.isdir(keymap):
-            os.makedirs(keymap)
-    except:
-        pass
-
-    try:
-        import shutil
-        shutil.copy(src, dst)
-    except:
-        pass
+    sfile.makedirs(keymap)
+    
+    sfile.copy(src, dst)
 
     return True
 
@@ -373,16 +347,14 @@ def isATV():
 
 def GetFolder(title):
     default = ROOT
-    folder  = xbmc.translatePath(PROFILE)
 
-    if not os.path.isdir(folder):
-        os.makedirs(folder) 
+    sfile.makedirs(PROFILE) 
 
     folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, default)
     if folder == default:
         return None
 
-    return xbmc.translatePath(folder)
+    return folder
 
 
 html_escape_table = {
@@ -500,8 +472,7 @@ def showChangelog(addonID=None):
         else: 
             ADDON = xbmcaddon.Addon(ADDONID)
 
-        f     = open(ADDON.getAddonInfo('changelog'))
-        text  = f.read()
+        text  = sfile.read(ADDON.getAddonInfo('changelog'))
         title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
 
         showText(title, text)
