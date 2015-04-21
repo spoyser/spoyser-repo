@@ -86,7 +86,7 @@ def doDownload(url, dest, title, referrer=''):
     resume  = 0
     sleep   = 0
                 
-    f = sfile.file(dest, mode='wb')
+    f = sfile.file(dest, type='wb')
     
     chunk  = None
     chunks = []
