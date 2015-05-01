@@ -609,9 +609,8 @@ def getParam(param, file):
     except Exception, e:
         return None
 
-    param  = param.upper() + '='
+    param  += '='
     for line in config:
-        line = line.upper()
         if line.startswith(param):
             return line.split(param, 1)[-1].strip()
     return None
