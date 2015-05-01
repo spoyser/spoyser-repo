@@ -52,13 +52,14 @@ class MyMonitor(xbmc.Monitor):
 
 monitor = MyMonitor()
 
+import xbmcgui
 while (not xbmc.abortRequested):
     xbmc.sleep(1000)
     if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
         utils.DeleteKeymap(utils.KEYMAP_HOT)
         utils.DeleteKeymap(utils.KEYMAP_MENU)
         xbmc.sleep(1000)
-        xbmc.executebuiltin('Action(reloadkeymaps)')  
+        xbmc.executebuiltin('Action(reloadkeymaps)') 
 
 
 if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:

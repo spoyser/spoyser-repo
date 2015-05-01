@@ -99,14 +99,22 @@ def copy(src, dst):
 
 
 def rename(src, dst):
+    if not exists(src):
+        return
     return xbmcvfs.rename(src, dst)
 
 
 def mtime(filename):
+    if not exists(filename):
+        raise 'sfile.mtime error %s does not exists'
+
     status = xbmcvfs.Stat(filename)
     return status.st_mtime()
 
 
 def ctime(filename):
+    if not exists(filename):
+        raise 'sfile.ctime error %s does not exists'
+
     status = xbmcvfs.Stat(filename)
     return status.st_ctime()

@@ -172,7 +172,8 @@ def verifySuperSearch():
 
     dst = os.path.join(dst, FILENAME)
 
-    sfile.copy(src, dst)
+    if not sfile.exists(dst):
+        sfile.copy(src, dst)
 
     try:
         #patch any changes

@@ -21,6 +21,7 @@
 
 import xbmc
 import xbmcgui
+import os
 
 
 _STD_SETTINGS = 0

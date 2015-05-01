@@ -561,13 +561,7 @@ def addMainItems():
 
 
 def parseFolder(folder):
-    folder = folder
     global separator
-
-    #addMainItems()
-
-    #try:    current, dirs, files = os.walk(folder).next()
-    #except: return
 
     try:    current, dirs, files = sfile.walk(folder)
     except: return
@@ -578,6 +572,11 @@ def parseFolder(folder):
         path = os.path.join(current, dir)
 
         folderConfig = os.path.join(path, FOLDERCFG)
+
+        visible = getParam('VISIBLE', folderConfig)
+        if visible and visible.lower() == 'false':
+            continue
+
         lock   = getParam('LOCK',   folderConfig)
         colour = getParam('COLOUR', folderConfig)
 
@@ -606,12 +605,13 @@ def parseFolder(folder):
 def getParam(param, file):
     try:
         config = []
-        param  = param.upper() + '='
         config = sfile.readlines(file)
     except Exception, e:
         return None
 
+    param  = param.upper() + '='
     for line in config:
+        line = line.upper()
         if line.startswith(param):
             return line.split(param, 1)[-1].strip()
     return None
@@ -1408,8 +1408,13 @@ def getMovieMenu(infolabels, menu=None):
 
 
 def recommendIMDB(imdb, keyword):
-    from metahandler import metahandlers
-    grabber = metahandlers.MetaData()
+    grabber = None
+    if METARECOMMEND:
+        try:
+            from metahandler import metahandlers
+            grabber = metahandlers.MetaData()
+        except:
+            pass
 
     url  = 'http://imdb.com/title/%s' % imdb
     html = quicknet.getURL(url, maxSec=86400, agent='Firefox')
@@ -1428,14 +1433,14 @@ def recommendIMDB(imdb, keyword):
         thumbnail = BLANK
         fanart    = FANART
 
-        if METARECOMMEND:
+        if grabber:
             #thumbnail,  fanart = getTVDB(imdb)
             infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
             thumbnail  = infolabels['cover_url']
             fanart     = infolabels['fanart']
 
         try:
-            outline = utils.RemoveTags(item[2]).strip()
+            outline = utils.RemoveTags(item[2]).strip() if grabber else None
             if outline:
                 if ('plot' not in infolabels) or (not infolabels['plot']):
                     infolabels['plot'] = outline
@@ -1449,8 +1454,13 @@ def recommendIMDB(imdb, keyword):
 
     
 def recommendKey(keyword):
-    from metahandler import metahandlers
-    grabber = metahandlers.MetaData()
+    grabber = None
+    if METARECOMMEND:
+        try:
+            from metahandler import metahandlers
+            grabber = metahandlers.MetaData()
+        except:
+            pass
 
     url  = 'http://m.imdb.com/find?q=%s' % keyword.replace(' ', '+') #use mobile site as less data
     html = quicknet.getURL(url, maxSec=86400, agent='Apple-iPhone/')
@@ -1470,7 +1480,7 @@ def recommendKey(keyword):
         thumbnail = BLANK
         fanart    = FANART
 
-        if METARECOMMEND:
+        if grabber:
             #thumbnail,  fanart = getTVDB(imdb)
             infolabels = getMeta(grabber, name, 'movie', year=None, imdb=imdb)
             thumbnail  = infolabels['cover_url']
@@ -1915,9 +1925,15 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
     infolabels = {}
 
-    if METARECOMMEND and len(imdb) > 0:
-        from metahandler import metahandlers
-        grabber = metahandlers.MetaData()
+    grabber = None
+    if METARECOMMEND:
+        try:
+            from metahandler import metahandlers
+            grabber = metahandlers.MetaData()
+        except:
+            pass
+
+    if grabber and len(imdb) > 0:        
         infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
         getMovieMenu(infolabels, menu)
 
@@ -1992,6 +2008,8 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
 def playCommand(originalCmd): 
     try:
+        xbmc.executebuiltin('Dialog.Close(busydialog)')
+
         cmd = favourite.tidy(originalCmd)  
         
         #if a 'Super Favourite' favourite just do it
@@ -2517,7 +2535,7 @@ elif mode == _RECOMMEND_IMDB:
         xbmc.executebuiltin('Container.Refresh(%s)' % cmd)
 
         cacheToDisc = False
-        doEnd       = False
+        doEnd       = True
 
 
 elif mode == _PLAYTRAILER:
@@ -2543,9 +2561,6 @@ elif mode == _PLAYLISTITEM:
 
 elif mode == _PLAYLISTBROWSE:
     doRefresh = iPlaylistBrowse()
-    #doRefresh = False
-    #doEnd     = False
-    #iPlaylistBrowse()
 
 
 elif mode == _DELETEPLAYLIST:
