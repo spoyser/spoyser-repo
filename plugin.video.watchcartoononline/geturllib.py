@@ -5,6 +5,9 @@ import time
 import glob
 import urllib2
 
+from StringIO import StringIO
+import gzip
+
 gCacheDir = ""
 gCacheSize = 100
 
@@ -29,10 +32,17 @@ def GetURLNoCache(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
     req.add_header('Referer',    'http://www.watchcartoononline.com/')
+    req.add_header('Accept-encoding', 'gzip')
     response = urllib2.urlopen(req)
-    html = response.read()
+
+    data = response.read()
     response.close()
-    return html
+
+    if response.info().get('Content-Encoding') == 'gzip':
+        data = gzip.GzipFile(fileobj=StringIO(data)).read()
+
+    return data
+
 
 #==============================================================================
 

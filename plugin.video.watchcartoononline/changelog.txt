@@ -1,3 +1,6 @@
+v1.0.13:
+   - added gzip support (thanks to Azerothian)
+
 v1.0.12:
    - fixed for xbox (SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE not defined)
    - added multiple sources (thanks to phunn1e2)
