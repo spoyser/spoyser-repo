@@ -1,0 +1,56 @@
+v1.0.13:
+   - added gzip support (thanks to Azerothian)
+
+v1.0.12:
+   - fixed for xbox (SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE not defined)
+   - added multiple sources (thanks to phunn1e2)
+
+v1.0.11:
+   - fixed resolvers due to changes on website
+   - updated builtin YouTube resolver
+   - fixed for xbox (SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE not defined)
+   - added multiple sources (thanks to phunn1e2)
+
+v1.0.10:
+   - added storageserverdummy.py to installation 
+   - added clear cache feature, available from the settings dialog
+
+v1.0.9:
+   - fixed cizgifilmlerizle resolver
+   - fixed animeuploads resolver
+   - fixed vid44 resolver
+
+v1.0.8:
+   - really added Vid44 resolver this time! (thanks to phunn1e2)
+
+v1.0.7:
+   - fixed resolvers (thanks to phunn1e2)
+   - added VideoWeed resolver (thanks to phunn1e2)
+   - added Vid44 resolver (thanks to phunn1e2)
+
+v1.0.6:
+   - fixed resolvers (thanks to phunn1e2)
+   - added sort ascending / descending (thanks to phunn1e2)
+
+v1.0.5:
+   - now collates all episodes for a given series (thanks to phunn1e2)
+   - starting 'The' is ignored in alphabetical lists
+
+v1.0.4:
+   - fixed due to changes to website
+
+v1.0.3:
+   - now works on Xbox
+
+v1.0.2:
+   - fixed missing a cartoons from certain lists
+   - removed need for YouTube addon for playing YouTube hosted videos
+
+v1.0.1:
+  - fixed playing from XBMC favourites
+  - fixed YouTube resolving
+  - added Movieweb resolver
+  - added images
+
+v1.0.0:
+  - initial release
