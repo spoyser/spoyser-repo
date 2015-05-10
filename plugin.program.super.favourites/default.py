@@ -90,10 +90,10 @@ _REMOVEFOLDER     = 700
 _REMOVEFAVE       = 800
 _RENAMEFOLDER     = 900
 _RENAMEFAVE       = 1000
-_MOVE             = 1100
-_COPY             = 1200
-_UP               = 1300
-_DOWN             = 1400
+#_MOVE             = 1100
+#_COPY             = 1200
+#_UP               = 1300
+#_DOWN             = 1400
 _THUMBFAVE        = 1500
 _THUMBFOLDER      = 1600
 _PLAYBACKMODE     = 1700
@@ -123,6 +123,12 @@ _HISTORYSHOW      = 4100
 _HISTORYADD       = 4200
 _HISTORYREMOVE    = 4300
 _MANUAL           = 4400
+_CUT              = 4500
+_COPY             = 4600
+_PASTE            = 4700
+_CUTFOLDER        = 4800
+_COPYFOLDER       = 4900
+_PASTEFOLDER      = 5000
 
 
 # --------------------- Addon Settings --------------------- #
@@ -168,6 +174,9 @@ nItem = 0
 global separator
 separator = False
 
+global currentFolder
+currentFolder = PROFILE
+
 
 def clean(text):
     if not text:
@@ -199,6 +208,10 @@ def addSuperSearch():
 
 
 def addNewFolderItem(path):
+    global currentFolder
+
+    currentFolder = path
+
     global separator
     if SHOWNEW:
         separator = False
@@ -213,14 +226,45 @@ def addSeparatorItem(menu=None):
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False, menu=menu)
 
 
-def addGlobalMenuItem(menu, item):
-    #check if we are in the XBMC favourites folder
+def populatePasteMenu(menu):
+    global currentFolder
+
+    type = xbmcgui.Window(10000).getProperty('SF_TYPE').lower()
+
+    if len(type) == 0:
+        return
+
+    folder = 'folder' in type.lower()
+    cut    = 'cut'    in type.lower()
+
+    src = xbmcgui.Window(10000).getProperty('SF_FOLDER')
+
+    if folder:
+        if cut and currentFolder == xbmcgui.Window(10000).getProperty('SF_FILE'):
+            return
+        menu.append((GETTEXT(30182), 'XBMC.RunPlugin(%s?mode=%d&paste=%s)' % (sys.argv[0], _PASTEFOLDER, urllib.quote_plus(currentFolder))))
+        return
+
+    if src == currentFolder:
+        return
+
+    menu.append((GETTEXT(30179), 'XBMC.RunPlugin(%s?mode=%d&paste=%s)' % (sys.argv[0], _PASTE, urllib.quote_plus(currentFolder))))
+
+
+def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
+    if mode == _FOLDER or mode == _MAIN or mode == _XBMC:
+        populatePasteMenu(menu)        
+            
+    if not ignore:
+        addFavouriteMenuItem(menu, label, thumbnail, u, keyword)
+
     if mode != _XBMC:
         cmd = '%s?mode=%d' % (sys.argv[0], _XBMC)
         label = GETTEXT(30040) % DISPLAYNAME
         menu.append((label, 'XBMC.Container.Update(%s)' % cmd))
 
-        if mode != _SUPERSEARCH and mode != _IPLAY:
+        #if mode != _SUPERSEARCH and mode != _IPLAY and mode != _IRECOMMEND:
+        if mode == _FOLDER or mode == _MAIN:
             path = thepath
             if path == '':
                 path = PROFILE
@@ -319,6 +363,10 @@ def addToXBMC(name, thumb, cmd,  keyword):
         cmd = cmd.replace(find, replace)
         if not cmd.lower().endswith(',return)'):
             cmd = cmd[:-1] + ',return)'
+
+    if folder:
+        thumbnail, fanart = getFolderThumb(path)
+        cmd = favourite.addFanart(cmd, fanart)
 
     keyword = urllib.unquote_plus(keyword)
     if len(keyword) > 0:
@@ -442,7 +490,9 @@ def checkPassword(path, lock=None):
 
 
 def showXBMCFolder():
-    file = os.path.join('special://profile', FILENAME)
+    global currentFolder
+    currentFolder = 'special://profile'
+    file = os.path.join(currentFolder, FILENAME)
     parseFile(file)
 
 
@@ -463,8 +513,12 @@ def parseFile(file):
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
 
+
         if isPlaylist(cmd) and (not PLAY_PLAYLISTS):
             menu.append((GETTEXT(30084), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYLIST, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+
+        menu.append((GETTEXT(30178), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
+        menu.append((GETTEXT(30177), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _CUT, urllib.quote_plus(file),  urllib.quote_plus(cmd))))
 
         if manualUnset:
             addDir(label, _IGNORE, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu, fanart=fanart)
@@ -559,9 +613,11 @@ def addMainItems():
         separator = True    
 
 
-
 def parseFolder(folder):
     global separator
+    global currentFolder
+
+    currentFolder = folder
 
     try:    current, dirs, files = sfile.walk(folder)
     except: return
@@ -593,6 +649,10 @@ def parseFolder(folder):
         if colour:
             dir = '[COLOR %s]%s[/COLOR]' % (colour, dir)
 
+        if not lock:
+            menu.append((GETTEXT(30181), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _COPYFOLDER, urllib.quote_plus(path))))
+            menu.append((GETTEXT(30180), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _CUTFOLDER,  urllib.quote_plus(path))))
+        
         addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart)
 
     if len(dirs) > 0:
@@ -1910,6 +1970,18 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
     keyword = keyword.split(' - [I]', 1)[0]
 
+    if keyword.startswith('tt'): #assume IMDB number
+        url  = 'http://m.imdb.com/title/%s/' % keyword
+        html = quicknet.getURL(url)
+
+        try:
+            keyword = re.compile('<meta property=\'og:title\' content="(.+?)"').search(html).group(1)
+            keyword = utils.Clean(keyword)
+            keyword = utils.unescape(keyword)
+            keyword = utils.fix(keyword)
+        except:
+            pass
+      
     editItem = (GETTEXT(30057), 'XBMC.Container.Update(%s?mode=%d&keyword=%s)' % (sys.argv[0], _EDITTERM, keyword))
 
     menu = []    
@@ -2033,7 +2105,6 @@ def playCommand(originalCmd):
                 return playPlaylist(cmd)      
 
         if 'ActivateWindow' in cmd:
-            #return activateWindowCommandReturn(cmd)
             return activateWindowCommand(cmd) 
 
         if 'PlayMedia' in cmd:
@@ -2059,6 +2130,150 @@ def playPlaylist(cmd):
         cmd      = 'PlayMedia(%s)' % playlist
 
     xbmc.executebuiltin(cmd)
+
+
+def cutCopy(file, cmd, cut=True):
+    xbmcgui.Window(10000).setProperty('SF_FILE',   file)
+    xbmcgui.Window(10000).setProperty('SF_FOLDER', file.rsplit(os.sep, 1)[0])
+    xbmcgui.Window(10000).setProperty('SF_CMD',    cmd)
+    xbmcgui.Window(10000).setProperty('SF_TYPE',  'cut' if cut else 'copy')
+
+    return True
+
+
+def cutCopyFolder(folder, cut=True):
+    xbmcgui.Window(10000).setProperty(  'SF_FILE',   folder)
+    xbmcgui.Window(10000).setProperty(  'SF_FOLDER', folder.rsplit(os.sep, 1)[0])
+    xbmcgui.Window(10000).clearProperty('SF_CMD')
+    xbmcgui.Window(10000).setProperty(  'SF_TYPE',  'cutfolder' if cut else 'copyfolder')
+
+    return True
+
+
+def paste(folder):
+    if len(folder) < 1:
+        return False
+
+    file = xbmcgui.Window(10000).getProperty('SF_FILE')
+    cmd  = xbmcgui.Window(10000).getProperty('SF_CMD')
+    type = xbmcgui.Window(10000).getProperty('SF_TYPE').lower()
+
+    dst = os.path.join(folder, FILENAME)
+
+    if type == 'cut':
+        return pasteCut(file, cmd, folder)
+    else:
+        return pasteCopy(file, cmd, folder)
+
+    return True
+
+
+def pasteFolder(dst):
+    if len(dst) < 1:
+        return False
+
+    src = xbmcgui.Window(10000).getProperty('SF_FILE')
+    cut = xbmcgui.Window(10000).getProperty('SF_TYPE').lower() == 'cutfolder'
+
+    folderName = src.rsplit(os.sep, 1)[-1]
+
+    link = True
+
+    if dst == 'special://profile': #i.e. Kodi favourites
+        if cut:
+            cut   = False
+            line1 = GETTEXT(30187) % DISPLAYNAME
+            line2 = GETTEXT(30188) % folderName
+            line3 = GETTEXT(30189)
+            link  = utils.DialogYesNo(line1, line2, line3, noLabel=GETTEXT(30190), yesLabel=GETTEXT(30186))
+            if not link:
+                return
+    else:
+        if cut:
+            link = False
+        else:            
+            line1 = GETTEXT(30183) % folderName
+            link  = utils.DialogYesNo(line1, GETTEXT(30184), noLabel=GETTEXT(30185), yesLabel=GETTEXT(30186))
+
+    if link:
+        success = pasteFolderLink(src, dst, folderName)
+    else:
+        success = pasteFolderCopy(src, dst, folderName)
+
+    if not success:
+        line1 = GETTEXT(30191) % folderName
+        utils.DialogOK(line1)
+        return False
+
+    if cut:
+        sfile.rmtree(src)
+
+    return success
+
+
+def pasteFolderLink(src, dst, folderName):
+    thumbnail, fanart = getFolderThumb(src)
+
+    folderConfig = os.path.join(src, FOLDERCFG)
+    colour       = getParam('COLOUR', folderConfig)
+
+    if colour:
+        folderName = '[COLOR %s]%s[/COLOR]' % (colour, folderName)
+
+    path  = favourite.convertToHome(src)
+
+    cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
+    cmd = '"%s"' % cmd  
+    cmd = cmd.replace('+', '%20')
+    cmd = 'ActivateWindow(%d,%s)' % (getCurrentWindowId(), cmd) 
+    cmd = favourite.addFanart(cmd, fanart)
+
+    file = os.path.join(dst, FILENAME)
+
+    if favourite.findFave(file, cmd)[0]:
+        return True
+
+    faves = favourite.getFavourites(file, validate=False)
+    fave  = [folderName, thumbnail, cmd]
+
+    faves.append(fave)
+
+    favourite.writeFavourites(file, faves)
+
+    return True
+
+
+def pasteFolderCopy(src, _dst, folderName):
+    dst = os.path.join(_dst, folderName)
+
+    index = 0
+    while sfile.exists(dst):
+        index += 1
+        dst    = os.path.join(_dst, GETTEXT(30192) % (folderName, index))
+
+    try:
+        sfile.copytree(src, dst)
+    except Exception, e: 
+        utils.log('Error in pasteFolderCopy: %s' % str(e))
+        return False
+
+    return True
+
+
+def pasteCopy(file, cmd, folder):
+    copy, index, nFaves = favourite.findFave(file, cmd)
+    if not copy:
+        return False
+  
+    file  = os.path.join(folder, FILENAME)
+    return favourite.copyFave(file, copy)
+
+
+def pasteCut(file, cmd, folder):
+    if not pasteCopy(file, cmd, folder):
+        return False
+
+    return favourite.removeFave(file, cmd)
 
 
 def playMedia(original):
@@ -2093,7 +2308,6 @@ def playMedia(original):
 
         xbmc.executebuiltin(cmd)
         return
-    
 
     if mode == RUNPLUGIN_MODE:
         cmd = 'RunPlugin(%s)' % plugin
@@ -2104,12 +2318,6 @@ def playMedia(original):
     #if all else fails just execute it
     xbmc.executebuiltin(cmd)
     
-
-def activateWindowCommandReturn(cmd):
-    if not cmd.lower().endswith(',return)'):
-        cmd = cmd[:-1] + ',return)'
-    xbmc.executebuiltin(cmd)
-
 
 def activateWindowCommand(cmd):
     cmds = cmd.split(',', 1)
@@ -2163,7 +2371,6 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if len(imdb) > 0:
         u += '&imdb=' + urllib.quote_plus(imdb)
 
-    #if mode == _SUPERSEARCH:
     if len(thumbnail) > 0:
         u += '&image=' + urllib.quote_plus(thumbnail)
     if len(fanart) > 0:
@@ -2200,7 +2407,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     #special case
     if mode == _XBMC:
-        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER,  urllib.quote_plus(PROFILE))))
+        menu.append((GETTEXT(30043), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _THUMBFOLDER, urllib.quote_plus(PROFILE))))
 
     ignoreFave = False
     if mode == _NEWFOLDER:
@@ -2208,12 +2415,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     elif (mode == _EDITTERM) or (mode == _ACTIVATESEARCH):
         ignoreFave = len(keyword) == 0
 
-    if ignoreFave:
-        pass # do nothing
-    else:
-        addFavouriteMenuItem(menu, label, thumbnail, u, keyword)
-
-    addGlobalMenuItem(menu, cmd)
+    addGlobalMenuItem(menu, cmd, ignoreFave, label, thumbnail, u, keyword)
 
     liz.addContextMenuItems(menu, replaceItems=True)
 
@@ -2317,7 +2519,6 @@ if len(folder) > 0:
     path = os.path.join(PROFILE, folder)
 
 
-
 utils.log(sys.argv[2])
 utils.log(sys.argv)
 utils.log('Mode    = %d' % mode)
@@ -2395,20 +2596,44 @@ elif mode == _NEWFOLDER:
     doRefresh = createNewFolder(path)
 
 
-elif mode == _MOVE:
-    doRefresh = favourite.moveFave(file, cmd)
+#elif mode == _MOVE:
+#    doRefresh = favourite.moveFave(file, cmd)
+
+
+elif mode == _CUT:
+    doRefresh = cutCopy(file, cmd, cut=True)
 
 
 elif mode == _COPY:
-    doRefresh = copyFave(file, cmd)
+    doRefresh = cutCopy(file, cmd, cut=False)
 
 
-elif mode == _UP:
-    doRefresh = favourite.shiftFave(file, cmd, up=True)
+elif mode == _PASTE:
+    try:    folder = urllib.unquote_plus(params['paste'])
+    except: folder
+    doRefresh = paste(folder)
 
 
-elif mode == _DOWN:
-    doRefresh = favourite.shiftFave(file, cmd, up=False)
+elif mode == _CUTFOLDER:
+    doRefresh = cutCopyFolder(path, cut=True)
+
+
+elif mode == _COPYFOLDER:
+    doRefresh = cutCopyFolder(path, cut=False)
+
+
+elif mode == _PASTEFOLDER:
+    try:    folder = urllib.unquote_plus(params['paste'])
+    except: folder
+    doRefresh = pasteFolder(folder)
+
+
+#elif mode == _UP:
+#    doRefresh = favourite.shiftFave(file, cmd, up=True)
+
+
+#elif mode == _DOWN:
+#    doRefresh = favourite.shiftFave(file, cmd, up=False)
 
 
 elif mode == _REMOVEFAVE:
@@ -2534,7 +2759,7 @@ elif mode == _RECOMMEND_IMDB:
         xbmc.executebuiltin('Container.Refresh(%s)' % cmd)
 
         cacheToDisc = False
-        doEnd       = True
+        doEnd       = False
 
 
 elif mode == _PLAYTRAILER:

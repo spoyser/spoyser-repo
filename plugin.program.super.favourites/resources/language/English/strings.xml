@@ -171,4 +171,20 @@
 	<string id="30174">RunScript</string>
 	<string id="30175">Enter window ID for %s</string>
 	<string id="30176">Enter window ID</string>
+	<string id="30177">Cut Super Favourite</string>
+	<string id="30178">Copy Super Favourite</string>
+	<string id="30179">Paste Super Favourite</string>
+	<string id="30180">Cut Super Folder</string>
+	<string id="30181">Copy Super Folder</string>
+	<string id="30182">Paste Super Folder</string>
+	<string id="30183">Do you want to paste the %s Super Folder</string>
+	<string id="30184">as a link or copy the complete folder?</string>
+	<string id="30185">Copy</string>
+	<string id="30186">Link</string>
+    <string id="30187">Super Folders cannot be 'cut' to %s favourites.</string>
+    <string id="30188">Do you want to create a link to the %s</string>
+    <string id="30189">Super Folder instead?</string>
+    <string id="30190">Cancel</string>	
+    <string id="30191">Failed to paste the %s Super Folder, please check logs</string>
+    <string id="30192">%s - Copy %d</string>	
 </strings>

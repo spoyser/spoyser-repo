@@ -60,7 +60,6 @@ TITLE   =  GETTEXT(30000)
 DEBUG   = ADDON.getSetting('DEBUG') == 'true'
 
 
-
 KEYMAP_HOT  = 'super_favourites_hot.xml'
 KEYMAP_MENU = 'super_favourites_menu.xml'
 
