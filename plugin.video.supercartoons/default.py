@@ -32,10 +32,10 @@ import xbmcgui
 ADDONID = 'plugin.video.supercartoons'
 ADDON   = xbmcaddon.Addon(ADDONID)
 HOME    = ADDON.getAddonInfo('path')
+TITLE   = ADDON.getAddonInfo('name')
+VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
-TITLE   = 'Super Cartoons'
-VERSION = '1.0.6'
 URL     = 'http://www.supercartoons.net/'
 
 
@@ -132,9 +132,9 @@ def All(page):
     next  = URL + 'cartoons/' + str(page+1)
 
     html  = GetHTML(url)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(html)
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(html)
 
-    for desc, img, link, title in match:
+    for link, desc, img, title in match:
         AddCartoon(title, img, link, desc) 
 
     if next in html:
@@ -145,17 +145,24 @@ def KidsTime():
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()  
 
-    for i in range(0, 10):
-        title, image, url = GetRandom()  
+    count = 0
+    while count < 10:
+        try:
+            title, image, url = GetRandom()  
 
-        liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+            liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
-        liz.setInfo( type="Video", infoLabels={"Title": title})
+            liz.setInfo( type="Video", infoLabels={"Title": title})
 
-        pl.add(url, liz)
+            pl.add(url, liz)
 
-        if i == 0:
-            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
+            count += 1
+
+            if count == 1:
+                xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
+
+        except:
+            pass
     
 
 def Random():
@@ -164,7 +171,7 @@ def Random():
 
 
 def GetRandom():
-    page = random.randrange(1, 57+1)
+    page = random.randrange(1, 50+1)
 
     url = URL + 'cartoons/' + str(page)
 
@@ -280,18 +287,18 @@ def MostRecent():
     html  = GetHTML(URL)
 
     match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
 
-    for desc, img, link, title in match:
+    for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)
 
 
 def MostPopular():
     html  = GetHTML(URL)
-    match = re.compile('<h3>Best Cartoons</h3>.+?<h3>Special Selection Of Free Cartoons</h3>(.+?)</div></div>').search(html).group(1)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(match)
+    match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
 
-    for desc, img, link, title in match:
+    for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)  
 
 
@@ -307,11 +314,13 @@ def DoStudios(page):
 
     for item in html:
         try:
-            match = re.compile('title="(.+?)"><img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(item)
-            desc  = match[0][0]
-            img   = match[0][1]
-            link  = match[0][2]
+            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(item)
+           
+            link  = match[0][0]
+            desc  = match[0][1]
+            img   = match[0][2]
             title = match[0][3]
+
             AddStudio(title, img, link, desc)
         except:
             pass
@@ -355,14 +364,17 @@ def GetCharacters(page):
 
     characters = []
 
+
     html = html.split('<div class="character">')
     for item in html:
         try:
-            match = re.compile('title="(.+?)"><img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(item)
-            desc  = match[0][0]
-            img   = match[0][1]
-            link  = match[0][2]
+            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(item)
+           
+            link  = match[0][0]
+            desc  = match[0][1]
+            img   = match[0][2]
             title = match[0][3]
+
             characters.append([title, img, link, desc])
         except:
             pass
