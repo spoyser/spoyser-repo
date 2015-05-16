@@ -83,11 +83,21 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
                     win  = xbmcgui.getCurrentWindowId()
                     cmd  = updateSFOption(cmd, 'winID', win)
 
+            cmd = patch(cmd)
+
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
 
     return items
+
+
+def patch(cmd):
+    cmd = cmd.replace('&quot;,return', 'SF_PATCHING')
+    cmd = cmd.replace(',return'      ,  '')
+    cmd = cmd.replace('SF_PATCHING'  , '&quot;,return')
+
+    return cmd
 
 
 def upgradeCmd(cmd):
@@ -380,12 +390,14 @@ def updateSFOptions(cmd, options):
             values += '%s=%s&' % (key, value)
         
     if len(values) > 0:
-        cmd += suffix + 'sf_options=%s_options_sf")' % urllib.quote_plus(values)
+        cmd += suffix + 'sf_options=%s_options_sf"' % urllib.quote_plus(values)
     else:
-        cmd += '")'
+        cmd += '"'
 
     if hasReturn:
-        cmd = cmd.replace(')', ',return)')
+        cmd += ',return)'
+    else:
+        cmd += ')'
 
     return cmd
 

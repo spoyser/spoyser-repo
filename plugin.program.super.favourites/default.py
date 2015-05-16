@@ -60,6 +60,7 @@ FOLDERCFG     = utils.FOLDERCFG
 PLAYMEDIA_MODE      = 1
 ACTIVATEWINDOW_MODE = 2
 RUNPLUGIN_MODE      = 3
+ACTION_MODE         = 4
 
 MANUAL_CMD = 'SF_MANUAL_CMD_'
 
@@ -1097,13 +1098,19 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     if manualUnset:
         newCmd = getText(title, '', allowEmpty=True)
     else:
-        cmd = re.compile('\((.+?)\)').search(cmd.lower()).group(1)
+        if type == ACTION_MODE:
+            cmd = cmd.split('ExecuteBuiltin("', 1)[-1]
+            cmd = cmd.rsplit('")')[0]
+        else:
+            cmd = re.compile('\((.+?)\)').search(cmd).group(1)
+
+        cmd = cmd.lower()
 
         if _cmd.lower().startswith('activatewindow'):
             if cmd == originalID:
                 cmd = ''
             else:
-                cmd = cmd.split(',', 1)[-1].strip()            
+                cmd = cmd.split(',', 1)[-1].strip()  
 
         if cmd.endswith(',return'):
             cmd = cmd[:-7]
@@ -1119,6 +1126,8 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
 
         if cmd.lower() == 'return':
             cmd = ''
+
+        cmd = cmd.replace('"', '')
 
         newCmd = getText(title, cmd, allowEmpty=True)
 
@@ -1149,14 +1158,22 @@ def buildManualFave(type, cmd, windowID='-1'):
         return 'PlayMedia("%s")' % cmd
 
     elif type == RUNPLUGIN_MODE:
+        cmd = cmd.replace(',', '","')
         return 'RunScript("%s")' % cmd
+
+    elif type == ACTION_MODE:
+        return 'ExecuteBuiltin("%s")' % cmd
+
 
     return getDefaultManualCmd()
 
 
 def getWindowID(cmd, name):
-    try:    originalID = re.compile('activatewindow\((.+?),').search(cmd.lower()).group(1)
-    except: originalID = ''
+    try:
+        originalID = re.compile('activatewindow\((.+?),').search(cmd.lower()).group(1)
+    except:
+        try:    originalID = re.compile('activatewindow\((.+?)\)').search(cmd.lower()).group(1)
+        except: originalID = ''
 
     try:
         if len(name) > 0:
@@ -1174,28 +1191,25 @@ def getWindowID(cmd, name):
     return '0', originalID
 
 
+def colourise(cmd, type, action):
+    if cmd.lower().startswith(type):
+        action = '[COLOR selected]%s[/COLOR]' % action
+
+    return action
+
+
 def manualType(name, cmd):
-    title = GETTEXT(30169) % name
-
-    playMedia      = GETTEXT(30172)
-    activateWindow = GETTEXT(30173)
-    runScript      = GETTEXT(30174)
-
-    lower = cmd.lower()
-
-    if lower.startswith('playmedia'):
-        playMedia = '[COLOR selected]%s[/COLOR]' % playMedia
-
-    if lower.startswith('activatewindow'):
-        activateWindow = '[COLOR selected]%s[/COLOR]' % activateWindow
-
-    if lower.startswith('runscript'):
-        runScript = '[COLOR selected]%s[/COLOR]' % runScript
+    title          = GETTEXT(30169) % name
+    playMedia      = colourise(cmd, 'playmedia',      GETTEXT(30172))
+    activateWindow = colourise(cmd, 'activatewindow', GETTEXT(30173))
+    runScript      = colourise(cmd, 'runscript',      GETTEXT(30174))
+    action         = colourise(cmd, 'executebuiltin', GETTEXT(30193))
 
     options = []
     options.append([playMedia,      PLAYMEDIA_MODE])
     options.append([activateWindow, ACTIVATEWINDOW_MODE])
     options.append([runScript,      RUNPLUGIN_MODE])
+    options.append([action,         ACTION_MODE])
 
     import menus
     option = menus.selectMenu(title, options)
@@ -2109,6 +2123,13 @@ def playCommand(originalCmd):
 
         if 'PlayMedia' in cmd:
             return playMedia(originalCmd)
+
+        if 'ExecuteBuiltin' in cmd:
+            try:    
+                cmd = cmd.split('ExecuteBuiltin("', 1)[-1]
+                cmd = cmd.rsplit('")')[0]
+            except:
+                pass
 
         xbmc.executebuiltin(cmd)
 
