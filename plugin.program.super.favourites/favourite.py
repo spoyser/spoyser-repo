@@ -135,7 +135,6 @@ def writeFavourites(file, faves):
 
             name  = 'name="%s" '  % name
             thumb = 'thumb="%s">' % thumb
-
             f.write('\n\t<favourite ')
             f.write(name)
             f.write(thumb)

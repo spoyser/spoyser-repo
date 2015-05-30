@@ -73,63 +73,60 @@ if not DISPLAYNAME:
     DISPLAYNAME = 'Kodi'
 
 # -----Addon Modes ----- #
-_IGNORE           = -10
-_MAIN             = -2
-_SUPERSEARCH      = 0
-_SUPERSEARCHDEF   = 10
-_EXTSEARCH        = 25 #used to trigger new Super Search from outside of addon
-_SEPARATOR        = 50
-_SETTINGS         = 100
-_ADDTOXBMC        = 200
-_XBMC             = 300
-_FOLDER           = 400
-_NEWFOLDER        = 500
-_PLAYMEDIA        = 600
-_ACTIVATEWINDOW   = 650
-_ACTIVATESEARCH   = 675
-_REMOVEFOLDER     = 700
-_REMOVEFAVE       = 800
-_RENAMEFOLDER     = 900
-_RENAMEFAVE       = 1000
-#_MOVE             = 1100
-#_COPY             = 1200
-#_UP               = 1300
-#_DOWN             = 1400
-_THUMBFAVE        = 1500
-_THUMBFOLDER      = 1600
-_PLAYBACKMODE     = 1700
-_EDITTERM         = 1900
-_EDITFOLDER       = 2000
-_EDITFAVE         = 2100
-_SECURE           = 2200
-_UNSECURE         = 2300
-_PLAYLIST         = 2400
-_COLOURFOLDER     = 2500
-_COLOURFAVE       = 2600
-_RECOMMEND_KEY    = 2700
-_RECOMMEND_IMDB   = 2800
-_PLAYTRAILER      = 2900
-_EDITSEARCH       = 3000
-_IMPORT           = 3100
-_IPLAY            = 3200
-_PLAYLISTFILE     = 3300 
-_PLAYLISTITEM     = 3400 
-_PLAYLISTBROWSE   = 3500
-_DELETEPLAYLIST   = 3600
-_COPYPLAYLIST     = 3700
-_PLAYPLAYLIST     = 3800
-_COPYPLAYLISTITEM = 3900
-_URLPLAYLIST      = 4000
-_HISTORYSHOW      = 4100
-_HISTORYADD       = 4200
-_HISTORYREMOVE    = 4300
-_MANUAL           = 4400
-_CUT              = 4500
-_COPY             = 4600
-_PASTE            = 4700
-_CUTFOLDER        = 4800
-_COPYFOLDER       = 4900
-_PASTEFOLDER      = 5000
+_IGNORE              = -10
+_MAIN                = -2
+_SUPERSEARCH         = 0
+_SUPERSEARCHDEF      = 10
+_EXTSEARCH           = 25 #used to trigger new Super Search from outside of addon
+_SEPARATOR           = 50
+_SETTINGS            = 100
+_ADDTOXBMC           = 200
+_XBMC                = 300
+_FOLDER              = 400
+_NEWFOLDER           = 500
+_PLAYMEDIA           = 600
+_ACTIVATEWINDOW      = 650
+_ACTIVATEWINDOW_XBMC = 660
+_ACTIVATESEARCH      = 675
+_REMOVEFOLDER        = 700
+_REMOVEFAVE          = 800
+_RENAMEFOLDER        = 900
+_RENAMEFAVE          = 1000
+_THUMBFAVE           = 1500
+_THUMBFOLDER         = 1600
+_PLAYBACKMODE        = 1700
+_EDITTERM            = 1900
+_EDITFOLDER          = 2000
+_EDITFAVE            = 2100
+_SECURE              = 2200
+_UNSECURE            = 2300
+_PLAYLIST            = 2400
+_COLOURFOLDER        = 2500
+_COLOURFAVE          = 2600
+_RECOMMEND_KEY       = 2700
+_RECOMMEND_IMDB      = 2800
+_PLAYTRAILER         = 2900
+_EDITSEARCH          = 3000
+_IMPORT              = 3100
+_IPLAY               = 3200
+_PLAYLISTFILE        = 3300 
+_PLAYLISTITEM        = 3400 
+_PLAYLISTBROWSE      = 3500
+_DELETEPLAYLIST      = 3600
+_COPYPLAYLIST        = 3700
+_PLAYPLAYLIST        = 3800
+_COPYPLAYLISTITEM    = 3900
+_URLPLAYLIST         = 4000
+_HISTORYSHOW         = 4100
+_HISTORYADD          = 4200
+_HISTORYREMOVE       = 4300
+_MANUAL              = 4400
+_CUT                 = 4500
+_COPY                = 4600
+_PASTE               = 4700
+_CUTFOLDER           = 4800
+_COPYFOLDER          = 4900
+_PASTEFOLDER         = 5000
 
 
 # --------------------- Addon Settings --------------------- #
@@ -341,9 +338,11 @@ def addToXBMC(name, thumb, cmd,  keyword):
 
     if activate:
         cmd = urllib.unquote_plus(p['cmd'])
-    elif isSF: #folder or search or edit or recommend or history or iPlay:
+    elif isSF:
         cmd = cmd.replace('+', '%20')
         cmd = 'ActivateWindow(%d,%s,return)' % (getCurrentWindowId(), cmd)
+        if mode == _ACTIVATEWINDOW:
+            cmd = cmd.replace('mode=%d' % _ACTIVATEWINDOW, 'mode=%d' % _ACTIVATEWINDOW_XBMC) 
     else:
         cmd = 'PlayMedia(%s)' % cmd
 
@@ -2093,7 +2092,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
 def playCommand(originalCmd): 
     try:
-        xbmc.executebuiltin('Dialog.Close(busydialog)')
+        xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
 
         cmd = favourite.tidy(originalCmd)  
         
@@ -2196,7 +2195,10 @@ def pasteFolder(dst):
     src = xbmcgui.Window(10000).getProperty('SF_FILE')
     cut = xbmcgui.Window(10000).getProperty('SF_TYPE').lower() == 'cutfolder'
 
+    root       = src.rsplit(os.sep, 1)[0]
     folderName = src.rsplit(os.sep, 1)[-1]
+
+    same = (root == dst)
 
     link = True
 
@@ -2212,9 +2214,9 @@ def pasteFolder(dst):
     else:
         if cut:
             link = False
-        else:            
+        else:  
             line1 = GETTEXT(30183) % folderName
-            link  = utils.DialogYesNo(line1, GETTEXT(30184), noLabel=GETTEXT(30185), yesLabel=GETTEXT(30186))
+            link  = True if same else utils.DialogYesNo(line1, GETTEXT(30184), noLabel=GETTEXT(30185), yesLabel=GETTEXT(30186))
 
     if link:
         success = pasteFolderLink(src, dst, folderName)
@@ -2285,8 +2287,13 @@ def pasteCopy(file, cmd, folder):
     copy, index, nFaves = favourite.findFave(file, cmd)
     if not copy:
         return False
-  
-    file  = os.path.join(folder, FILENAME)
+
+    file = os.path.join(folder, FILENAME)
+
+    #xbmc = os.path.join('special://profile', FILENAME)  
+    #if xbmc == file:
+    #    return addToXBMC(copy[0], copy[1], copy[2], '')
+
     return favourite.copyFave(file, copy)
 
 
@@ -2553,11 +2560,21 @@ if mode == _PLAYMEDIA:
         mode = _IGNORE
         playCommand(cmd)
  
-elif mode == _ACTIVATEWINDOW:
+elif mode == _ACTIVATEWINDOW or mode == _ACTIVATEWINDOW_XBMC:
     if not contentMode:
         doEnd = False
+        kodi  = mode == _ACTIVATEWINDOW_XBMC
         mode  = _IGNORE
         playCommand(cmd)
+
+        #if came from Kodi favourites
+        if kodi:
+            xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
+            #Container.Update removes current item from history
+            cmd = '%s' % (sys.argv[0])
+            cmd = 'Container.Update(%s,replace)' % cmd
+            xbmc.executebuiltin(cmd)
+            xbmc.executebuiltin('ActivateWindow(Home)')
 
 
 elif mode == _PLAYLIST:

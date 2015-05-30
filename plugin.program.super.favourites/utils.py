@@ -367,7 +367,7 @@ html_escape_table = {
 
 
 def escape(text):
-    return ''.join(html_escape_table.get(c,c) for c in text)
+    return str(''.join(html_escape_table.get(c,c) for c in text))
 
 
 def unescape(text):
