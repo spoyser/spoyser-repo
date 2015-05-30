@@ -53,6 +53,10 @@ MORE     = 1100
 RESULTS  = 1200
 
 
+try:    NMR_KIDSTIME = int(ADDON.getSetting('KIDSTIME'))
+except: NMR_KIDSTIME = 10
+
+
 def CheckVersion():
     prev = ADDON.getSetting('VERSION')
     curr = VERSION
@@ -62,12 +66,12 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    d = xbmcgui.Dialog()
+    #xbmcgui.Dialog().ok(TITLE + ' - ' + VERSION, 'Funnier Moments acquires distribution rights for all videos', 'This costs money - please consider a small donation', 'via the website - www.funniermoments.com')
 
-    #if prev == '0.0.0':
-    #    d.ok(TITLE + ' - ' + VERSION, 'Funnier Moments acquires distribution rights for all videos', 'This costs money - please consider a small donation', 'via the website - www.funniermoments.com')
-        
-    d.ok(TITLE + ' - ' + VERSION, 'Funnier Moments acquires distribution rights for all videos', 'This costs money - please consider a small donation', 'via the website - www.funniermoments.com')
+    #call showChangeLog like this to workaround bug in openElec
+    script = os.path.join(HOME, 'showChangelog.py')
+    cmd    = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % ('changelog', script, ADDONID, 0)
+    xbmc.executebuiltin(cmd)
 
 
 
@@ -110,7 +114,9 @@ def GetHTML(url, maxAge = 86400):
 def Main():
     CheckVersion()
 
-    AddSection('Kids Time',      'kidstime', KIDSTIME, False)    
+    kidstime = 'Kids Time (%d Random Cartoons)' % NMR_KIDSTIME
+
+    AddSection(kidstime,         'kidstime', KIDSTIME, False)    
     AddSection('All Moments',    'all',      ALL)
     AddSection('New Moments',    'new',      NEW)
     AddSection('Top Moments',    'top',      TOP)
@@ -161,9 +167,8 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 
 def All():
     html  = GetHTML(URL)
-
-    html  = html.replace('&nbsp;&nbsp;&nbsp;', '')
-    match = re.compile('<li class=""><b><a href="(.+?)" class="">(.+?)<br></b></a>.+?\((.+?)\)</p></li>').findall(html)
+   
+    match = re.compile('<li class=""><h3><a href="(.+?)" class="">(.+?)</a>.+?\((.+?)\)</p></li>').findall(html)
                       
     list = []
 
@@ -173,7 +178,7 @@ def All():
             menu.append(('Add to library', 'XBMC.RunPlugin(%s?mode=%d&title=%s&url=%s)' % (sys.argv[0], LIBRARY, urllib.quote_plus(title), urllib.quote_plus(url))))
 
             list.append(title)            
-            AddProgram(title, nmr, url, 1, menu)
+            AddProgram(title, nmr.strip(), url, 1, menu)
 
 
 def Program(_url, page):
@@ -186,27 +191,8 @@ def Program(_url, page):
 
     html = html.split('<ul class="videolist">', 1)[-1]
 
-    match = re.compile('<li><a href="(.+?)">.+?<img src="(.+?)" alt="(.+?)"/></a></li>').findall(html)
-
-    for url, img, title in match:
-        url  = url.split('"',     1)[0]
-
-        try:    title = title.split(' - ', 1)[1]
-        except: pass
-
-        AddCartoon(title, url, img)
-
-    html = html.split('<ul class="pagination">')[-1]
-
-    pages = re.compile('<li class=""><a href="show.php\?title=.+?page=(.+?)&sortby=.+?</a></li>').findall(html)
-
-    allPages = []
-    for p in pages:
-        if not p in allPages:
-            allPages.append(int(p))
-
-    if page+1 in allPages:
-        AddMore(PROGRAM, _url, page+1)
+    pagination = '<li class=""><a href="show.php\?title=.+?page=(.+?)&sortby=.+?</a></li>'
+    parseCartoons(html, PROGRAM, _url, page, pagination)
 
 
 def New(page):
@@ -220,24 +206,9 @@ def New(page):
     split = 'Recently added videos'
     html  = html.split(split, 1)[-1]  
 
-    match = re.compile('<li><a href="(.+?)">.+?<img src="(.+?)" alt="(.+?)"/></a></li>').findall(html)
-    
-    for url, img, title in match:
-        url   = url.split('"', 1)[0]
+    pagination = '<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>'
+    parseCartoons(html, NEW, _url, page, pagination)
 
-        AddCartoon(title, url, img)
-
-    html = html.split('<ul class="pagination">')[-1]
-
-    pages = re.compile('<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>').findall(html)
-
-    allPages = []
-    for p in pages:
-        if not p in allPages:
-            allPages.append(int(p))
-
-    if page+1 in allPages:
-        AddMore(NEW, _url, page+1)
 
 
 def Top(page):
@@ -251,24 +222,8 @@ def Top(page):
     split = 'Most popular episodes</h1>'
     html  = html.split(split, 1)[-1]
 
-    match = re.compile('<li><a href="(.+?)">.+?<img src="(.+?)" alt="(.+?)"/></a>').findall(html)
-    
-    for url, img, title in match:
-        url   = url.split('"', 1)[0]
-
-        AddCartoon(title, url, img)
-
-    html = html.split('<ul class="pagination">')[-1]
-
-    pages = re.compile('<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>').findall(html)
-
-    allPages = []
-    for p in pages:
-        if not p in allPages:
-            allPages.append(int(p))
-
-    if page+1 in allPages:
-        AddMore(TOP, _url, page+1)
+    pagination = '<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>'
+    parseCartoons(html, TOP, _url, page, pagination)
 
 
 def GetRandom():
@@ -281,7 +236,7 @@ def GetRandom():
 def GetInfo(html):
     html = html.split('<section id="video">', 1)[-1]
 
-    try:    title = re.compile('<h1 itemprop="name">(.+?)</h1>').search(html).group(1)
+    try:    title = re.compile('<h1.+?itemprop="name">(.+?)</h1>').search(html).group(1)
     except: pass
 
     try:    id    = re.compile('watch.php\?vid=(.+?)"').search(html).group(1)
@@ -581,7 +536,7 @@ def KidsTime():
 
     titles = []
 
-    for i in range(0, 10):
+    for i in range(0, NMR_KIDSTIME):
         title, image, url = GetRandom()  
         if title not in titles:
             titles.append(title)
@@ -630,14 +585,22 @@ def SearchResults(url, page):
     html = GetHTML(url)
     html = html.split('Search Results')[-1]
 
-    match = re.compile('<li><a href="(.+?)">.+?<img src="(.+?)" alt="(.+?)"/></a>').findall(html)
+    pagination = '<li class=""><a href="search.php\?.+?&page=(.+?)">.+?</a></li>'
+    parseCartoons(html, RESULTS, _url, page, pagination) 
 
-    for url, img, title in match:
-        AddCartoon(title, url, img)
+
+def parseCartoons(html, mode, _url, page, pagination):
+    items = html.split('<li>')
+    for item in items:
+        match = re.compile('<a href="(.+?)">.+?<img.+?src="(.+?)" alt="(.+?)".+?</li>').findall(item)
+        for url, img, title in match:
+            url = url.split('"', 1)[0]
+
+            AddCartoon(title, url, img)
 
     html = html.split('<ul class="pagination">')[-1]
 
-    pages = re.compile('<li class=""><a href="search.php\?.+?&page=(.+?)">.+?</a></li>').findall(html)
+    pages = re.compile(pagination).findall(html)
 
     allPages = []
     for p in pages:
@@ -645,7 +608,7 @@ def SearchResults(url, page):
             allPages.append(int(p))
 
     if page+1 in allPages:
-        AddMore(RESULTS, _url, page+1)    
+        AddMore(mode, _url, page+1) 
 
     
 def get_params():
