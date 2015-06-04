@@ -1,11 +1,17 @@
 [B][COLOR blue]This file contains ALOT of useful information regarding the functionality of Super Favourites - PLEASE READ IT!![/COLOR][/B]
 
+1.0.33:
+    - Added ability to add Android Apps directly to Super Favourites via the override menu (finally!)
+    - Improved the fix for the adding of playlist Super Favourites back to Kodi favourites (existing items will need to be re-added)
+
+
 1.0.32.1:
     - Fixed adding of playlist Super Favourites back to Kodi favourites (existing items will need to be re-added)
 
+
 1.0.32:
-    - THIS IS A BIG DEAL >>> create ExecuteBuiltin favourites via the 'Create new manual entry' item
-        - see http://kodi.wiki/view/List_of_built-in_functions for full list of functionality now available within SF
+    [B][COLOR blue]- THIS IS A BIG DEAL >>> create ExecuteBuiltin favourites via the 'Create new manual entry' item[/COLOR][/B]
+    [B][COLOR blue]- see http://kodi.wiki/view/List_of_built-in_functions for full list of functionality now available directly from within Super Favourites[/COLOR][/B]
     - fixed upgrading from version 1.0.25
     - fixed RunScript manual entry handling of extra parameters
 

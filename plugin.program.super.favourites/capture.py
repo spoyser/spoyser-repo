@@ -246,6 +246,8 @@ def doMenu():
             cmd = 'PlayMedia("%s' % filename
         #elif path.lower().startswith('musicdb') and len(filename) > 0:
         #    cmd = 'PlayMedia("%s")' % filename
+        elif path.lower().startswith('androidapp'):
+            cmd = 'StartAndroidActivity("%s")' % path.replace('androidapp://sources/apps/', '', 1)
         else:            
             cmd = 'PlayMedia("%s")' % path
             cmd = favourite.updateSFOption(cmd, 'winID', window)

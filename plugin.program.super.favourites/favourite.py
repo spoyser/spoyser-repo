@@ -93,9 +93,13 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
 
 
 def patch(cmd):
-    cmd = cmd.replace('&quot;,return', 'SF_PATCHING')
+    cmd = cmd.replace('&quot;,return', 'SF_PATCHING1')
+    cmd = cmd.replace('",return',      'SF_PATCHING2')
+
     cmd = cmd.replace(',return'      ,  '')
-    cmd = cmd.replace('SF_PATCHING'  , '&quot;,return')
+
+    cmd = cmd.replace('SF_PATCHING1'  , '&quot;,return')
+    cmd = cmd.replace('SF_PATCHING2'  , '",return')
 
     return cmd
 
@@ -121,6 +125,9 @@ def upgradeCmd(cmd):
 
 
 def writeFavourites(file, faves):
+    kodiFile = os.path.join('special://profile', utils.FILENAME)
+    isKodi = xbmc.translatePath(file) == xbmc.translatePath(kodiFile)
+
     f = sfile.file(file, 'w')
 
     f.write('<favourites>')
@@ -130,6 +137,9 @@ def writeFavourites(file, faves):
             name  = utils.escape(fave[0])
             thumb = utils.escape(fave[1])
             cmd   = utils.escape(fave[2])
+
+            if isKodi:
+                cmd = removeSFOptions(cmd)
 
             thumb = convertToHome(thumb)
 

@@ -2094,7 +2094,7 @@ def playCommand(originalCmd):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
 
-        cmd = favourite.tidy(originalCmd)  
+        cmd = favourite.tidy(originalCmd)
         
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
@@ -2554,27 +2554,38 @@ utils.log('cmd     = %s' % cmd)
 utils.log('folder  = %s' % folder)
 utils.log('params  = %s' % params)
 
-
 if mode == _PLAYMEDIA:
     if not contentMode:
         mode = _IGNORE
         playCommand(cmd)
+
  
-elif mode == _ACTIVATEWINDOW or mode == _ACTIVATEWINDOW_XBMC:
+
+elif mode == _ACTIVATEWINDOW:
     if not contentMode:
         doEnd = False
-        kodi  = mode == _ACTIVATEWINDOW_XBMC
         mode  = _IGNORE
         playCommand(cmd)
 
-        #if came from Kodi favourites
-        if kodi:
-            xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
-            #Container.Update removes current item from history
-            cmd = '%s' % (sys.argv[0])
-            cmd = 'Container.Update(%s,replace)' % cmd
-            xbmc.executebuiltin(cmd)
-            xbmc.executebuiltin('ActivateWindow(Home)')
+
+elif mode == _ACTIVATEWINDOW_XBMC:
+    doEnd = True
+    mode  = _IGNORE
+
+    if PLAY_PLAYLISTS and isPlaylist(cmd):        
+        playCommand(cmd)
+
+        #Container.Update removes current item from history to stop looping
+        update = '%s' % (sys.argv[0])
+        update = 'Container.Update(%s,replace)' % update
+        xbmc.executebuiltin(update)
+
+        xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
+        xbmc.executebuiltin('ActivateWindow(Home)')
+    else:
+        script = os.path.join(HOME, 'cmdLauncher.py')
+        cmd    = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % ('changelog', script, cmd, 0)
+        xbmc.executebuiltin(cmd)
 
 
 elif mode == _PLAYLIST:
@@ -2634,10 +2645,6 @@ elif mode == _NEWFOLDER:
     doRefresh = createNewFolder(path)
 
 
-#elif mode == _MOVE:
-#    doRefresh = favourite.moveFave(file, cmd)
-
-
 elif mode == _CUT:
     doRefresh = cutCopy(file, cmd, cut=True)
 
@@ -2664,14 +2671,6 @@ elif mode == _PASTEFOLDER:
     try:    folder = urllib.unquote_plus(params['paste'])
     except: folder
     doRefresh = pasteFolder(folder)
-
-
-#elif mode == _UP:
-#    doRefresh = favourite.shiftFave(file, cmd, up=True)
-
-
-#elif mode == _DOWN:
-#    doRefresh = favourite.shiftFave(file, cmd, up=False)
 
 
 elif mode == _REMOVEFAVE:
