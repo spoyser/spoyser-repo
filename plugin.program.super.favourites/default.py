@@ -507,8 +507,11 @@ def parseFile(file):
         thumb  = fave[1]
         cmd    = fave[2]
         fanart = favourite.getFanart(cmd)
+        desc   = favourite.getOption(cmd, 'desc')
 
         manualUnset = MANUAL_CMD in cmd
+
+        infolabel = { 'plot' : desc }
   
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -520,12 +523,17 @@ def parseFile(file):
         menu.append((GETTEXT(30178), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
         menu.append((GETTEXT(30177), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _CUT, urllib.quote_plus(file),  urllib.quote_plus(cmd))))
 
+        type     = _ACTIVATEWINDOW
+        isFolder = True
+
         if manualUnset:
-            addDir(label, _IGNORE, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu, fanart=fanart)
+            type     = _IGNORE
+            isFolder = False
         elif 'playmedia(' in cmd.lower():
-            addDir(label, _PLAYMEDIA, cmd=cmd, thumbnail=thumb, isFolder=False, menu=menu, fanart=fanart)
-        else:
-            addDir(label, _ACTIVATEWINDOW, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart)
+            type     = _PLAYMEDIA
+            isFolder = False
+
+        addDir(label, type, cmd=cmd, thumbnail=thumb, isFolder=isFolder, menu=menu, fanart=fanart, infolabels=infolabel)
 
     separator = len(faves) > 0
 
@@ -635,7 +643,12 @@ def parseFolder(folder):
 
         lock   = getParam('LOCK',   folderConfig)
         colour = getParam('COLOUR', folderConfig)
+        desc   = getParam('DESC',   folderConfig)
 
+        infolabel = None
+        if desc:
+            infolabel = { 'plot' : desc }
+    
         menu = []
         menu.append((GETTEXT(30067), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _EDITFOLDER, urllib.quote_plus(path), urllib.quote_plus(dir))))
 
@@ -653,7 +666,7 @@ def parseFolder(folder):
             menu.append((GETTEXT(30181), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _COPYFOLDER, urllib.quote_plus(path))))
             menu.append((GETTEXT(30180), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _CUTFOLDER,  urllib.quote_plus(path))))
         
-        addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart)
+        addDir(dir, _FOLDER, path=path, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, infolabels=infolabel)
 
     if len(dirs) > 0:
         separator = True
@@ -732,6 +745,9 @@ def getColour():
 
 
 def getText(title, text='', hidden=False, allowEmpty=False):
+    if text == None:
+        text = ''
+
     kb = xbmc.Keyboard(text.strip(), title)
     kb.setHiddenInput(hidden)
     kb.doModal()
@@ -936,11 +952,13 @@ def editFolder(path, name):
     CHOOSEFANART = 3
     REMOVETHUMB  = 4
     REMOVEFANART = 5
-    COLOUR       = 6
+    DESCRIPTION  = 6
+    COLOUR       = 7
 
     options = []
     options.append([GETTEXT(30011), REMOVE])
     options.append([GETTEXT(30012), RENAME])
+    options.append([GETTEXT(30194), DESCRIPTION])
 
     options.append([GETTEXT(30043), CHOOSETHUMB])
     if hasThumb:
@@ -961,6 +979,9 @@ def editFolder(path, name):
     if option == RENAME:
         return renameFolder(path)
 
+    if option == DESCRIPTION:
+        return editFolderDescription(path, name)
+
     if option == CHOOSETHUMB:
         return thumbFolder(path)
 
@@ -979,7 +1000,6 @@ def editFolder(path, name):
     return False
     
 
-
 def editFave(file, cmd, name, thumb):
     fanart    = favourite.getFanart(cmd)
     hasThumb  = len(thumb)  > 0
@@ -992,13 +1012,14 @@ def editFave(file, cmd, name, thumb):
     MOVE         = 3
     REMOVE       = 4
     RENAME       = 5
-    CHOOSETHUMB  = 6
-    CHOOSEFANART = 7
-    REMOVETHUMB  = 8
-    REMOVEFANART = 9
-    COLOUR       = 10
-    PLAYBACKMODE = 11
-    MANUALEDIT   = 12
+    DESCRIPTION  = 6
+    CHOOSETHUMB  = 7
+    CHOOSEFANART = 8
+    REMOVETHUMB  = 9
+    REMOVEFANART = 10
+    COLOUR       = 11
+    PLAYBACKMODE = 12
+    MANUALEDIT   = 13
 
     options = []
     options.append([GETTEXT(30041), UP])
@@ -1007,6 +1028,7 @@ def editFave(file, cmd, name, thumb):
     options.append([GETTEXT(30008), MOVE])
     options.append([GETTEXT(30009), REMOVE])
     options.append([GETTEXT(30010), RENAME])
+    options.append([GETTEXT(30194), DESCRIPTION])
 
     options.append([GETTEXT(30043), CHOOSETHUMB])
     if hasThumb:
@@ -1044,6 +1066,9 @@ def editFave(file, cmd, name, thumb):
     if option == RENAME:
         return renameFave(file, cmd)
 
+    if option == DESCRIPTION:
+        return editDescription(file, cmd, name)
+
     if option == CHOOSETHUMB:
         return thumbFave(file, cmd)
 
@@ -1066,6 +1091,37 @@ def editFave(file, cmd, name, thumb):
         return manualEdit(file, cmd, name, thumb)
 
     return False
+
+
+def editFolderDescription(path, name):
+    cfg  = os.path.join(path, FOLDERCFG)
+    desc = getParam('DESC', cfg)
+
+    desc = getText(name, text=desc, hidden=False, allowEmpty=True)
+
+    if desc == None:
+        return False
+
+    setParam('DESC', desc, cfg)
+
+    return True
+
+
+def editDescription(file, cmd, name):
+    fave, index, nFaves = favourite.findFave(file, cmd)
+    if not fave:
+        return False
+
+    desc = favourite.getOption(cmd, 'desc')
+    desc = getText(name, text=desc, hidden=False, allowEmpty=True)
+
+    if desc == None:
+        return False
+
+    fave[2] = favourite.updateSFOption(cmd, 'desc', desc)
+
+    favourite.updateFave(file, fave)
+    return True
 
 
 def manualEdit(file, _cmd, name='', thumb='', editName=True):
@@ -1305,7 +1361,9 @@ def renameFolder(path):
 
     root = path.rsplit(os.sep, 1)[0]
     newName = os.path.join(root, text)
-    os.rename(path, newName)
+
+    sfile.rename(path, newName)
+
     return True
 
 
@@ -2417,7 +2475,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
     if isPlayable:
         liz.setProperty('IsPlayable', 'true')
 
-    if len(infolabels) > 0:
+    if infolabels and len(infolabels) > 0:
         liz.setInfo(type='Video', infoLabels=infolabels)
 
     if len(fanart) == 0:
@@ -2510,7 +2568,7 @@ except: contentMode = False
 doRefresh   = False
 doEnd       = True
 cacheToDisc = False
-contentType = ''
+contentType = 'movies'
 
 
 if len(content) > 0:   

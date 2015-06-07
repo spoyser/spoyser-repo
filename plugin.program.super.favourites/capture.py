@@ -96,6 +96,24 @@ def activateCommand(cmd):
     xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
 
+def getDescription():
+    labels = []
+    labels.append('ListItem.Plot')
+    labels.append('ListItem.Property(Addon.Description)')
+    labels.append('ListItem.Property(Addon.Summary)')
+    labels.append('ListItem.Property(Artist_Description)')
+    labels.append('ListItem.Property(Album_Description)')
+    labels.append('ListItem.Artist')
+    labels.append('ListItem.Comment')
+
+    for label in labels:
+        desc = xbmc.getInfoLabel(label)
+        if len(desc) > 0:
+            return desc
+
+    return ''
+
+
 def doMenu():
     try:
         import utils
@@ -135,9 +153,12 @@ def doMenu():
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
     name     = xbmc.getInfoLabel('ListItem.Label')
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
+    thumb    = xbmc.getInfoLabel('ListItem.Art(thumb)')
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
+    fanart   = xbmc.getInfoLabel('ListItem.Art(fanart)')
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
+    desc     = getDescription()
 
     try:    file = xbmc.Player().getPlayingFile()
     except: file = None
@@ -253,6 +274,7 @@ def doMenu():
             cmd = favourite.updateSFOption(cmd, 'winID', window)
 
         cmd = favourite.addFanart(cmd, fanart)
+        cmd = favourite.updateSFOption(cmd, 'desc', desc)
 
         if isFolder:
             cmd = cmd.replace('")', '",return)')

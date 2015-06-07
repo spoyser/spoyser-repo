@@ -25,6 +25,22 @@ import xbmcvfs
 
 def exists(filename):
     return xbmcvfs.exists(filename)
+
+
+def isfile(filename):
+    if not exists(filename):
+        raise 'sfile.isFile error %s does not exists' % filename
+
+    import stat
+    return stat.S_ISREG(xbmcvfs.Stat(filename).st_mode())
+    
+
+def isdir(folder):
+    if not exists(folder):
+        raise 'sfile.isDdir error %s does not exists' % folder
+
+    import stat
+    return stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode())
    
 
 def file(filename, type):
@@ -101,6 +117,12 @@ def copy(src, dst):
 def rename(src, dst):
     if not exists(src):
         return
+
+    if isdir(src):
+        copytree(src, dst)
+        rmtree(src)
+        return
+
     return xbmcvfs.rename(src, dst)
 
 
@@ -118,3 +140,12 @@ def ctime(filename):
 
     status = xbmcvfs.Stat(filename)
     return status.st_ctime()
+
+
+
+#def status(filename):
+#    if not exists(filename):
+#        raise 'sfile.status error %s does not exists' % filename
+#
+#    status = xbmcvfs.Stat(filename)
+#    return status
