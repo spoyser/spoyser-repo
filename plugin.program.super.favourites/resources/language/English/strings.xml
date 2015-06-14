@@ -62,7 +62,7 @@
 	<string id="30063">Show iRecommend menu item</string>		
 	<string id="30064">Show fanart</string>
 	<string id="30065">          Show in root folder only</string>
-	<string id="30066">[B]iSearch - %s[/B] [I](Click to edit search term)[/I]</string>
+    <string id="30066">[B]iSearch - %s[/B] [I](Click to edit search term)[/I]</string>
 	<string id="30067">Edit Super Folder</string>
 	<string id="30068">Edit Super Favourite</string>
 	<string id="30069">Enter password to temporarily unlock %s</string>
@@ -188,5 +188,17 @@
     <string id="30191">Failed to paste the %s Super Folder, please check logs</string>
     <string id="30192">%s - Copy %d</string>	
     <string id="30193">ExecuteBuiltin</string>	
-    <string id="30194">Edit description</string>		
+    <string id="30194">Edit description</string>	
+	<string id="30195">Quickly search all the popular addons from one place.[CR]Also provides access to the iRecommend and iRemember features.</string>	
+	<string id="30196">Browse your playlists.[CR]Copy playlists to Super Favourites.[CR]Link to online playlists.</string>	
+	<string id="30197">Browse your Kodi favourites.[CR]Launch or edit your Kodi favourites directly from within Super Favourites.[CR]Copy your Kodi favourites to Super Favourites.</string>	
+	<string id="30198">Import Super Favourites from a remote location (configure via the Advanced settings tab).</string>	
+	<string id="30199">Create a new Super Folder within the current folder.</string>	
+	<string id="30200">Populate iSearch with [I]%s.[/I]</string>	
+	<string id="30201">View your previously iRemembered keywords.[CR]Saves repeatedly typing searches you perform frequently.</string>	
+	<string id="30202">Perform an 'Also Watched' IMDB search using [I]%s[/I]  (%s)</string>	
+	<string id="30203">Set view type (0 - default)</string>		
+	<string id="30204">Remember current view type</string>		
+	<string id="30205">Perform a keyword IMDB search using [I]%s.[/I]</string>		
+	<string id="30206">Search %s using [I]%s.[/I]</string>	
 </strings>

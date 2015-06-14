@@ -80,6 +80,7 @@ _SUPERSEARCHDEF      = 10
 _EXTSEARCH           = 25 #used to trigger new Super Search from outside of addon
 _SEPARATOR           = 50
 _SETTINGS            = 100
+_VIEWTYPE            = 150
 _ADDTOXBMC           = 200
 _XBMC                = 300
 _FOLDER              = 400
@@ -147,6 +148,8 @@ SHOWIHISTORY          = ADDON.getSetting('SHOWREMEMBER')          == 'true'
 COPY_PLAYLISTS        = ADDON.getSetting('COPY_PLAYLISTS')        == 'true'
 ALLOW_PLAYLIST_DELETE = ADDON.getSetting('ALLOW_PLAYLIST_DELETE') == 'true'
 DEFAULT_FANART        = ADDON.getSetting('DEFAULT_FANART')
+VIEWTYPE              = int(ADDON.getSetting('VIEWTYPE'))
+
 
 if REMOTE:
     LOCATION = len(ADDON.getSetting('LOCATION')) > 0
@@ -194,6 +197,39 @@ def main():
     parseFolder(PROFILE)
 
 
+def setViewType():
+    #logic to obtain viewtype inspired by lambda
+    path  = 'special://skin/'
+    addon = os.path.join(path, 'addon.xml')
+    xml   = sfile.read(addon).replace('\n','').replace('\t','')
+
+    try:    src = re.compile('defaultresolution="(.+?)"').findall(xml)[0]
+    except: src = re.compile('<res.+?folder="(.+?)"').findall(xml)[0]
+
+    types = ['MyVideoNav.xml', 'MyMusicNav.xml', 'MyPrograms.xml']
+    views = []
+
+    for type in types:
+        view = os.path.join(path, src, type)
+        view = sfile.read(view).replace('\n','').replace('\t','')
+        try:
+            view = re.compile('<views>(.+?)</views>').findall(view)[0].split(',')
+            for v in view:
+                v = int(v)
+                if v not in views:
+                    views.append(v)
+        except:
+            pass
+
+    for view in views:
+        label = xbmc.getInfoLabel('Control.GetLabel(%d)' % view)
+        if label:
+            ADDON.setSetting('VIEWTYPE', str(view))
+            return True
+
+    return False
+
+
 def addSuperSearch():
     global separator
 
@@ -201,7 +237,7 @@ def addSuperSearch():
         return
 
     separator = False        
-    addDir(GETTEXT(30054), _SUPERSEARCH, thumbnail=SEARCH, isFolder=True)
+    addDir(GETTEXT(30054), _SUPERSEARCH, thumbnail=SEARCH, isFolder=True, infolabels={'plot':GETTEXT(30195)})
     separator = True
 
 
@@ -213,7 +249,7 @@ def addNewFolderItem(path):
     global separator
     if SHOWNEW:
         separator = False
-        addDir(GETTEXT(30004), _NEWFOLDER, path=path, thumbnail=ICON, isFolder=False)
+        addDir(GETTEXT(30004), _NEWFOLDER, path=path, thumbnail=ICON, isFolder=False, infolabels={'plot':GETTEXT(30199)})
         separator = True
 
 
@@ -261,7 +297,6 @@ def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
         label = GETTEXT(30040) % DISPLAYNAME
         menu.append((label, 'XBMC.Container.Update(%s)' % cmd))
 
-        #if mode != _SUPERSEARCH and mode != _IPLAY and mode != _IRECOMMEND:
         if mode == _FOLDER or mode == _MAIN:
             path = thepath
             if path == '':
@@ -269,6 +304,8 @@ def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
             menu.append((GETTEXT(30004), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _NEWFOLDER, urllib.quote_plus(path))))
 
             menu.append((GETTEXT(30166), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _MANUAL, urllib.quote_plus(path))))
+
+    menu.append((GETTEXT(30204), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _VIEWTYPE)))
 
     menu.append((GETTEXT(30005), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _SETTINGS)))
 
@@ -511,7 +548,7 @@ def parseFile(file):
 
         manualUnset = MANUAL_CMD in cmd
 
-        infolabel = { 'plot' : desc }
+        infolabel = {'plot':desc}
   
         menu  = []
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
@@ -595,7 +632,7 @@ def addMainItems():
         fanart    = ''
 
         label = GETTEXT(30146) % DISPLAYNAME
-        addDir(label, _IPLAY, thumbnail=thumbnail, isFolder=True, fanart=fanart)
+        addDir(label, _IPLAY, thumbnail=thumbnail, isFolder=True, fanart=fanart, infolabels={'plot':GETTEXT(30196)})
         separator = True
 
     addNewFolderItem(PROFILE)
@@ -607,7 +644,7 @@ def addMainItems():
         thumbnail, fanart = getFolderThumb(PROFILE, True)
 
         label = GETTEXT(30040) % DISPLAYNAME
-        addDir(label, _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart)
+        addDir(label, _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart, infolabels={'plot':GETTEXT(30197)})
         separator = True
 
 
@@ -617,7 +654,7 @@ def addMainItems():
         thumbnail = 'DefaultFile.png'
         fanart    = ''
 
-        addDir(GETTEXT(30125), _IMPORT, thumbnail=thumbnail, isFolder=False, fanart=fanart)
+        addDir(GETTEXT(30125), _IMPORT, thumbnail=thumbnail, isFolder=False, fanart=fanart, infolabels={'plot':GETTEXT(30198)})
         separator = True    
 
 
@@ -647,7 +684,7 @@ def parseFolder(folder):
 
         infolabel = None
         if desc:
-            infolabel = { 'plot' : desc }
+            infolabel = {'plot':desc}
     
         menu = []
         menu.append((GETTEXT(30067), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _EDITFOLDER, urllib.quote_plus(path), urllib.quote_plus(dir))))
@@ -1577,7 +1614,10 @@ def recommendIMDB(imdb, keyword):
                 if SYNOPSRECOMMEND:
                     name += ' - [I]%s[/I]' % utils.unescape(utils.fix(infolabels['plot']))
 
-            addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=getMovieMenu(infolabels), fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
+            menu = getMovieMenu(infolabels)
+            getHistoryItem(menu, name, thumbnail, fanart, False)
+
+            addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
 
         except:
             pass
@@ -1620,7 +1660,10 @@ def recommendKey(keyword):
                 if ('plot' in infolabels) and (infolabels['plot']):
                     label += ' - [I]%s[/I]' % utils.unescape(infolabels ['plot'])
 
-        addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=getMovieMenu(infolabels), fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
+        menu = getMovieMenu(infolabels)
+        getHistoryItem(menu, name, thumbnail, fanart, False)
+
+        addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
     
 
 def editSearchTerm(_keyword):
@@ -1660,7 +1703,9 @@ def iHistoryBrowse():
 
         menu.append((GETTEXT(30165) % label, 'XBMC.RunPlugin(%s?mode=%d&name=%s)' % (sys.argv[0], _HISTORYREMOVE, urllib.quote_plus(label))))
 
-        addDir(label, _SUPERSEARCH, thumbnail=thumb, isFolder=True, fanart=fanart, keyword=label, menu=menu) 
+        desc = GETTEXT(30200) % label
+
+        addDir(label, _SUPERSEARCH, thumbnail=thumb, isFolder=True, fanart=fanart, keyword=label, menu=menu, infolabels={'plot':desc})
 
     return False
 
@@ -2011,9 +2056,22 @@ def shortenText(text, length):
 
     short += '...'
     return short
-        
 
-    
+
+def getHistoryItem(menu, keyword, image, fanart, refresh):
+    #NOTE the SF@V is to workaround a bug in XBMC where the string is erroneously converted to lowercase when the menu item triggers
+ 
+    refresh = 'true' if refresh else 'false'
+
+    historyItem = None
+    if SHOWIHISTORY and not history.contains(keyword):
+        label = GETTEXT(30164) % shortenText(keyword, 10)
+        historyItem = (label, 'RunPlugin(%s?mode=%d&keyword=%s&image=%s&fanart=%s&refresh=%s)' % (sys.argv[0], _HISTORYADD, urllib.unquote_plus(keyword), urllib.unquote_plus(image.replace('/', 'SF@V')), urllib.unquote_plus(fanart.replace('/', 'SF@V')), refresh))
+        menu.append(historyItem)
+
+    return historyItem
+
+            
 def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
     if len(keyword) < 1:
         kb = xbmc.Keyboard(keyword, GETTEXT(30054))
@@ -2058,12 +2116,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
     menu = []    
     menu.append(editItem)
 
-    historyItem = None
-    if SHOWIHISTORY and not history.contains(keyword):
-        label = GETTEXT(30164) % shortenText(keyword, 10)
-        historyItem = (label, 'RunPlugin(%s?mode=%d&keyword=%s&image=%s&fanart=%s)' % (sys.argv[0], _HISTORYADD, urllib.unquote_plus(keyword), urllib.unquote_plus(image.replace('/', 'SF@V')), urllib.unquote_plus(fanart.replace('/', 'SF@V'))))
-        menu.append(historyItem)
-        #NOTE the SF@V is to workaround a bug in XBMC where the string is erroneously converted to lowercase when the menu item triggers
+    historyItem = getHistoryItem(menu, keyword, image, fanart, True)
 
     infolabels = {}
 
@@ -2075,10 +2128,11 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         except:
             pass
 
-    if grabber and len(imdb) > 0:        
+    if grabber and len(imdb) > 0:  
+        imdb = imdb.replace('/?', '')      
         infolabels = getMeta(grabber, '', 'movie', year=None, imdb=imdb)
         getMovieMenu(infolabels, menu)
-
+    
     addDir(GETTEXT(30066) % keyword.strip(), _EDITTERM, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, infolabels=infolabels)
 
     #reset menu
@@ -2095,7 +2149,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         menu.append(editItem)
         if historyItem:
             menu.append(historyItem)
-        addDir(GETTEXT(30163), _HISTORYSHOW, thumbnail=SEARCH, isFolder=True, menu=menu)
+        addDir(GETTEXT(30163), _HISTORYSHOW, thumbnail=SEARCH, isFolder=True, menu=menu, infolabels={'plot':GETTEXT(30201)})
 
     if SHOWRECOMMEND and len(keyword) > 0:
         #reset menu
@@ -2106,9 +2160,9 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         getMovieMenu(infolabels, menu)
 
         if len(imdb) > 0:
-            addDir(GETTEXT(30088), _RECOMMEND_IMDB, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, imdb=imdb, infolabels=infolabels)
+            addDir(GETTEXT(30088), _RECOMMEND_IMDB, thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, imdb=imdb, infolabels={'plot':GETTEXT(30202) % (keyword, imdb)})
         else:
-            addDir(GETTEXT(30088), _RECOMMEND_KEY,  thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword)
+            addDir(GETTEXT(30088), _RECOMMEND_KEY,  thumbnail=image, isFolder=True, menu=menu, fanart=fanart, keyword=keyword, infolabels={'plot':GETTEXT(30205) % keyword})
         
     keyword = urllib.quote_plus(keyword.replace('&', ''))  
 
@@ -2143,7 +2197,8 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         #special fix for GlobalSearch, use local launcher (globalsearch.py) to bypass keyboard
         cmd = cmd.replace('script.globalsearch', os.path.join(HOME, 'globalsearch.py'))
 
-        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fan, keyword=keyword)
+        infolabel = {'plot':GETTEXT(30206) % (label, keyword)}
+        addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fan, keyword=keyword, infolabels=infolabel)
     
     return True
 
@@ -2470,7 +2525,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
        
     label = label.replace('&apos;', '\'')
 
-    liz = xbmcgui.ListItem(label, iconImage=thumbnail, thumbnailImage=thumbnail)
+    liz = xbmcgui.ListItem(label, iconImage='Default', thumbnailImage=thumbnail)
 
     if isPlayable:
         liz.setProperty('IsPlayable', 'true')
@@ -2618,7 +2673,6 @@ if mode == _PLAYMEDIA:
         playCommand(cmd)
 
  
-
 elif mode == _ACTIVATEWINDOW:
     if not contentMode:
         doEnd = False
@@ -2916,10 +2970,15 @@ elif mode == _HISTORYADD:
     try:    fanart = urllib.unquote_plus(params['fanart'])
     except: fanart = FANART
 
+    try:    refres = urllib.unquote_plus(params['refresh']) == 'true'
+    except: refres = True
+
     image  = image.replace('SF@V', '/')
     fanart = fanart.replace('SF@V', '/')
 
     doRefresh = iHistoryAdd(keyword, image, fanart)
+    #if not refres:
+    #    doRefresh = False
 
 
 elif mode == _HISTORYREMOVE:
@@ -2928,6 +2987,10 @@ elif mode == _HISTORYREMOVE:
 
 elif mode == _MANUAL:
     doRefresh = manualAdd(path)
+
+
+elif mode == _VIEWTYPE:
+    doRefresh = setViewType()
         
 
 elif mode == _MAIN:
@@ -2960,11 +3023,13 @@ if nItem < 1:
 if doRefresh:
     refresh()
 
-
 if doEnd:
     if len(contentType) > 0:
         xbmcplugin.setContent(int(sys.argv[1]), contentType)
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
+    if VIEWTYPE > 0:        
+        print "SETTING VIEWTYPE"
+        xbmc.executebuiltin('Container.SetViewMode(%d)' % VIEWTYPE)
 
 
 
