@@ -168,7 +168,7 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 def All():
     html  = GetHTML(URL)
    
-    match = re.compile('<li class=""><h3><a href="(.+?)" class="">(.+?)</a>.+?\((.+?)\)</p></li>').findall(html)
+    match = re.compile('<li class=""><b><a href="(.+?)" class="">(.+?)</br></b></a> <p>\((.+?)\)</p></li>').findall(html)
                       
     list = []
 
@@ -184,14 +184,12 @@ def All():
 def Program(_url, page):
     page  = int(page)
 
-    sortBy = 'title'
-    url    = _url + '&page=%s&sortby=%s' % (str(page), sortBy)
+    url = _url.replace('-date.', '-title.')
 
-    html  = GetHTML(url)
-
+    html = GetHTML(url)
     html = html.split('<ul class="videolist">', 1)[-1]
 
-    pagination = '<li class=""><a href="show.php\?title=.+?page=(.+?)&sortby=.+?</a></li>'
+    pagination = url.replace('videos-%d' % (page), 'videos-%d' % (page+1))
     parseCartoons(html, PROGRAM, _url, page, pagination)
 
 
@@ -236,6 +234,34 @@ def GetRandom():
 def GetInfo(html):
     html = html.split('<section id="video">', 1)[-1]
 
+    try:
+        title = re.compile('<h1.+?itemprop="name">(.+?)</h1>').search(html).group(1)
+    except:
+        title = None
+
+    try:    
+        url = re.compile("file: 'http://funniermoments.com/vids/(.+?),primary:").search(html).group(1)
+        url = 'http://funniermoments.com/vids/' + url[:-1] #+ '|referer=http://www.funniermoments.com'
+    except:
+        url = None
+ 
+    try:
+        img = re.compile("image: 'http://www.funniermoments.com/uploads/thumbs/(.+?)-1.jpg").search(html).group(1)
+        img = 'http://www.funniermoments.com/uploads/thumbs/%s-1.jpg' % img
+    except:
+        img = None
+
+    return title, img, url
+
+
+def Random():
+    title, img, url = GetRandom()
+    PlayCartoon(title, img, url, True)
+
+
+def GetInfoDELETE(html):
+    html = html.split('<section id="video">', 1)[-1]
+
     try:    title = re.compile('<h1.+?itemprop="name">(.+?)</h1>').search(html).group(1)
     except: pass
 
@@ -249,11 +275,6 @@ def GetInfo(html):
     except: pass
 
     return title, img, url
-
-
-def Random():
-    title, img, url = GetRandom()
-    PlayCartoon(title, img, url)
 
 
 def AddCartoon(title, url, image):
@@ -502,7 +523,7 @@ def FixNameForLibrary(series):
         return 'Grape Ape'
 
     return series
-    
+   
 
 def GetCartoonURL(url):
     html  = GetHTML(url)
@@ -513,11 +534,12 @@ def GetCartoonURL(url):
     return url
 
 
-def PlayCartoon(title, image, url):    
+def PlayCartoon(title, image, url, isResolved=False):    
     if not url:
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xbmcgui.ListItem('title'))
 
-    url = GetCartoonURL(url)
+    if not isResolved:
+        url = GetCartoonURL(url)
 
     if '|referer=' not in image:
         image += '|referer=http://www.funniermoments.com'
@@ -540,7 +562,6 @@ def KidsTime():
         title, image, url = GetRandom()  
         if title not in titles:
             titles.append(title)
-            url = GetCartoonURL(url)
 
             liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
@@ -598,17 +619,8 @@ def parseCartoons(html, mode, _url, page, pagination):
 
             AddCartoon(title, url, img)
 
-    html = html.split('<ul class="pagination">')[-1]
-
-    pages = re.compile(pagination).findall(html)
-
-    allPages = []
-    for p in pages:
-        if not p in allPages:
-            allPages.append(int(p))
-
-    if page+1 in allPages:
-        AddMore(mode, _url, page+1) 
+    if pagination in html:
+        AddMore(mode, pagination, page+1) 
 
     
 def get_params():
