@@ -138,7 +138,7 @@ def writeFavourites(file, faves):
             thumb = utils.escape(fave[1])
             cmd   = utils.escape(fave[2])
 
-            if isKodi:
+            if isKodi and cmd.lower().startswith('playmedia'):
                 cmd = removeSFOptions(cmd)
 
             thumb = convertToHome(thumb)
@@ -361,6 +361,9 @@ def equals(fave, cmd):
 
 
 def addFanart(cmd, fanart):
+    if len(fanart) < 1:
+        return cmd
+
     return updateSFOption(cmd, 'fanart', convertToHome(fanart))
 
 

@@ -24,16 +24,17 @@
 	</category>
 	
 	<category label="30022">	
-		<setting id="SHOWNEW"        label="30023" type="bool"      default="true"  />
-		<setting id="SHOWXBMC"       label="30024" type="bool"      default="true"  />		
-		<setting id="SHOWSEP"        label="30051" type="bool"      default="true"  />			
-		<setting id="SHOWUNAVAIL"    label="30138" type="bool"      default="false" />
-		<setting id="INHERIT"        label="30096" type="bool"      default="true"  />	
-        <setting id="SHOW_FANART"    label="30064" type="bool"      default="true"  />
-        <setting id="DEFAULT_FANART" label="30113" type="enum"      default="30114" lvalues="30114|30115|30116"/>
-        <setting id="DEFAULT_IMAGE"  label="30117" type="file"      default=""      enable="eq(-1,1)" visible="eq(-1,1)"/>		
-		<setting id="SHOWIMPORT"     label="30139" type="bool"      default="false"  />
-		<setting id="VIEWTYPE"       label="30203" type="number"    default="0"      />		
+		<setting id="SHOWNEW"          label="30023" type="bool"      default="true"  />
+		<setting id="SHOWXBMC"         label="30024" type="bool"      default="true"  />		
+		<setting id="SHOWSEP"          label="30051" type="bool"      default="true"  />			
+		<setting id="SHOWUNAVAIL"      label="30138" type="bool"      default="false" />
+		<setting id="INHERIT"          label="30096" type="bool"      default="true"  />	
+        <setting id="SHOW_FANART"      label="30064" type="bool"      default="true"  />
+        <setting id="DEFAULT_FANART"   label="30113" type="enum"      default="30114" lvalues="30114|30115|30116"/>
+        <setting id="DEFAULT_IMAGE"    label="30117" type="file"      default=""      enable="eq(-1,1)" visible="eq(-1,1)"/>		
+		<setting id="SHOWIMPORT"       label="30139" type="bool"      default="false"  />
+		<setting id="VIEWTYPE"         label="30203" type="number"    default="0"      />	
+		<setting id="DISABLEMOVIEVIEW" label="30208" type="bool"      default="false"  />		
 		
 		<setting type="sep" visible="true" />
 	</category>

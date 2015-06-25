@@ -24,6 +24,7 @@ import xbmcplugin
 import xbmcgui
 import os
 
+
 import urllib
 import re
 
@@ -147,8 +148,10 @@ SHOWIPLAY             = ADDON.getSetting('SHOWIPLAY')             == 'true'
 SHOWIHISTORY          = ADDON.getSetting('SHOWREMEMBER')          == 'true'
 COPY_PLAYLISTS        = ADDON.getSetting('COPY_PLAYLISTS')        == 'true'
 ALLOW_PLAYLIST_DELETE = ADDON.getSetting('ALLOW_PLAYLIST_DELETE') == 'true'
+DISABLEMOVIEVIEW      = ADDON.getSetting('DISABLEMOVIEVIEW')      == 'true'
 DEFAULT_FANART        = ADDON.getSetting('DEFAULT_FANART')
 VIEWTYPE              = int(ADDON.getSetting('VIEWTYPE'))
+
 
 
 if REMOTE:
@@ -206,7 +209,7 @@ def setViewType():
     try:    src = re.compile('defaultresolution="(.+?)"').findall(xml)[0]
     except: src = re.compile('<res.+?folder="(.+?)"').findall(xml)[0]
 
-    types = ['MyVideoNav.xml', 'MyMusicNav.xml', 'MyPrograms.xml']
+    types = ['MyVideoNav.xml', 'MyMusicNav.xml', 'MyPrograms.xml', 'Includes_View_Modes.xml']
     views = []
 
     for type in types:
@@ -368,20 +371,31 @@ def addToXBMC(name, thumb, cmd,  keyword):
     search    = mode == _SUPERSEARCH
     edit      = mode == _EDITTERM
     activate  = mode == _ACTIVATESEARCH
+    activateW = mode == _ACTIVATEWINDOW
     recommend = mode == _RECOMMEND_KEY or mode == _RECOMMEND_IMDB
     iPlay     = mode == _IPLAY
     history   = mode == _HISTORYSHOW
     isSF      = cmd.startswith('"plugin://%s' % utils.ADDONID)
 
+    isCached = False
+    if activateW:
+        isCached = utils.DialogYesNo(GETTEXT(30207))
+
+    try:    fanart = urllib.unquote_plus(p['fanart'])
+    except: fanart = ''
+
     if activate:
         cmd = urllib.unquote_plus(p['cmd'])
+    elif isCached:
+        cmd = 'PlayMedia(%s)' % cmd
     elif isSF:
         cmd = cmd.replace('+', '%20')
         cmd = 'ActivateWindow(%d,%s,return)' % (getCurrentWindowId(), cmd)
-        if mode == _ACTIVATEWINDOW:
+        if activateW:
             cmd = cmd.replace('mode=%d' % _ACTIVATEWINDOW, 'mode=%d' % _ACTIVATEWINDOW_XBMC) 
     else:
-        cmd = 'PlayMedia(%s)' % cmd
+        fanart = ''
+        cmd    = 'PlayMedia(%s)' % cmd
 
     if search:
         name = GETTEXT(30054)
@@ -403,7 +417,9 @@ def addToXBMC(name, thumb, cmd,  keyword):
 
     if folder:
         thumbnail, fanart = getFolderThumb(path)
-        cmd = favourite.addFanart(cmd, fanart)
+        #cmd = favourite.addFanart(cmd, fanart)
+
+    cmd = favourite.addFanart(cmd, fanart)
 
     keyword = urllib.unquote_plus(keyword)
     if len(keyword) > 0:
@@ -2197,7 +2213,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         #special fix for GlobalSearch, use local launcher (globalsearch.py) to bypass keyboard
         cmd = cmd.replace('script.globalsearch', os.path.join(HOME, 'globalsearch.py'))
 
-        infolabel = {'plot':GETTEXT(30206) % (label, keyword)}
+        infolabel = {'plot':GETTEXT(30206) % (label, urllib.unquote_plus(keyword))}
         addDir(label, _ACTIVATESEARCH, cmd=cmd, thumbnail=thumb, isFolder=True, menu=menu, fanart=fan, keyword=keyword, infolabels=infolabel)
     
     return True
@@ -2463,6 +2479,11 @@ def playMedia(original):
 def activateWindowCommand(cmd):
     cmds = cmd.split(',', 1)
 
+    #special case for filemanager
+    if '10003' in cmds[0] or 'filemanager' in cmds[0].lower():
+        xbmc.executebuiltin(cmd)
+        return   
+
     plugin   = None
     activate = None
 
@@ -2623,7 +2644,7 @@ except: contentMode = False
 doRefresh   = False
 doEnd       = True
 cacheToDisc = False
-contentType = 'movies'
+contentType = '' if DISABLEMOVIEVIEW else 'movies'
 
 
 if len(content) > 0:   
@@ -3023,12 +3044,12 @@ if nItem < 1:
 if doRefresh:
     refresh()
 
+cacheToDisc = True
 if doEnd:
     if len(contentType) > 0:
         xbmcplugin.setContent(int(sys.argv[1]), contentType)
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
     if VIEWTYPE > 0:        
-        print "SETTING VIEWTYPE"
         xbmc.executebuiltin('Container.SetViewMode(%d)' % VIEWTYPE)
 
 

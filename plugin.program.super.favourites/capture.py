@@ -122,11 +122,11 @@ def doMenu():
         return  
 
     DEBUG = utils.ADDON.getSetting('DEBUG') == 'true'
-    if DEBUG:
-        window = xbmcgui.getCurrentWindowId()
-        utils.DialogOK('Current Window ID %d' % window)  
+    #if DEBUG:
+    #    window = xbmcgui.getCurrentWindowId()
+    #    utils.DialogOK('Current Window ID %d' % window)  
 
-    active = [0, 1, 2, 25, 40, 500, 501, 502, 601]
+    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]
     window = xbmcgui.getCurrentWindowId()
     utils.log('Window     : %d' % window)  
     if window-10000 not in active:
@@ -153,7 +153,7 @@ def doMenu():
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
     name     = xbmc.getInfoLabel('ListItem.Label')
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
-    thumb    = xbmc.getInfoLabel('ListItem.Art(thumb)')
+    #thumb    = xbmc.getInfoLabel('ListItem.Art(thumb)')
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     fanart   = xbmc.getInfoLabel('ListItem.Art(fanart)')
@@ -172,6 +172,24 @@ def doMenu():
     #    isStream = xbmc.Player().isInternetStream()
     #elif file:
     #    isStream = file.startswith('http://')
+
+    if window == 10003: #filemanager
+        control = 0
+        if xbmc.getCondVisibility('Control.HasFocus(20)') == 1:
+            control = 20
+        elif xbmc.getCondVisibility('Control.HasFocus(21)') == 1:
+            control = 21
+
+        if control == 0:
+            return doStandard()
+
+        name     = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
+        root     = xbmc.getInfoLabel('Container(%d).ListItem.Path'  % control)
+        path     = root + name
+        isFolder = True
+        thumb    = 'DefaultFolder.png'
+        #if not path.endswith(os.sep):
+        #    path += os.sep
 
     if isFolder:
         path     = path.replace('\\', '\\\\')

@@ -46,6 +46,10 @@ def file(filename, type):
     return xbmcvfs.File(filename, type)
 
 
+def size(filename):
+    return xbmcvfs.File(filename).size()
+
+
 def read(filename):
     f = file(filename, 'r')
     content = f.read()

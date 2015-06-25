@@ -2,7 +2,7 @@
 
 
 1.0.36:
-    - option in disable 'movie content view' - enable if you get rectangular icons in thumbnail view
+    - option to disable 'movie content view' - use if you get rectangular icons in thumbnail view
     - can now add items from File Manager window directly to Super Favourites
     - Option to switch off caching when adding items back to Kodi favourites (particularly useful for 'Search' type favourites)
 

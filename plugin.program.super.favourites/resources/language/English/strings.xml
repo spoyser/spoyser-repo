@@ -200,5 +200,7 @@
 	<string id="30203">Set view type (0 - default)</string>		
 	<string id="30204">Remember current view type</string>		
 	<string id="30205">Perform a keyword IMDB search using [I]%s.[/I]</string>		
-	<string id="30206">Search %s using [I]%s.[/I]</string>	
+	<string id="30206">Search %s for [I]%s.[/I]</string>	
+	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites.</string>
+		<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails.</string>		
 </strings>
