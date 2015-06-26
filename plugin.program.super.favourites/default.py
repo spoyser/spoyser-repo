@@ -3044,7 +3044,7 @@ if nItem < 1:
 if doRefresh:
     refresh()
 
-cacheToDisc = True
+
 if doEnd:
     if len(contentType) > 0:
         xbmcplugin.setContent(int(sys.argv[1]), contentType)
