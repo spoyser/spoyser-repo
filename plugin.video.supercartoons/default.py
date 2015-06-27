@@ -53,6 +53,10 @@ SEARCH     = 1100
 DOWNLOAD   = 1200
 
 
+try:    NMR_KIDSTIME = int(ADDON.getSetting('KIDSTIME'))
+except: NMR_KIDSTIME = 10
+
+
 def CheckVersion():
     prev = ADDON.getSetting('VERSION')
     curr = VERSION
@@ -107,6 +111,7 @@ def Clean(text):
 def GetHTML(url, agent = 'Apple-iPhone/'):
     html = geturllib.GetURL(url, 86400, agent)
     html = html.replace('\n',            '')
+    html = html.replace('\r',            '')
     html = html.replace('\t',            '')
     html = html.replace('&quot;',        '"')
     html = html.replace('title="Search', '')
@@ -115,8 +120,10 @@ def GetHTML(url, agent = 'Apple-iPhone/'):
 
 def Main():
     CheckVersion()
+
+    kidstime = 'Kids Time (%d Random Cartoons)' % NMR_KIDSTIME
     
-    AddSection('Kids Time',     'kidstime',   KIDSTIME, False)
+    AddSection(kidstime,        'kidstime',   KIDSTIME, False)
     AddSection('Random',        'random',     RANDOM,   False)
     AddSection('All',           'all',        ALL)
     AddSection('Most Recent',   'recent',     RECENT)
@@ -131,8 +138,10 @@ def All(page):
     url   = URL + 'cartoons/' + str(page)
     next  = URL + 'cartoons/' + str(page+1)
 
-    html  = GetHTML(url)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(html)
+    html = GetHTML(url)
+    html = '<div class="cartoon">' + html.split('<div class="cartoon">', 1)[-1]
+
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc) 
@@ -141,12 +150,32 @@ def All(page):
         AddMore(ALL, URL, page+1)
 
 
+def MostRecent():
+    html  = GetHTML(URL)
+
+    match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+
+    for link, desc, img, title in match:
+        AddCartoon(title, img, link, desc)
+
+
+def MostPopular():
+    html  = GetHTML(URL)
+    match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+
+    for link, desc, img, title in match:
+        AddCartoon(title, img, link, desc)  
+
+
 def KidsTime():
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()  
+    pl.clear() 
 
-    count = 0
-    while count < 10:
+    resolved = False 
+
+    for i in range(0, NMR_KIDSTIME):
         try:
             title, image, url = GetRandom()  
 
@@ -158,7 +187,8 @@ def KidsTime():
 
             count += 1
 
-            if count == 1:
+            if not resolved:
+                resolved = True
                 xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
 
         except:
@@ -283,24 +313,6 @@ def PlayCartoon(title, image, url):
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
 
 
-def MostRecent():
-    html  = GetHTML(URL)
-
-    match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
-
-    for link, desc, img, title in match:
-        AddCartoon(title, img, link, desc)
-
-
-def MostPopular():
-    html  = GetHTML(URL)
-    match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
-
-    for link, desc, img, title in match:
-        AddCartoon(title, img, link, desc)  
-
 
 def Studios(page):
     #only one at the moment
@@ -313,8 +325,8 @@ def DoStudios(page):
     html = html.split('<div class="studio">')
 
     for item in html:
-        try:
-            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(item)
+        try:           
+            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(item)
            
             link  = match[0][0]
             desc  = match[0][1]
@@ -364,11 +376,10 @@ def GetCharacters(page):
 
     characters = []
 
-
     html = html.split('<div class="character">')
     for item in html:
-        try:
-            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(item)
+        try:           
+            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(item)
            
             link  = match[0][0]
             desc  = match[0][1]
