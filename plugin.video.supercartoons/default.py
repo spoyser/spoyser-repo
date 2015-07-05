@@ -271,9 +271,12 @@ def GetSearchTitle(title):
 
 def RemoveCharacter(title):
     uTitle = title.upper()
-    remove = ['MICKEY-MOUSE', 'DONALD-DUCK', 'GOOFY', 'PLUTO', 'CHIP-AND-DALE', 'DAISY-DUCK', 'FIGARO', 'MINNIE-MOUSE', 'HUEY-DEWEY-LOUIE', 'HUMPHREY-THE-BEAR', 'WILE-E.-COYOTE', 'ROAD-RUNNER', 'PORKY-PIG', 'DAFFY-DUCK', 'ELMER-FUDD', 'BUGS-BUNNY', 'HENERY-HAWK', 'TWEETY', 'SYLVESTER', 'YOSEMITE-SAM', 'SPEEDY-GONZALES', 'TASMANIAN-DEVIL', 'TOM-JERRY', 'THE-PINK-PANTHER', 'POPEYE', 'PEPE-LE-PEW', 'BARNYARD-DAWG', 'RALPH-WOLF-AND-SAM-SHEEPDOG', 'FOGHORN-LEGHORN']
+    remove = ['MICKEY-MOUSE', 'DONALD-DUCK', 'GOOFY', 'PLUTO', 'CHIP-AND-DALE', 'DAISY-DUCK', 'FIGARO', 'MINNIE-MOUSE', 'HUEY-DEWEY-LOUIE', 'HUMPHREY-THE-BEAR', 'WILE-E.-COYOTE', 'ROAD-RUNNER', 'PORKY-PIG', 'DAFFY-DUCK', 'ELMER-FUDD', 'BUGS-BUNNY', 'HENERY-HAWK', 'TWEETY', 'SYLVESTER', 'YOSEMITE-SAM', 'SPEEDY-GONZALES', 'TASMANIAN-DEVIL', 'TOM-JERRY', 'THE-PINK-PANTHER', 'POPEYE', 'PEPE-LE-PEW', 'BARNYARD-DAWG', 'RALPH-WOLF-AND-SAM-SHEEPDOG', 'FOGHORN-LEGHORN', 'SCOOBY-DOO']
 
     for item in remove:
+        if uTitle.startswith(item):
+            return title[len(item)+1:]
+
         item += ' '
         if uTitle.startswith(item):
             return title[len(item)+1:]
@@ -283,6 +286,13 @@ def RemoveCharacter(title):
 
 def GetSearchImage(link):
     title = link.rsplit('/', 1)[1].rsplit('.', 1)[0]
+
+    #http://www.supercartoons.net/cartoon/1212/scooby-doo-dont-fool-with-a-phantom.html
+    #scooby-doo-dont-fool-with-a-phantom
+
+    print title
+    #http://www.supercartoons.net/images/cartoons/dont-fool-with-a-phantom.jpg
+
     title = URL + 'images/cartoons/' + RemoveCharacter(title) + '.jpg'
 
     return title
@@ -330,6 +340,7 @@ def Search(page, keyword):
 
         if len(item) > 0:
             link  = 'http://www.supercartoons.net/cartoon/' + item[0][0] + '.html'
+            print link
             title = GetSearchTitle(item[0][1])
             image = GetSearchImage(link)
             desc  = Clean(item[0][2])
