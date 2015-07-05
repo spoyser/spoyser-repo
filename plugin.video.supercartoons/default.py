@@ -18,6 +18,7 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
+
 import urllib
 import urllib2
 import random
@@ -36,7 +37,10 @@ TITLE   = ADDON.getAddonInfo('name')
 VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
+FANART  = os.path.join(HOME, 'fanart.jpg')
 URL     = 'http://www.supercartoons.net/'
+
+
 
 
 KIDSTIME   = 100
@@ -104,8 +108,33 @@ def Clean(text):
     text = text.replace('</b>',    '')
     text = text.replace('&amp;',   '&')
     text = text.replace('&nbsp;',  ' ')
+    text = text.replace('Online Cartoon Network', '')
+    text = text.replace('Watch Free Cartoons Online', '')
+    text = text.replace('Watch Free Cartoons ', '')
 
-    return text
+    text = text.strip()
+
+    if text.endswith('...'):
+        text = text.rsplit('...', 1)[0].strip()
+
+    if text.endswith('Cartoon'):
+        text = text.rsplit('Cartoon', 1)[0]
+
+    if text.startswith('Watch Free'):
+        text = text.split('Watch Free', 1)[-1]
+
+    text = text.strip()
+
+    if text.endswith('Online'):
+        text = text.rsplit('Online', 1)[0]
+
+    text = text.strip()
+
+
+    while text.endswith('-'):
+        text = text.rsplit('-', 1)[0].strip()
+
+    return text.strip()
 
 
 def GetHTML(url, agent = 'Apple-iPhone/'):
@@ -141,7 +170,9 @@ def All(page):
     html = GetHTML(url)
     html = '<div class="cartoon">' + html.split('<div class="cartoon">', 1)[-1]
 
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
+    #match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
+
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(html)
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc) 
@@ -154,7 +185,9 @@ def MostRecent():
     html  = GetHTML(URL)
 
     match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+    #match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)
@@ -163,7 +196,11 @@ def MostRecent():
 def MostPopular():
     html  = GetHTML(URL)
     match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+
+    #match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(match)
+
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)  
@@ -184,8 +221,6 @@ def KidsTime():
             liz.setInfo( type="Video", infoLabels={"Title": title})
 
             pl.add(url, liz)
-
-            count += 1
 
             if not resolved:
                 resolved = True
@@ -239,10 +274,11 @@ def RemoveCharacter(title):
     remove = ['MICKEY-MOUSE', 'DONALD-DUCK', 'GOOFY', 'PLUTO', 'CHIP-AND-DALE', 'DAISY-DUCK', 'FIGARO', 'MINNIE-MOUSE', 'HUEY-DEWEY-LOUIE', 'HUMPHREY-THE-BEAR', 'WILE-E.-COYOTE', 'ROAD-RUNNER', 'PORKY-PIG', 'DAFFY-DUCK', 'ELMER-FUDD', 'BUGS-BUNNY', 'HENERY-HAWK', 'TWEETY', 'SYLVESTER', 'YOSEMITE-SAM', 'SPEEDY-GONZALES', 'TASMANIAN-DEVIL', 'TOM-JERRY', 'THE-PINK-PANTHER', 'POPEYE', 'PEPE-LE-PEW', 'BARNYARD-DAWG', 'RALPH-WOLF-AND-SAM-SHEEPDOG', 'FOGHORN-LEGHORN']
 
     for item in remove:
+        item += ' '
         if uTitle.startswith(item):
             return title[len(item)+1:]
 
-    return title
+    return title.strip()
 
 
 def GetSearchImage(link):
@@ -322,20 +358,11 @@ def Studios(page):
 def DoStudios(page):
     url  = URL + 'studios/' + str(page)
     html = GetHTML(url)
-    html = html.split('<div class="studio">')
 
-    for item in html:
-        try:           
-            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(item)
+    match = re.compile('<div class="studio">.+?title="(.+?)"><img src="(.+?)".+?><a href="(.+?)">(.+?)</a></span></div>').findall(html)
            
-            link  = match[0][0]
-            desc  = match[0][1]
-            img   = match[0][2]
-            title = match[0][3]
-
-            AddStudio(title, img, link, desc)
-        except:
-            pass
+    for desc, img, link, title in match:
+        AddStudio(title, img, link, desc)
 
 
 def Studio(_url, page):
@@ -379,7 +406,7 @@ def GetCharacters(page):
     html = html.split('<div class="character">')
     for item in html:
         try:           
-            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(item)
+            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title"><a href=".+?" title=".+?">(.+?)</a></span></div>').findall(item)
            
             link  = match[0][0]
             desc  = match[0][1]
@@ -470,6 +497,8 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 
     if not isFolder:
         liz.setProperty("IsPlayable","true")
+
+    liz.setProperty('Fanart_Image', FANART)     
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
@@ -634,7 +663,7 @@ else:
 
         
 try:
-    #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 except:
     pass
