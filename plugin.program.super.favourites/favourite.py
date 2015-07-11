@@ -206,6 +206,7 @@ def updateFave(file, update):
     cmd = update[2]
 
     fave, index, nFaves = findFave(file, cmd)
+    
    
     removeFave(file, cmd)
     return insertFave(file, update, index)
@@ -237,6 +238,11 @@ def findFave(file, cmd):
     for idx, fave in enumerate(faves):
         if '[%SF%]' in fave[2]:
             test = fave[2].split('[%SF%]', 1)
+            if cmd.startswith(test[0]) and cmd.endswith(test[1]):
+                return fave, idx, len(faves)
+
+        if '[%SF+%]' in fave[2]:
+            test = fave[2].split('[%SF+%]', 1)
             if cmd.startswith(test[0]) and cmd.endswith(test[1]):
                 return fave, idx, len(faves)
 
@@ -313,6 +319,7 @@ def removeFave(file, cmd):
 
 def shiftFave(file, cmd, up):
     fave, index, nFaves = findFave(file, cmd)
+
     max = nFaves - 1
     if up:
         index -= 1
@@ -341,21 +348,31 @@ def renameFave(file, cmd, newName):
 
 
 def equals(fave, cmd):
+    fave = fave.strip()
+    cmd  = cmd.strip()
+
     if fave == cmd:
         return True
 
     fave = removeSFOptions(fave)
     cmd  = removeSFOptions(cmd)
 
+
     if fave == cmd:
         return True
 
-    if '[%SF%]' not in fave:
-        return False
-
-    test = fave.split('[%SF%]', 1)
-    if cmd.startswith(test[0])  and cmd.endswith(test[1]):
+    if fave == cmd.replace('")', '/")'):
         return True
+
+    if '[%SF%]' in fave:
+        test = fave.split('[%SF%]', 1)
+        if cmd.startswith(test[0])  and cmd.endswith(test[1]):
+            return True
+
+    if '[%SF+%]' in fave:
+        test = fave.split('[%SF+%]', 1)
+        if cmd.startswith(test[0])  and cmd.endswith(test[1]):
+            return True
 
     return False
 

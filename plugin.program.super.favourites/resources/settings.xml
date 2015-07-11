@@ -24,6 +24,7 @@
 	</category>
 	
 	<category label="30022">	
+		<setting id="ALPHA_SORT"       label="30213" type="bool"      default="false" />	
 		<setting id="SHOWNEW"          label="30023" type="bool"      default="true"  />
 		<setting id="SHOWXBMC"         label="30024" type="bool"      default="true"  />		
 		<setting id="SHOWSEP"          label="30051" type="bool"      default="true"  />			
@@ -35,7 +36,7 @@
 		<setting id="SHOWIMPORT"       label="30139" type="bool"      default="false"  />
 		<setting id="VIEWTYPE"         label="30203" type="number"    default="0"      />	
 		<setting id="DISABLEMOVIEVIEW" label="30208" type="bool"      default="false"  />		
-		
+				
 		<setting type="sep" visible="true" />
 	</category>
 	
@@ -46,8 +47,9 @@
 		<setting id="SHOWRECOMMEND"   label="30063" type="bool"  enable="eq(-2,true)"              default="true" visible="eq(-2,true)"/>
 		<setting id="METARECOMMEND"   label="30093" type="bool"  enable="eq(-3,true)+eq(-1,true)"  default="true" visible="eq(-3,true)+eq(-1,true)"/>
         <setting id="SYNOPSRECOMMEND" label="30157" type="bool"  enable="eq(-4,true)+eq(-2,true)"  default="true" visible="eq(-4,true)+eq(-2,true)"/>
-		<setting id="CACHERECOMMEND"  label="30089" type="bool"  enable="eq(-5,true)+eq(-3,true)"  default="true" visible="eq(-5,true)+eq(-3,true)"/>
-		<setting id="STRIPNUMBERS"    label="30095" type="bool"  enable="eq(-6,true)"              default="true" visible="eq(-6,true)"/>
+		<setting id="RECOMMENDFIRST"  label="30214" type="bool"  enable="eq(-5,true)+eq(-3,true)"  default="false" visible="eq(-5,true)+eq(-3,true)"/>
+		<setting id="CACHERECOMMEND"  label="30089" type="bool"  enable="eq(-6,true)+eq(-4,true)"  default="true" visible="eq(-6,true)+eq(-4,true)"/>
+		<setting id="STRIPNUMBERS"    label="30095" type="bool"  enable="eq(-7,true)"              default="true" visible="eq(-7,true)"/>
 		
         <setting id="DUMMY"                 label="30151" type="lsep"/>	
 		<setting id="SHOWIPLAY"             label="30145" type="bool" default="true" />

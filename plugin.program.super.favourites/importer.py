@@ -42,16 +42,13 @@ TITLE    = utils.TITLE
 
 GETTEXT  = utils.GETTEXT
  
-def main():
-    toImport = True
-
-    if len(sys.argv) > 1:
-        toImport = sys.argv[1].lower() != 'false'
-
+def main(toImport):
     if toImport:
         doImport()
+        utils.openSettings(ADDONID, 3.6)
     else:
         doExport()
+        utils.openSettings(ADDONID, 3.7)
 
 
 def doImport():
@@ -251,9 +248,12 @@ def getFolder(title):
 
 if __name__ == '__main__':
     try:
-        main()
-        import xbmcaddon
-        xbmcaddon.Addon(ADDONID).openSettings()
+        toImport = True
+
+        if len(sys.argv) > 1:
+            toImport = sys.argv[1].lower() != 'false'
+
+        main(toImport)        
         xbmc.executebuiltin('Container.Refresh')
 
     except:

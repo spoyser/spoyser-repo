@@ -158,17 +158,15 @@ def CheckVersion():
 
 
 def verifySuperSearch():
-    src = os.path.join(ROOT, 'Search')
+    old = os.path.join(ROOT, 'Search')
     dst = os.path.join(ROOT, 'S')
 
-    sfile.rename(src, dst)
-
-    dst = os.path.join(ROOT, 'S')
-    src = os.path.join(HOME, 'resources', 'Search', FILENAME)
+    sfile.rename(old, dst)
 
     try:    sfile.makedirs(dst)
     except: pass
 
+    src = os.path.join(HOME, 'resources', 'search', FILENAME)
     dst = os.path.join(dst, FILENAME)
 
     if not sfile.exists(dst):
@@ -416,6 +414,22 @@ def Clean(name):
             break
 
     return name
+
+#logic for setting focus inspired by lambda
+def openSettings(addonID, focus=None):
+    if not focus:            
+        return xbmcaddon.Addon(addonID).openSettings()
+    
+    try:
+        xbmc.executebuiltin('Addon.OpenSettings(%s)' % addonID)
+
+        page, ctrl = re.compile('(\d*)\.(\d*)').findall(str(focus))[0]
+
+        xbmc.executebuiltin('SetFocus(%d)' % (int(page) + 200))
+        xbmc.executebuiltin('SetFocus(%d)' % (int(ctrl) + 100))
+
+    except:
+        return
 
 
 

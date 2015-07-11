@@ -202,5 +202,12 @@
 	<string id="30205">Perform a keyword IMDB search using [I]%s.[/I]</string>		
 	<string id="30206">Search %s for [I]%s.[/I]</string>	
 	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites.</string>
-		<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails.</string>		
+	<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails.</string>		
+	<string id="30209">Copy images and description</string>		
+	<string id="30210">Paste thumbnail</string>		
+	<string id="30211">Paste fanart</string>		
+	<string id="30212">Paste description</string>		
+	<string id="30213">Sort favourites alphabetically</string>			
+	<string id="30214">          Quick select (may not return accurate recommendations)</string>	
+	<string id="30215">Perform an 'Also Watched' IMDB search using [I]%s[/I]</string>	
 </strings>

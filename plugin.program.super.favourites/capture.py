@@ -29,10 +29,11 @@ _ADDTOFAVES   = 100
 _SF_SETTINGS  = 200
 _LAUNCH_SF    = 300
 _SEARCH       = 400
-_SEARCHDEF    = 450
-_DOWNLOAD     = 500
-_PLAYLIST     = 600
-_PLAYTUBE     = 700
+_SEARCHDEF    = 500
+_RECOMMEND    = 600
+_DOWNLOAD     = 700
+_PLAYLIST     = 800
+_COPYIMAGES   = 900
 
 
 def getDefaultSearch():
@@ -141,7 +142,7 @@ def doMenu():
         return
 
     folder = xbmc.getInfoLabel('Container.FolderPath')
-    path  = xbmc.getInfoLabel('ListItem.FolderPath')
+    path   = xbmc.getInfoLabel('ListItem.FolderPath')
 
     #ignore if in Super Favourites
     if (utils.ADDONID in folder) or (utils.ADDONID in path):
@@ -153,12 +154,16 @@ def doMenu():
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
     name     = xbmc.getInfoLabel('ListItem.Label')
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
+    icon     = xbmc.getInfoLabel('ListItem.ActualIcon')    
     #thumb    = xbmc.getInfoLabel('ListItem.Art(thumb)')
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     fanart   = xbmc.getInfoLabel('ListItem.Art(fanart)')
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
     desc     = getDescription()
+
+    if not thumb:
+        thumb = icon
 
     try:    file = xbmc.Player().getPlayingFile()
     except: file = None
@@ -222,15 +227,21 @@ def doMenu():
     
     if (len(menu) == 0) and len(path) > 0:
         menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
-        menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
-
-        if utils.ADDON.getSetting('SHOWSS') == 'true':
-            menu.append((utils.GETTEXT(30054), _SEARCH))
-
+       
+        if utils.ADDON.getSetting('SHOWSS') == 'true':           
             default = getDefaultSearch()
             if len(default) > 0:
                 menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
 
+            menu.append((utils.GETTEXT(30054), _SEARCH))
+
+        if utils.ADDON.getSetting('SHOWRECOMMEND') == 'true':
+            menu.append((utils.GETTEXT(30088), _RECOMMEND))
+
+        if len(thumb) > 0 or len(fanart) > 0:
+            menu.append((utils.GETTEXT(30209), _COPYIMAGES))       
+
+        menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
         menu.append((utils.GETTEXT(30048), _STD_SETTINGS))
 
     elif window == 10000: #Home screen
@@ -238,9 +249,8 @@ def doMenu():
         #menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
         pass
 
-
     if len(menu) == 0:
-        doStandard()
+        doStandard(useScript=False)
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
@@ -266,7 +276,6 @@ def doMenu():
     #    import download
     #    download.download(file, 'c:\\temp\\file.mpg', 'Super Favourites')
 
-    
     if choice == _STD_SETTINGS:
         doStandard()
 
@@ -302,26 +311,41 @@ def doMenu():
     if choice == _LAUNCH_SF:
         utils.LaunchSF()
 
-    if choice == _SEARCH or choice == _SEARCHDEF:
+    if choice in [_SEARCH, _SEARCHDEF, _RECOMMEND]:
         if utils.ADDON.getSetting('STRIPNUMBERS') == 'true':
             name = utils.Clean(name)
 
         thumb  = thumb  if len(thumb)  > 0 else 'null'
         fanart = fanart if len(fanart) > 0 else 'null'
 
-        _SUPERSEARCH    =  0     #declared as  0 in default.py
-        _SUPERSEARCHDEF = 10     #declared as 10 in default.py
+        #declared in default.py
+        _SUPERSEARCH    =    0
+        _SUPERSEARCHDEF =   10
+        _RECOMMEND_KEY  = 2700
 
-        mode    = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
         videoID = 10025 #video
 
         if window == 10000: #don't activate on home screen, push to video
             window = videoID
 
-        import urllib        
+        import urllib   
 
+        if choice == _RECOMMEND:
+            mode = _RECOMMEND_KEY
+        else:
+            mode = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
+            
         cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, utils.ADDONID, mode, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
+
         activateCommand(cmd)
+
+    if choice == _COPYIMAGES:
+        if not fanart:
+            fanart = thumb
+
+        xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
+        xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
+        xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
 
 
 def main():

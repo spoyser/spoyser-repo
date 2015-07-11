@@ -50,16 +50,18 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
 
         
     def onInit(self):
-        for i in range(5):
-            self.getControl(5001+i).setVisible(False)
+        nItem  = len(self.menu)
+        height = 58 + (nItem * 38)
+
+        self.getControl(5001).setHeight(height)
             
-        nItem = len(self.menu)  
-        if nItem > 5:
-            nItem = 5
-        id = 5000 + nItem
-        self.getControl(id).setVisible(True)
-            
-        self.list      = self.getControl(3000)
+        self.list = self.getControl(3000)
+        self.list.setHeight(height-20)
+
+        newY = 360 - (height/2)
+
+        self.getControl(5000).setPosition(self.getControl(5000).getX(), newY)
+
         self.params    = None
         self.paramList = []
 
