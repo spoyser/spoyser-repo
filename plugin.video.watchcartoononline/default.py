@@ -39,21 +39,23 @@ cache = StorageServer.StorageServer("WCO", 0)
 ADDONID = 'plugin.video.watchcartoononline'
 ADDON   = xbmcaddon.Addon(ADDONID)
 HOME    = ADDON.getAddonInfo('path')
+TITLE   = ADDON.getAddonInfo('name')
+VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
-TITLE   = 'Watch Cartoon Online'
-VERSION = '1.0.12'
 URL     = 'http://www.watchcartoononline.com/'
 
 
 SECTION  = 100
 SERIES   = 200
 EPISODE  = 300
+HOST     = 400
+
+AUTOPLAY = ADDON.getSetting('AUTOPLAY') == 'true'
 
 
 import geturllib
 geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
-
 
 
 def CheckVersion():
@@ -65,9 +67,9 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if prev == '0.0.0':
+    if curr == '1.0.14':
         d = xbmcgui.Dialog()
-        d.ok(TITLE + ' - ' + VERSION, '', 'Welcome to Watch Cartoon Online', '')
+        d.ok(TITLE + ' - ' + VERSION, 'Welcome to Watch Cartoon Online', 'Now with auto-play feature.', '')
 
 def Main():
     CheckVersion()
@@ -140,8 +142,9 @@ def DoSeries(html):#url):
         if name and url:
             AddEpisode(name, url, image)
 
-def GetLinkIndex(resolved):
-    if len(resolved) < 2:
+
+def GetLinkIndex(resolved, select):
+    if len(resolved) < 2 or (not select):
         return 0
 
     current = ''
@@ -169,14 +172,19 @@ def GetLinkIndex(resolved):
     return index
 
 
-def PlayVideo(_url):
+def selectHost(url):
+    PlayVideo(url, True)
+
+
+def PlayVideo(_url, select):
     resolved = resolve.ResolveURL(_url)
 
     if len(resolved) == 0:
         url = None
         msg = 'Unidentified Video Host'
     else:
-        index    = GetLinkIndex(resolved)
+        index = GetLinkIndex(resolved, select)
+
         if index == None:
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xbmcgui.ListItem(''))
             return
@@ -212,7 +220,10 @@ def PlayVideo(_url):
         
 
 def AddEpisode(name, url, image=None):
-    AddDir(name, EPISODE, url, image=image, isFolder=False)
+    menu = []
+    if AUTOPLAY:
+        menu.append(('Select video host', 'XBMC.RunPlugin(%s?mode=%d&url=%s)' % (sys.argv[0], HOST, urllib.quote_plus(url))))
+    AddDir(name, EPISODE, url, image=image, isFolder=False, menu=menu)
 
 
 def AddSeries(name, url):
@@ -228,7 +239,7 @@ def AddSection(name, image, url):
     AddDir(name, SECTION, url, image, isFolder=True)
 
 
-def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, contextMenu=None):
+def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, menu=None):
     name = common.clean(name)
 
     if not image:
@@ -248,8 +259,8 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 
     liz = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
 
-    if contextMenu:
-        liz.addContextMenuItems(contextMenu)
+    if menu:
+        liz.addContextMenuItems(menu)
 
     if infoLabels:
         infoLabels['title'] = name
@@ -284,12 +295,6 @@ def get_params():
                 param[splitparams[0]]=splitparams[1]
     return param
 
-
-import geturllib
-geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
-
-
-#print sys.argv[2]
 
 params = get_params()
 
@@ -326,12 +331,15 @@ elif mode == SERIES:
 
 elif mode == EPISODE:
     try:
-        PlayVideo(url)
+        PlayVideo(url, (not AUTOPLAY))
         if title:
             cache.set(common.fixup(title), url)
     except Exception, e:
         print str(e)
         raise
+
+elif mode == HOST:
+    selectHost(url)
 
 else:
     Main()

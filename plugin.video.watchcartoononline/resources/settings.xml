@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
-        <setting id="VERSION"       type="text"   label="Current Version"   default="0.0.0" visible="false"/>
+        <setting id="VERSION" type="text"   label="Current Version"   default="0.0.0" visible="false"/>
 		
-		<setting                    type="action" label="Clear cache"       action="RunScript($CWD/clearcache.py)"/>
+		<setting id="AUTOPLAY" type="bool"   label="Auto-play cartoons" default="true"/>		
+		
+		<setting type="action" label="Clear cache"       action="RunScript($CWD/clearcache.py)"/>
     </category>
 </settings>
