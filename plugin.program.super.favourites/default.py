@@ -36,6 +36,7 @@ import cache
 import sfile
 
 
+
 ADDONID  = utils.ADDONID
 ADDON    = utils.ADDON
 HOME     = utils.HOME
@@ -154,6 +155,7 @@ DISABLEMOVIEVIEW      = ADDON.getSetting('DISABLEMOVIEVIEW')      == 'true'
 ALPHA_SORT            = ADDON.getSetting('ALPHA_SORT')            == 'true'
 DEFAULT_FANART        = ADDON.getSetting('DEFAULT_FANART')
 VIEWTYPE              = int(ADDON.getSetting('VIEWTYPE'))
+DLG_MENU              = ADDON.getSetting('CONTEXT_STYLE')         == '1'
 
 
 
@@ -321,7 +323,7 @@ def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
         addon = addon.replace('/', '')
         addon = addon.split('?', 1)[0]
 
-        if addon == utils.ADDONID:
+        if addon == ADDONID:
             return
         
         if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
@@ -378,7 +380,7 @@ def addToXBMC(name, thumb, cmd,  keyword):
     recommend = mode == _RECOMMEND_KEY or mode == _RECOMMEND_IMDB
     iPlay     = mode == _IPLAY
     history   = mode == _HISTORYSHOW
-    isSF      = cmd.startswith('"plugin://%s' % utils.ADDONID)
+    isSF      = cmd.startswith('"plugin://%s' % ADDONID)
 
     isCached = False
     if activateW:
@@ -795,7 +797,13 @@ def getColour():
         return None
 
     import menus
-    option = menus.selectMenu(GETTEXT(30086), menu)
+    if DLG_MENU:
+        option = menus.selectMenu(GETTEXT(30086), menu)
+    else:
+        option = menus.showMenu(ADDONID, menu)
+
+
+    #option = menus.selectMenu(GETTEXT(30086), menu)
                  
     if option < 0:
         return None
@@ -982,7 +990,10 @@ def changePlaybackMode(file, cmd):
     options.append([runPlugin,      RUNPLUGIN_MODE])
 
     import menus
-    option = menus.selectMenu(GETTEXT(30052), options)
+    if DLG_MENU:
+        option = menus.selectMenu(GETTEXT(30052), options)
+    else:
+        option = menus.showMenu(ADDONID, options)
 
     if option == mode:
         return False
@@ -1055,7 +1066,10 @@ def editFolder(path, name):
     options.append([GETTEXT(30085), COLOUR])
 
     import menus
-    option = menus.selectMenu(name, options)
+    if DLG_MENU:
+        option = menus.selectMenu(name, options)
+    else:
+        option = menus.showMenu(ADDONID, options)
 
     if option == REMOVE:
         return removeFolder(path)
@@ -1163,7 +1177,10 @@ def editFave(file, cmd, name, thumb):
     options.append([GETTEXT(30168), MANUALEDIT])
 
     import menus
-    option = menus.selectMenu(name, options)
+    if DLG_MENU:
+        option = menus.selectMenu(name, options)
+    else:
+        option = menus.showMenu(ADDONID, options)
 
     if option == UP:
         return favourite.shiftFave(file, cmd, up=True)
@@ -1395,7 +1412,10 @@ def manualType(name, cmd):
     options.append([action,         ACTION_MODE])
 
     import menus
-    option = menus.selectMenu(title, options)
+    if DLG_MENU:
+        option = menus.selectMenu(title, options)
+    else:
+        option = menus.showMenu(ADDONID, options)
 
     return option
 
@@ -1470,7 +1490,10 @@ def editSearch(file, cmd, name, thumb):
     options.append([GETTEXT(30085), COLOUR])
 
     import menus
-    option = menus.selectMenu(name, options)
+    if DLG_MENU:
+        option = menus.selectMenu(name, options)
+    else:
+        option = menus.showMenu(ADDONID, options)
 
     if option == UP:
         return favourite.shiftFave(file, cmd, up=True)
@@ -2360,7 +2383,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
     return True
 
 
-def playCommand(originalCmd): 
+def playCommand(originalCmd):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
 
@@ -2611,14 +2634,13 @@ def pasteCut(file, cmd, folder):
     return favourite.removeFave(file, cmd)
 
 
-def playMedia(original):
+def playMedia(original): 
     cmd = favourite.tidy(original).replace(',', '') #remove spurious commas
     
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
 
-
-    if mode == PLAYMEDIA_MODE:
+    if mode == PLAYMEDIA_MODE:       
         xbmc.executebuiltin(cmd)
         return
 

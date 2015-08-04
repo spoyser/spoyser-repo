@@ -34,6 +34,7 @@ _RECOMMEND    = 600
 _DOWNLOAD     = 700
 _PLAYLIST     = 800
 _COPYIMAGES   = 900
+_SHOWIMAGE    = 1000
 
 
 def getDefaultSearch():
@@ -228,26 +229,34 @@ def doMenu():
     if (len(menu) == 0) and len(path) > 0:
         menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
        
+
         if utils.ADDON.getSetting('SHOWSS') == 'true':           
             default = getDefaultSearch()
             if len(default) > 0:
                 menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
 
+
             menu.append((utils.GETTEXT(30054), _SEARCH))
+
 
         if utils.ADDON.getSetting('SHOWRECOMMEND') == 'true':
             menu.append((utils.GETTEXT(30088), _RECOMMEND))
 
+
         if len(thumb) > 0 or len(fanart) > 0:
-            menu.append((utils.GETTEXT(30209), _COPYIMAGES))       
+            menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
+            menu.append((utils.GETTEXT(30216), _SHOWIMAGE))    
+   
 
         menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
         menu.append((utils.GETTEXT(30048), _STD_SETTINGS))
+
 
     elif window == 10000: #Home screen
         #menu.append((utils.GETTEXT(30053), _LAUNCH_SF))
         #menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
         pass
+
 
     if len(menu) == 0:
         doStandard(useScript=False)
@@ -260,7 +269,7 @@ def doMenu():
     if dialog:
         choice = menus.selectMenu(utils.TITLE, menu)
     else:
-        choice = menus.showMenu(utils.ADDONID, menu, utils.HELIX)
+        choice = menus.showMenu(utils.ADDONID, menu)
 
 
     if choice == _STD_SETTINGS:
@@ -346,6 +355,14 @@ def doMenu():
         xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
         xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
         xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
+
+
+    if choice == _SHOWIMAGE:
+        if not fanart:
+            fanart = thumb
+
+        import viewer
+        viewer.show(fanart, thumb, utils.ADDONID)
 
 
 def main():

@@ -23,6 +23,8 @@ import xbmcgui
 import xbmcaddon
 import os
 
+import utils
+
 ACTION_BACK          = 92
 ACTION_PARENT_DIR    = 9
 ACTION_PREVIOUS_MENU = 10
@@ -34,29 +36,38 @@ ACTION_RIGHT = 2
 ACTION_UP    = 3
 ACTION_DOWN  = 4
 
+USE_HELIX = (not utils.FRODO) and (not utils.GOTHAM)
 
 class ContextMenu(xbmcgui.WindowXMLDialog):
 
-    def __new__(cls, addonID, menu, helix):
-        if helix:
+    def __new__(cls, addonID, menu):
+        if USE_HELIX:
             return super(ContextMenu, cls).__new__(cls, 'contextmenu_helix.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
         else:
             return super(ContextMenu, cls).__new__(cls, 'contextmenu.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
         
 
-    def __init__(self, addonID, menu, helix):
+    def __init__(self, addonID, menu):
         super(ContextMenu, self).__init__()
         self.menu = menu
 
         
     def onInit(self):
-        nItem  = len(self.menu)
-        height = 58 + (nItem * 38)
+        line   = 38
+        spacer = 20
+        delta  = 0 
+
+        nItem = len(self.menu)
+        if nItem > 16:
+            nItem = 16
+            delta = 1
+
+        height = (line+spacer) + (nItem*line)
 
         self.getControl(5001).setHeight(height)
             
         self.list = self.getControl(3000)
-        self.list.setHeight(height-20)
+        self.list.setHeight(height-spacer-(delta*line))
 
         newY = 360 - (height/2)
 
@@ -99,8 +110,8 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
         pass
 
 
-def showMenu(addonID, menu, helix=False):
-    menu = ContextMenu(addonID, menu, helix)
+def showMenu(addonID, menu):
+    menu = ContextMenu(addonID, menu)
     menu.doModal()
     params = menu.params
     del menu
