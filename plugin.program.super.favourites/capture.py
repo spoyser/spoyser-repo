@@ -18,15 +18,24 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
+#try:
+#    import utils
+#except:
+#    doStandard(useScript=False)
+#    return  
+
+
 
 import xbmc
 import xbmcgui
+import xbmcaddon
 import os
 
 
-_STD_SETTINGS = 0
+_STD_MENU     = 0
 _ADDTOFAVES   = 100
 _SF_SETTINGS  = 200
+_SETTINGS     = 250
 _LAUNCH_SF    = 300
 _SEARCH       = 400
 _SEARCHDEF    = 500
@@ -35,6 +44,21 @@ _DOWNLOAD     = 700
 _PLAYLIST     = 800
 _COPYIMAGES   = 900
 _SHOWIMAGE    = 1000
+
+
+import utils
+ADDON   = utils.ADDON
+ADDONID = utils.ADDONID
+
+MENU_ADDTOFAVES     = ADDON.getSetting('MENU_ADDTOFAVES')     == 'true'
+MENU_DEF_ISEARCH    = ADDON.getSetting('MENU_DEF_ISEARCH')    == 'true'
+MENU_ISEARCH        = ADDON.getSetting('MENU_ISEARCH')        == 'true'
+MENU_IRECOMMEND     = ADDON.getSetting('MENU_IRECOMMEND')     == 'true'
+MENU_COPY_PROPS     = ADDON.getSetting('MENU_COPY_PROPS')     == 'true'
+MENU_VIEW_IMAGES    = ADDON.getSetting('MENU_VIEW_IMAGES')    == 'true'
+MENU_SF_SETTINGS    = ADDON.getSetting('MENU_SF_SETTINGS')    == 'true'
+MENU_ADDON_SETTINGS = ADDON.getSetting('MENU_ADDON_SETTINGS') == 'true'
+MENU_STD_MENU       = ADDON.getSetting('MENU_STD_MENU')       == 'true'
 
 
 def getDefaultSearch():
@@ -57,7 +81,6 @@ def doStandard(useScript=True):
 
     if useScript:
         #open menu via script to prevent animation locking up (due to bug in XBMC)
-        import utils    
         path   = utils.HOME
         script = os.path.join(path, 'standardMenu.py')
         cmd    = 'AlarmClock(%s,RunScript(%s),%d,True)' % ('menu', script, 0)
@@ -68,7 +91,6 @@ def doStandard(useScript=True):
 
 def copyFave(name, thumb, cmd):
     import favourite
-    import utils
 
     text = utils.GETTEXT(30019)
 
@@ -116,19 +138,13 @@ def getDescription():
     return ''
 
 
-def doMenu():
-    try:
-        import utils
-    except:
-        doStandard(useScript=False)
-        return  
+def doMenu():     
+    DEBUG = ADDON.getSetting('DEBUG') == 'true'
+    if DEBUG:
+        window = xbmcgui.getCurrentWindowId()
+        utils.DialogOK('Current Window ID %d' % window)  
 
-    DEBUG = utils.ADDON.getSetting('DEBUG') == 'true'
-    #if DEBUG:
-    #    window = xbmcgui.getCurrentWindowId()
-    #    utils.DialogOK('Current Window ID %d' % window)  
-
-    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]
+    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601, 2005]
     window = xbmcgui.getCurrentWindowId()
     utils.log('Window     : %d' % window)  
     if window-10000 not in active:
@@ -138,7 +154,7 @@ def doMenu():
     import menus
 
     # to prevent master profile setting being used in other profiles
-    if utils.ADDON.getSetting('CONTEXT') != 'true':
+    if ADDON.getSetting('CONTEXT') != 'true':
         doStandard(useScript=False)
         return
 
@@ -146,7 +162,7 @@ def doMenu():
     path   = xbmc.getInfoLabel('ListItem.FolderPath')
 
     #ignore if in Super Favourites
-    if (utils.ADDONID in folder) or (utils.ADDONID in path):
+    if (ADDONID in folder) or (ADDONID in path):
         doStandard(useScript=False)
         return
         
@@ -166,18 +182,18 @@ def doMenu():
     if not thumb:
         thumb = icon
 
+    if not fanart:
+        fanart = thumb
+
     try:    file = xbmc.Player().getPlayingFile()
     except: file = None
 
     isStream = False
-    if file:
+   
+    if hasattr(xbmc.Player(), 'isInternetStream'):
+        isStream = xbmc.Player().isInternetStream()
+    elif file:
         isStream = file.startswith('http://')
-
-    #GOTHAM only 
-    #if hasattr(xbmc.Player(), 'isInternetStream'):
-    #    isStream = xbmc.Player().isInternetStream()
-    #elif file:
-    #    isStream = file.startswith('http://')
 
     if window == 10003: #filemanager
         control = 0
@@ -215,81 +231,83 @@ def doMenu():
     utils.log('File       : %s' % file)
     utils.log('IsStream   : %s' % isStream)
 
-    menu = []
+    menu       = []
+    localAddon = None
 
-    #if (len(menu) == 0) and window == 12005: #video playing
-        #if isStream:
-        #    menu.append(('Download  %s' % label, _DOWNLOAD))
-        #    menu.append(('Show Playlist',        _PLAYLIST))
-        #else:
-        #    return doStandard()
-        #cancel download feature for now
-        #return doStandard()
+    #if xbmc.getCondVisibility('Player.HasVideo') == 1:
+    #    if isStream:
+    #        menu.append(('Download  %s' % label, _DOWNLOAD))
+    #        menu.append(('Now playing...',       _PLAYLIST))
+
     
-    if (len(menu) == 0) and len(path) > 0:
-        menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
+    if len(path) > 0:
+        if MENU_ADDTOFAVES: menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
+
+
+        if MENU_ADDON_SETTINGS:
+            localAddon = utils.FindAddon(path)
+            if localAddon:
+                name = xbmcaddon.Addon(localAddon).getAddonInfo('name')
+                menu.append((utils.GETTEXT(30094) % name, _SETTINGS))
        
 
-        if utils.ADDON.getSetting('SHOWSS') == 'true':           
+        if MENU_DEF_ISEARCH:           
             default = getDefaultSearch()
             if len(default) > 0:
                 menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
 
 
-            menu.append((utils.GETTEXT(30054), _SEARCH))
+        if MENU_ISEARCH: menu.append(   (utils.GETTEXT(30054), _SEARCH))
+        if MENU_IRECOMMEND: menu.append((utils.GETTEXT(30088), _RECOMMEND))
 
 
-        if utils.ADDON.getSetting('SHOWRECOMMEND') == 'true':
-            menu.append((utils.GETTEXT(30088), _RECOMMEND))
-
-
-        if len(thumb) > 0 or len(fanart) > 0:
-            menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
-            menu.append((utils.GETTEXT(30216), _SHOWIMAGE))    
+        if MENU_COPY_PROPS:
+            if len(thumb) > 0 or len(fanart) > 0:
+                menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
+                if MENU_VIEW_IMAGES: menu.append((utils.GETTEXT(30216), _SHOWIMAGE))
+            else:
+                if len(description) > 0: menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
    
 
-        menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
-        menu.append((utils.GETTEXT(30048), _STD_SETTINGS))
+    if MENU_SF_SETTINGS: menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
+    if MENU_STD_MENU:    menu.append((utils.GETTEXT(30048), _STD_MENU))
 
 
-    elif window == 10000: #Home screen
-        #menu.append((utils.GETTEXT(30053), _LAUNCH_SF))
-        #menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
-        pass
-
-
-    if len(menu) == 0:
+    if len(menu) == 0 or (len(menu) == 1 and MENU_STD_MENU):
         doStandard(useScript=False)
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
 
-    dialog = utils.ADDON.getSetting('CONTEXT_STYLE') == '1'
+    dialog = ADDON.getSetting('CONTEXT_STYLE') == '1'    
 
     if dialog:
         choice = menus.selectMenu(utils.TITLE, menu)
     else:
-        choice = menus.showMenu(utils.ADDONID, menu)
+        choice = menus.showMenu(ADDONID, menu)
 
 
-    if choice == _STD_SETTINGS:
-        doStandard()
-        return
+    #if choice == _STD_MENU:
+    #    doStandard()
+    #    return
 
     xbmc.executebuiltin('Dialog.Close(all, true)')
 
     if choice == _PLAYLIST:
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
 
-    #if choice == _DOWNLOAD: 
-    #    import download
-    #    download.download(file, 'c:\\temp\\file.mpg', 'Super Favourites')
+    if choice == _DOWNLOAD: 
+        import download
+        download.doDownload(file, 'c:\\temp\\file.mpg', 'Super Favourites', '', True)
 
-    if choice == _STD_SETTINGS:
+    if choice == _STD_MENU:
         doStandard()
 
     if choice == _SF_SETTINGS:
         utils.ADDON.openSettings()
+
+    if choice == _SETTINGS:
+        xbmcaddon.Addon(localAddon).openSettings()
 
     if choice == _ADDTOFAVES:
         import favourite
@@ -344,38 +362,38 @@ def doMenu():
         else:
             mode = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
             
-        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, utils.ADDONID, mode, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
+        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, ADDONID, mode, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
 
         activateCommand(cmd)
 
-    if choice == _COPYIMAGES:
-        if not fanart:
-            fanart = thumb
-
+    if choice == _COPYIMAGES:        
         xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
         xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
         xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
 
 
     if choice == _SHOWIMAGE:
-        if not fanart:
-            fanart = thumb
-
         import viewer
-        viewer.show(fanart, thumb, utils.ADDONID)
+        viewer.show(fanart, thumb, ADDONID)
 
 
 def main():
     if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') == 'true':
         return
 
+    if ADDON.getSetting('MENU_MSG') == 'true':
+        ADDON.setSetting('MENU_MSG', 'false')
+        if utils.DialogYesNo(utils.GETTEXT(35015), utils.GETTEXT(35016), utils.GETTEXT(35017)):
+            utils.openSettings(ADDONID, 2.1)
+            return
+    
     doMenu()    
 
 
 try:        
     main()
 except Exception, e:
-    import utils
+    print str(e)
     utils.log('Exception in capture.py %s' % str(e))
 
 xbmc.sleep(1000)

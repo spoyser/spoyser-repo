@@ -415,6 +415,24 @@ def Clean(name):
 
     return name
 
+
+def FindAddon(item):
+    try:
+        try:    addon = re.compile('"(.+?)"').search(item).group(1)
+        except: addon = item
+
+        addon = addon.replace('plugin://', '')
+        addon = addon.replace('/', '')
+        addon = addon.split('?', 1)[0]
+        
+        if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
+            addon = None
+    except:
+        addon = None
+
+    return addon
+
+
 #logic for setting focus inspired by lambda
 def openSettings(addonID, focus=None):
     if not focus:            

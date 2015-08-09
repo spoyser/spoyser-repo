@@ -43,17 +43,17 @@ def getResponse(url, size, referrer):
         return None
 
 
-def download(url, dest, title=None):
+def download(url, dest, title, referrer, showProgress):
     if not title:
         title  = 'XBMC Download'
                 
     script = inspect.getfile(inspect.currentframe())    
-    cmd    = 'RunScript(%s, %s, %s, %s)' % (script, url, dest, title)
+    cmd    = 'RunScript(%s, %s, %s, %s)' % (script, url, dest, title, referrer, showProgress)
     
     xbmc.executebuiltin(cmd)
 
 
-def doDownload(url, dest, title, referrer=''):    
+def doDownload(url, dest, title, referrer='', showProgress=False):    
     resp = getResponse(url, 0, referrer)
     
     if not resp:
@@ -97,6 +97,8 @@ def doDownload(url, dest, title, referrer=''):
             downloaded += len(c)
         percent = min(100 * downloaded / content, 100)
         if percent >= notify:
+            if showProgress:
+                xbmc.executebuiltin( "XBMC.Notification(%s,%s,%d)" % ( title + ' - Download Progress - ' + notify +'%', dest, 10000))
             notify += 10
 
         chunk = None
@@ -171,5 +173,11 @@ def doDownload(url, dest, title, referrer=''):
 
 
 if __name__ == '__main__': 
-    if 'download.py' in sys.argv[0]:       
-        doDownload(sys.argv[1], sys.argv[2], sys.argv[3])
+    if 'download.py' in sys.argv[0]:    
+        url          = sys.argv[1]
+        dest         = sys.argv[2]
+        title        = sys.argv[3]
+        referrer     = sys.argv[4]
+        showProgress = sys.argv[5]
+            
+        doDownload(url, dest, title, referrer, showProgress.lower()=='true')

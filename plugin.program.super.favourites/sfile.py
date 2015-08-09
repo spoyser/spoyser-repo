@@ -1,5 +1,5 @@
 
-#       Copyright (C) 2013-
+#       Copyright (C) 2015
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -17,6 +17,7 @@
 #  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
 #
+#  this module provides a wrapper around the Kodi xbmcvfs class
 
 
 import xbmcvfs

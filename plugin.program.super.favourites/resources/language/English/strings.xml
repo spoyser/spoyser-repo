@@ -20,7 +20,7 @@
 	<string id="30019">Choose Super Folder to copy favourite to</string>
 	<string id="30020">Choose Super Folder to move favourite to</string>
 	<string id="30021">Please enter a new name for this favourite</string>	
-	<string id="30022">Display Settings</string>	
+	<string id="30022">Display</string>	
 	<string id="30023">Show new Super Folder item</string>	
 	<string id="30024">Show Kodi favourites item</string>			
 	<string id="30026">Quickstart hotkey</string>	
@@ -46,7 +46,6 @@
 	<string id="30047">Add to Super Favourites</string>
 	<string id="30048">Standard context menu</string>
 	<string id="30049">Super Favourites settings</string>
-	<string id="30050">Enable global Super Favourites menu</string>
 	<string id="30051">Show separator</string>
 	<string id="30052">Change playback mode</string>
 	<string id="30053">Launch Super Favourites</string>
@@ -66,7 +65,7 @@
 	<string id="30067">Edit Super Folder</string>
 	<string id="30068">Edit Super Favourite</string>
 	<string id="30069">Enter password to temporarily unlock %s</string>
-	<string id="30070">General Settings</string>
+	<string id="30070">General</string>
 	<string id="30071">Cache locked folder passwords for</string>	
 	<string id="30072">Never</string>	
 	<string id="30073">1 minute</string>	
@@ -86,8 +85,8 @@
 	<string id="30087">[I]Decolourize[/I]</string>	
 	<string id="30088">iRecommend</string>	
 	<string id="30089">          Remember history</string>	
-	<string id="30090">Movie Information</string>	
-	<string id="30091">Play Trailer</string>	
+	<string id="30090">Movie information</string>	
+	<string id="30091">Play trailer</string>	
 	<string id="30092">Trailer is no longer available</string>
 	<string id="30093">          Enable metadata</string>
 	<string id="30094">%s settings</string>
@@ -153,9 +152,6 @@
 	<string id="30155">No valid M3U playlist found at</string>	
 	<string id="30156">Please enter a name for this playlist</string>	
 	<string id="30157">          Show synopsis</string>	
-	<string id="30158">Menu style</string>
-	<string id="30159">Menu</string>
-	<string id="30160">Dialog</string>
 	<string id="30161">Other Features</string>	
 	<string id="30162">Autostart Super Favourites</string>	
 	<string id="30163">iRemember</string>	
@@ -210,5 +206,24 @@
 	<string id="30213">Sort favourites alphabetically</string>			
 	<string id="30214">          Quick select (may not return accurate recommendations)</string>	
 	<string id="30215">Perform an 'Also Watched' IMDB search using [I]%s[/I]</string>	
-	<string id="30216">View fullsize images</string>	
+	<string id="30216">View fullsize images</string>
+	
+	<string id="35000">Global Menu</string>
+	<string id="35001">Enable global Super Favourites menu</string>
+	<string id="35002">Style</string>
+	<string id="35003">Menu</string>
+	<string id="35004">Dialog</string>
+	<string id="35005">Menu Items</string>	
+	<string id="35006">Add to Super Favourites</string>
+	<string id="35007">Default iSearch</string>
+	<string id="35008">iSearch</string>
+	<string id="35009">iRecommend</string>
+	<string id="35010">Copy item properties</string>
+	<string id="35011">View item images</string>
+	<string id="35012">Super Favourite settings</string>
+	<string id="35013">Selected addon settings</string>
+	<string id="35014">Standard context menu</string>	
+	<string id="35015">The Super Favourites global menu is now configurable.</string>	
+	<string id="35016"></string>	
+	<string id="35017">Would you like to configure it now?</string>	
 </strings>

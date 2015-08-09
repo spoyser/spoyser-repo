@@ -317,21 +317,12 @@ def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
 
     menu.append((GETTEXT(30005), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _SETTINGS)))
 
-    try:
-        addon = re.compile('"(.+?)"').search(item).group(1)
-        addon = addon.replace('plugin://', '')
-        addon = addon.replace('/', '')
-        addon = addon.split('?', 1)[0]
+    addon = utils.FindAddon(item)
 
-        if addon == ADDONID:
-            return
+    if addon == None or addon == ADDONID:
+        return
         
-        if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
-            return
-        
-        menu.append((GETTEXT(30094) % xbmcaddon.Addon(addon).getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
-    except:
-        pass
+    menu.append((GETTEXT(30094) % xbmcaddon.Addon(addon).getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
 
 
 def addFavouriteMenuItem(menu, name, thumb, cmd, keyword):
@@ -1704,8 +1695,6 @@ def getMovieMenu(infolabels, menu=None):
         return menu
 
     menu.append((GETTEXT(30090), 'Action(Info)'))
-    menu.append((GETTEXT(30090), 'ExecuteBuiltin(ActivateWindow(12003))'))
-
 
     try:
         if 'trailer_url' in infolabels and len(infolabels['trailer_url']) > 0:   

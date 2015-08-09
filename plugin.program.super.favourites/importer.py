@@ -45,10 +45,10 @@ GETTEXT  = utils.GETTEXT
 def main(toImport):
     if toImport:
         doImport()
-        utils.openSettings(ADDONID, 3.6)
+        utils.openSettings(ADDONID, 4.6)
     else:
         doExport()
-        utils.openSettings(ADDONID, 3.7)
+        utils.openSettings(ADDONID, 4.7)
 
 
 def doImport():
