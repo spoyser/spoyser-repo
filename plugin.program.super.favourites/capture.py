@@ -182,9 +182,6 @@ def doMenu():
     if not thumb:
         thumb = icon
 
-    if not fanart:
-        fanart = thumb
-
     try:    file = xbmc.Player().getPlayingFile()
     except: file = None
 
@@ -366,13 +363,19 @@ def doMenu():
 
         activateCommand(cmd)
 
-    if choice == _COPYIMAGES:        
+    if choice == _COPYIMAGES:  
+        if not fanart:
+            fanart = thumb
+      
         xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
         xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
         xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
 
 
     if choice == _SHOWIMAGE:
+        if not fanart:
+            fanart = thumb
+
         import viewer
         viewer.show(fanart, thumb, ADDONID)
 
