@@ -384,7 +384,7 @@ def main():
     if ADDON.getSetting('MENU_MSG') == 'true':
         ADDON.setSetting('MENU_MSG', 'false')
         if utils.DialogYesNo(utils.GETTEXT(35015), utils.GETTEXT(35016), utils.GETTEXT(35017)):
-            utils.openSettings(ADDONID, 1.2)
+            utils.openSettings(ADDONID, 2.1)
             return
     
     doMenu()    

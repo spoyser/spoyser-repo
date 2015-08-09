@@ -67,6 +67,7 @@ MAJOR, MINOR = GetXBMCVersion()
 FRODO        = (MAJOR == 12) and (MINOR < 9)
 GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
 HELIX        = (MAJOR == 14) or (MAJOR == 13 and MINOR == 9)
+ISENGARD     = (MAJOR == 15) or (MAJOR == 14 and MINOR == 9)
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
@@ -441,10 +442,14 @@ def openSettings(addonID, focus=None):
     try:
         xbmc.executebuiltin('Addon.OpenSettings(%s)' % addonID)
 
-        page, ctrl = re.compile('(\d*)\.(\d*)').findall(str(focus))[0]
+        value1, value2 = re.compile('(\d*)\.(\d*)').findall(str(focus))[0]
 
-        xbmc.executebuiltin('SetFocus(%d)' % (int(page) + 200))
-        xbmc.executebuiltin('SetFocus(%d)' % (int(ctrl) + 100))
+        if ISENGARD:
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 100))
+        else:
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 200))
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 100))
 
     except:
         return
