@@ -444,12 +444,12 @@ def openSettings(addonID, focus=None):
 
         value1, value2 = re.compile('(\d*)\.(\d*)').findall(str(focus))[0]
 
-        if ISENGARD:
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 100))
-        else:
+        if FRODO:
             xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 200))
             xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 100))
+        else:
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 100))
 
     except:
         return
