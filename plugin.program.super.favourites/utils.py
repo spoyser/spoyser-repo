@@ -417,21 +417,36 @@ def Clean(name):
     return name
 
 
-def FindAddon(item):
+def findAddon(item):
     try:
         try:    addon = re.compile('"(.+?)"').search(item).group(1)
         except: addon = item
 
         addon = addon.replace('plugin://', '')
+        addon = addon.replace('script://', '')
         addon = addon.replace('/', '')
-        addon = addon.split('?', 1)[0]
-        
+        addon = addon.split('?', 1)[0]        
+
         if xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 0:
             addon = None
     except:
         addon = None
 
     return addon
+
+
+def getSettingsLabel(addon):
+    label = xbmcaddon.Addon(addon).getAddonInfo('name')
+    label = fix(label)
+    label = label.strip()
+
+    try:
+        if len(label) > 0:
+            return GETTEXT(30094) % label
+    except:
+        pass
+
+    return GETTEXT(30094) % GETTEXT(30217)
 
 
 #logic for setting focus inspired by lambda

@@ -50,6 +50,8 @@ import utils
 ADDON   = utils.ADDON
 ADDONID = utils.ADDONID
 
+GETTEXT = utils.GETTEXT
+
 MENU_ADDTOFAVES     = ADDON.getSetting('MENU_ADDTOFAVES')     == 'true'
 MENU_DEF_ISEARCH    = ADDON.getSetting('MENU_DEF_ISEARCH')    == 'true'
 MENU_ISEARCH        = ADDON.getSetting('MENU_ISEARCH')        == 'true'
@@ -92,7 +94,7 @@ def doStandard(useScript=True):
 def copyFave(name, thumb, cmd):
     import favourite
 
-    text = utils.GETTEXT(30019)
+    text = GETTEXT(30019)
 
     folder = utils.GetFolder(text)
     if not folder:
@@ -238,36 +240,36 @@ def doMenu():
 
     
     if len(path) > 0:
-        if MENU_ADDTOFAVES: menu.append((utils.GETTEXT(30047), _ADDTOFAVES))
+        if MENU_ADDTOFAVES: menu.append((GETTEXT(30047), _ADDTOFAVES))
 
 
-        if MENU_ADDON_SETTINGS:
-            localAddon = utils.FindAddon(path)
+        if MENU_ADDON_SETTINGS:          
+            localAddon = utils.findAddon(path)           
             if localAddon:
-                name = xbmcaddon.Addon(localAddon).getAddonInfo('name')
-                menu.append((utils.GETTEXT(30094) % name, _SETTINGS))
+                label = utils.getSettingsLabel(localAddon)
+                menu.append((label, _SETTINGS))
        
 
         if MENU_DEF_ISEARCH:           
             default = getDefaultSearch()
             if len(default) > 0:
-                menu.append((utils.GETTEXT(30098) % default, _SEARCHDEF))
+                menu.append((GETTEXT(30098) % default, _SEARCHDEF))
 
 
-        if MENU_ISEARCH: menu.append(   (utils.GETTEXT(30054), _SEARCH))
-        if MENU_IRECOMMEND: menu.append((utils.GETTEXT(30088), _RECOMMEND))
+        if MENU_ISEARCH: menu.append(   (GETTEXT(30054), _SEARCH))
+        if MENU_IRECOMMEND: menu.append((GETTEXT(30088), _RECOMMEND))
 
 
         if MENU_COPY_PROPS:
             if len(thumb) > 0 or len(fanart) > 0:
-                menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
-                if MENU_VIEW_IMAGES: menu.append((utils.GETTEXT(30216), _SHOWIMAGE))
+                menu.append((GETTEXT(30209), _COPYIMAGES))   
+                if MENU_VIEW_IMAGES: menu.append((GETTEXT(30216), _SHOWIMAGE))
             else:
-                if len(description) > 0: menu.append((utils.GETTEXT(30209), _COPYIMAGES))   
+                if len(description) > 0: menu.append((GETTEXT(30209), _COPYIMAGES))   
    
 
-    if MENU_SF_SETTINGS: menu.append((utils.GETTEXT(30049), _SF_SETTINGS))
-    if MENU_STD_MENU:    menu.append((utils.GETTEXT(30048), _STD_MENU))
+    if MENU_SF_SETTINGS: menu.append((GETTEXT(30049), _SF_SETTINGS))
+    if MENU_STD_MENU:    menu.append((GETTEXT(30048), _STD_MENU))
 
 
     if len(menu) == 0 or (len(menu) == 1 and MENU_STD_MENU):
@@ -386,7 +388,7 @@ def main():
 
     if ADDON.getSetting('MENU_MSG') == 'true':
         ADDON.setSetting('MENU_MSG', 'false')
-        if utils.DialogYesNo(utils.GETTEXT(35015), utils.GETTEXT(35016), utils.GETTEXT(35017)):
+        if utils.DialogYesNo(GETTEXT(35015), GETTEXT(35016), GETTEXT(35017)):
             utils.openSettings(ADDONID, 2.1)
             return
     

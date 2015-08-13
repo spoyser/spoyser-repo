@@ -317,12 +317,14 @@ def addGlobalMenuItem(menu, item, ignore, label, thumbnail, u, keyword):
 
     menu.append((GETTEXT(30005), 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], _SETTINGS)))
 
-    addon = utils.FindAddon(item)
+    addon = utils.findAddon(item)
 
     if addon == None or addon == ADDONID:
         return
+
+    label = utils.getSettingsLabel(addon)
         
-    menu.append((GETTEXT(30094) % xbmcaddon.Addon(addon).getAddonInfo('name'), 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
+    menu.append((label, 'XBMC.RunPlugin(%s?mode=%d&addon=%s)' % (sys.argv[0], _SETTINGS, urllib.quote_plus(addon))))
 
 
 def addFavouriteMenuItem(menu, name, thumb, cmd, keyword):

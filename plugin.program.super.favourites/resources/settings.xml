@@ -39,21 +39,21 @@
 	<category label="35000">
    	    <setting id="MENU_MSG"                    type="bool" default="true" visible="false"/>	
 		<setting id="CONTEXT"       label="35001" type="bool" default="true" />
-		<setting id="CONTEXT_STYLE" label="35002" type="enum" lvalues="35003|35004" visible="eq(-1,true)" />
+		<setting id="CONTEXT_STYLE" label="35002" type="enum" lvalues="35003|35004" visible1="eq(-1,true)" />
 		
-		<setting type="sep" visible="eq(-2,true)" />
+		<setting type="sep" visible1="eq(-2,true)" />
 		
-		<setting id="DUMMY"        label="35005" type="lsep" visible="eq(-3,true)" />
+		<setting id="DUMMY"        label="35005" type="lsep" visible1="eq(-3,true)" />
 		
-		<setting id="MENU_ADDTOFAVES"     label="35006" type="bool" default="true" visible="eq(-4,true)" />
-		<setting id="MENU_DEF_ISEARCH"    label="35007" type="bool" default="true" visible="eq(-5,true)" />
-		<setting id="MENU_ISEARCH"        label="35008" type="bool" default="true" visible="eq(-6,true)" />
-		<setting id="MENU_IRECOMMEND"     label="35009" type="bool" default="true" visible="eq(-7,true)" />
-		<setting id="MENU_COPY_PROPS"     label="35010" type="bool" default="true" visible="eq(-8,true)" />
-		<setting id="MENU_VIEW_IMAGES"    label="35011" type="bool" default="true" visible="eq(-9,true)" />
-		<setting id="MENU_SF_SETTINGS"    label="35012" type="bool" default="true" visible="eq(-10,true)" />
-		<setting id="MENU_ADDON_SETTINGS" label="35013" type="bool" default="true" visible="eq(-11,true)" />
-		<setting id="MENU_STD_MENU"       label="35014" type="bool" default="true" visible="eq(-12,true)" />
+		<setting id="MENU_ADDTOFAVES"     label="35006" type="bool" default="true" visible1="eq(-4,true)" />
+		<setting id="MENU_DEF_ISEARCH"    label="35007" type="bool" default="true" visible1="eq(-5,true)" />
+		<setting id="MENU_ISEARCH"        label="35008" type="bool" default="true" visible1="eq(-6,true)" />
+		<setting id="MENU_IRECOMMEND"     label="35009" type="bool" default="true" visible1="eq(-7,true)" />
+		<setting id="MENU_COPY_PROPS"     label="35010" type="bool" default="true" visible1="eq(-8,true)" />
+		<setting id="MENU_VIEW_IMAGES"    label="35011" type="bool" default="true" visible1="eq(-9,true)" />
+		<setting id="MENU_SF_SETTINGS"    label="35012" type="bool" default="true" visible1="eq(-10,true)" />
+		<setting id="MENU_ADDON_SETTINGS" label="35013" type="bool" default="true" visible1="eq(-11,true)" />
+		<setting id="MENU_STD_MENU"       label="35014" type="bool" default="true" visible1="eq(-12,true)" />
 		
 		<setting type="sep" visible="true" />
 	</category>>
