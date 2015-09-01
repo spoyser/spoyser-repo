@@ -96,7 +96,7 @@ def GetFave(property, path='', changeTitle=False):
         xbmc.sleep(100)
 
     xbmc.sleep(500)
-    return len(xbmc.getInfoLabel('Skin.String(OTT.Path)')) > 0
+    return len(xbmc.getInfoLabel('Skin.String(%s.Path)' % property)) > 0
 
 
 class Main:
@@ -215,9 +215,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
             if cmd.lower().startswith('activatewindow'):
                 cmd = cmd.replace('")', '",return)')
 
+            fanart = favourite.getFanart(cmd) 
+            desc   = favourite.getOption(cmd, 'desc')
+
             cmd = favourite.removeSFOptions(cmd)
 
-            listitem.setProperty('Path', cmd)
+            listitem.setProperty('Path',   cmd)
+            listitem.setProperty('Fanart', fanart)
+            listitem.setProperty('Desc',   desc)
             
             if len(fave) > 3 and fave[3]:
                 listitem.setProperty('IsFolder', 'true')
@@ -225,9 +230,9 @@ class MainGui(xbmcgui.WindowXMLDialog):
             self.favList.addItem(listitem)
             
         # add a dummy item with no action assigned
-        listitem = xbmcgui.ListItem(GETTEXT(30101))
-        listitem.setProperty('Path', 'noop')
-        self.favList.addItem(listitem)
+        #listitem = xbmcgui.ListItem(GETTEXT(30101))
+        #listitem.setProperty('Path', 'noop')
+        #self.favList.addItem(listitem)
         self.setFocus(self.favList)
 
 
@@ -301,7 +306,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
                 favPath  = self.favList.getSelectedItem().getProperty('Path')
                 favLabel = self.favList.getSelectedItem().getLabel()
                 favIcon  = self.favList.getSelectedItem().getProperty('Icon')
-                isFolder = self.favList.getSelectedItem().getProperty('IsFolder')
+                isFolder = self.favList.getSelectedItem().getProperty('IsFolder')               
+               
+                if not isFolder:
+                    fanart = self.favList.getSelectedItem().getProperty('Fanart')
+                    desc   = self.favList.getSelectedItem().getProperty('Desc')
+
+                    favPath = favourite.updateSFOption(favPath, 'fanart', fanart)
+                    favPath = favourite.updateSFOption(favPath, 'desc',   desc)            
 
                 if favLabel.endswith(GETTEXT(30102)):
                     favLabel = favLabel.replace(GETTEXT(30102), '')
