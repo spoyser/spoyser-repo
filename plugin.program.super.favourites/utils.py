@@ -177,9 +177,11 @@ def verifySuperSearch():
         #patch any changes
         xml = sfile.read(dst)
 
-        xml = xml.replace('1channel/?mode=7000', '1channel/?mode=Search')
-        xml = xml.replace('plugin.video.genesis/?action=actors_movies', 'plugin.video.genesis/?action=people_movies')
-        xml = xml.replace('plugin.video.genesis/?action=actors_shows',  'plugin.video.genesis/?action=people_shows')
+        xml = xml.replace('is/?action=movies_search&', 'is/?action=movieSearch&')
+        xml = xml.replace('is/?action=people_movies&', 'is/?action=moviePerson&')
+        xml = xml.replace('is/?action=shows_search&',  'is/?action=tvSearch&')
+        xml = xml.replace('is/?action=people_shows&',  'is/?action=tvPerson&')
+
 
         f = sfile.file(dst, 'w')
         f.write(xml)            

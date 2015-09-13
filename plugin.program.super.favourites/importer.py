@@ -1,5 +1,5 @@
 #
-#       Copyright (C) 2014
+#       Copyright (C) 2014-
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -35,12 +35,14 @@ ADDON    = utils.ADDON
 ADDONID  = utils.ADDONID
 HOME     = xbmc.translatePath(ADDON.getAddonInfo('profile')) #has to be a real path
 ROOT     = utils.ROOT
-REMOTE   = ADDON.getSetting('REMOTE').lower() == 'true'
-LOCATION = ADDON.getSetting('LOCATION')
 TITLE    = utils.TITLE
 
-
 GETTEXT  = utils.GETTEXT
+
+REMOTE       = ADDON.getSetting('REMOTE').lower() == 'true'
+LOCATION     = ADDON.getSetting('LOCATION')
+IMPORT_RESET = ADDON.getSetting('IMPORT_RESET').lower() == 'true'
+
  
 def main(toImport):
     if toImport:
@@ -54,6 +56,11 @@ def main(toImport):
 def doImport():
     try:
         success = False
+
+        if IMPORT_RESET:
+            profile = os.path.join(ROOT, 'Super Favourites')
+            try:    sfile.rmtree(profile)
+            except: pass
 
         if REMOTE:
             success = _doImportFromRemote()
@@ -85,7 +92,8 @@ def _doImportFromRemote():
         dp = utils.Progress(TITLE, line1 = GETTEXT(30140) % GETTEXT(30000), line2 = location.replace('%20', ' '), line3 = GETTEXT(30141))
 
         import download
-        download.doDownload(location, file, TITLE)
+        import urllib
+        download.doDownload(urllib.quote_plus(location), urllib.quote_plus(file), urllib.quote_plus(TITLE), quiet=True)
 
         if os.path.exists(file):
             success = extractAll(file, dp, location.replace('%20', ' '))

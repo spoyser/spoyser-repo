@@ -18,12 +18,6 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-#try:
-#    import utils
-#except:
-#    doStandard(useScript=False)
-#    return  
-
 
 
 import xbmc
@@ -45,10 +39,13 @@ _PLAYLIST     = 800
 _COPYIMAGES   = 900
 _SHOWIMAGE    = 1000
 
+_EXTRABASE    = 10000
+
 
 import utils
 ADDON   = utils.ADDON
 ADDONID = utils.ADDONID
+ROOT    = utils.ROOT
 
 GETTEXT = utils.GETTEXT
 
@@ -61,6 +58,26 @@ MENU_VIEW_IMAGES    = ADDON.getSetting('MENU_VIEW_IMAGES')    == 'true'
 MENU_SF_SETTINGS    = ADDON.getSetting('MENU_SF_SETTINGS')    == 'true'
 MENU_ADDON_SETTINGS = ADDON.getSetting('MENU_ADDON_SETTINGS') == 'true'
 MENU_STD_MENU       = ADDON.getSetting('MENU_STD_MENU')       == 'true'
+MENU_EDITFAVE       = ADDON.getSetting('MENU_EDITFAVE')       == 'true'
+MENU_PLUGINS        = ADDON.getSetting('MENU_PLUGINS')        == 'true'
+
+
+def getText(title, text=''):
+    if text == None:
+        text = ''
+
+    kb = xbmc.Keyboard(text.strip(), title)
+    kb.doModal()
+
+    if not kb.isConfirmed():
+        return None
+
+    text = kb.getText().strip()
+
+    if len(text) < 1:
+        return None
+
+    return text
 
 
 def getDefaultSearch():
@@ -100,8 +117,14 @@ def copyFave(name, thumb, cmd):
     if not folder:
         return False
   
-    file  = os.path.join(folder, utils.FILENAME)    
+    file  = os.path.join(folder, utils.FILENAME)   
 
+    if MENU_EDITFAVE:
+        name = getText(GETTEXT(30021), name)
+        
+    if not name:
+        return False
+    
     fave = [name, thumb, cmd] 
   
     return favourite.copyFave(file, fave)
@@ -140,20 +163,62 @@ def getDescription():
     return ''
 
 
-def doMenu():     
+def getPlugins():
+    if not MENU_PLUGINS:
+        return
+
+    import os
+
+    path = xbmc.translatePath(os.path.join(ROOT, 'Plugins'))
+    sys.path.insert(0, path)
+
+    plugin  = []
+
+    import sfile
+    files = sfile.glob(path)
+
+    for name in files:
+        name = name.rsplit(os.sep, 1)[1]
+        if name.rsplit('.', 1)[-1] == 'py':
+            plugin.append(name .rsplit('.', 1)[0])
+
+    plugins = map(__import__, plugin)
+
+    return plugins 
+
+
+def addPlugins(menu, plugins, params, base):
+    offset = 0
+    for plugin in plugins:
+        items = None
+        if hasattr(plugin, 'add') and hasattr(plugin, 'process'):
+            try :   items = plugin.add(params)
+            except: items = None
+
+        if items:
+            if not isinstance(items, list):
+                items = [items]
+            for item in items:
+                menu.append((item, base+offset))
+                offset += 1
+
+
+        offset = 0
+        base  += 1000
+
+
+def doMenu():
+    window = xbmcgui.getCurrentWindowId()
+
     DEBUG = ADDON.getSetting('DEBUG') == 'true'
     if DEBUG:
-        window = xbmcgui.getCurrentWindowId()
-        utils.DialogOK('Current Window ID %d' % window)  
+        utils.DialogOK('Current Window ID %d' % window)
 
-    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601, 2005]
-    window = xbmcgui.getCurrentWindowId()
+    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]#, 2005] 12005 is video window
     utils.log('Window     : %d' % window)  
     if window-10000 not in active:
         doStandard(useScript=False)
         return
-
-    import menus
 
     # to prevent master profile setting being used in other profiles
     if ADDON.getSetting('CONTEXT') != 'true':
@@ -171,10 +236,9 @@ def doMenu():
     choice   = 0
     label    = xbmc.getInfoLabel('ListItem.Label')
     filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
-    name     = xbmc.getInfoLabel('ListItem.Label')
     thumb    = xbmc.getInfoLabel('ListItem.Thumb')    
     icon     = xbmc.getInfoLabel('ListItem.ActualIcon')    
-    #thumb    = xbmc.getInfoLabel('ListItem.Art(thumb)')
+    #thumb   = xbmc.getInfoLabel('ListItem.Art(thumb)')
     playable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     fanart   = xbmc.getInfoLabel('ListItem.Art(fanart)')
@@ -192,7 +256,7 @@ def doMenu():
     if hasattr(xbmc.Player(), 'isInternetStream'):
         isStream = xbmc.Player().isInternetStream()
     elif file:
-        isStream = file.startswith('http://')
+        isStream = file.startswith('http')
 
     if window == 10003: #filemanager
         control = 0
@@ -204,9 +268,9 @@ def doMenu():
         if control == 0:
             return doStandard()
 
-        name     = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
+        label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
         root     = xbmc.getInfoLabel('Container(%d).ListItem.Path'  % control)
-        path     = root + name
+        path     = root + label
         isFolder = True
         thumb    = 'DefaultFolder.png'
         #if not path.endswith(os.sep):
@@ -216,19 +280,24 @@ def doMenu():
         path     = path.replace('\\', '\\\\')
         filename = filename.replace('\\', '\\\\')
 
+    params                = {}
+    params['label']       = label
+    params['folder']      = folder
+    params['path']        = path
+    params['filename']    = filename
+    params['thumb']       = thumb
+    params['icon']        = icon
+    params['fanart']      = fanart
+    params['window']      = window
+    params['isplayable']  = playable
+    params['isfolder']    = isFolder
+    params['file']        = file
+    params['isstream']    = isStream
+    params['description'] = desc
+
     utils.log('**** Context Menu Information ****')
-    utils.log('Label      : %s' % label)
-    utils.log('Folder     : %s' % folder) 
-    utils.log('Path       : %s' % path) 
-    utils.log('Filename   : %s' % filename)
-    utils.log('Name       : %s' % name)    
-    utils.log('Thumb      : %s' % thumb)
-    utils.log('Fanart     : %s' % fanart)   
-    utils.log('Window     : %d' % window)  
-    utils.log('IsPlayable : %s' % playable)
-    utils.log('IsFolder   : %s' % isFolder)
-    utils.log('File       : %s' % file)
-    utils.log('IsStream   : %s' % isStream)
+    for key in params:
+        utils.log('%s\t\t: %s' % (key, params[key]))
 
     menu       = []
     localAddon = None
@@ -238,16 +307,24 @@ def doMenu():
     #        menu.append(('Download  %s' % label, _DOWNLOAD))
     #        menu.append(('Now playing...',       _PLAYLIST))
 
-    
+    plugins    = []
+    try:
+        plugins = getPlugins()
+        addPlugins(menu, plugins, params, _EXTRABASE)
+    except Exception, e:
+        utils.log('Error adding plugins : %s' % str(e))
+        
     if len(path) > 0:
-        if MENU_ADDTOFAVES: menu.append((GETTEXT(30047), _ADDTOFAVES))
+
+        if MENU_ADDTOFAVES:
+            menu.append((GETTEXT(30047), _ADDTOFAVES))
 
 
         if MENU_ADDON_SETTINGS:          
             localAddon = utils.findAddon(path)           
             if localAddon:
-                label = utils.getSettingsLabel(localAddon)
-                menu.append((label, _SETTINGS))
+                name = utils.getSettingsLabel(localAddon)
+                menu.append((name, _SETTINGS))
        
 
         if MENU_DEF_ISEARCH:           
@@ -268,29 +345,44 @@ def doMenu():
                 if len(description) > 0: menu.append((GETTEXT(30209), _COPYIMAGES))   
    
 
-    if MENU_SF_SETTINGS: menu.append((GETTEXT(30049), _SF_SETTINGS))
-    if MENU_STD_MENU:    menu.append((GETTEXT(30048), _STD_MENU))
+    if MENU_SF_SETTINGS:
+        menu.append((GETTEXT(30049), _SF_SETTINGS))
+
+    if window <> 10000: #Home
+        if MENU_STD_MENU:
+            menu.append((GETTEXT(30048), _STD_MENU))
 
 
-    if len(menu) == 0 or (len(menu) == 1 and MENU_STD_MENU):
+    if len(menu) == 0 or (len(menu) == 1 and MENU_STD_MENU and window <> 10000):
         doStandard(useScript=False)
         return
 
     xbmcgui.Window(10000).setProperty('SF_MENU_VISIBLE', 'true')
 
-    dialog = ADDON.getSetting('CONTEXT_STYLE') == '1'    
+    dialog = ADDON.getSetting('CONTEXT_STYLE') == '1' 
+
+    import menus
 
     if dialog:
         choice = menus.selectMenu(utils.TITLE, menu)
     else:
         choice = menus.showMenu(ADDONID, menu)
 
-
-    #if choice == _STD_MENU:
-    #    doStandard()
-    #    return
-
     xbmc.executebuiltin('Dialog.Close(all, true)')
+
+    utils.log('selection\t\t: %s' % choice)
+    
+    if choice >= _EXTRABASE:       
+        module = (choice - _EXTRABASE) / 1000
+        option = (choice - _EXTRABASE) % 1000
+
+        utils.log('plugin\t\t: %s' % module)
+        utils.log('option\t\t: %s' % option)
+
+        try:    
+            plugins[module].process(option, params)
+        except Exception, e:
+            utils.log('Error processing plugin: %s' % str(e))
 
     if choice == _PLAYLIST:
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
@@ -331,15 +423,15 @@ def doMenu():
 
         if isFolder:
             cmd = cmd.replace('")', '",return)')
-       
-        copyFave(name, thumb, cmd)
+
+        copyFave(label, thumb, cmd)
 
     if choice == _LAUNCH_SF:
         utils.LaunchSF()
 
     if choice in [_SEARCH, _SEARCHDEF, _RECOMMEND]:
         if utils.ADDON.getSetting('STRIPNUMBERS') == 'true':
-            name = utils.Clean(name)
+            label = utils.Clean(label)
 
         thumb  = thumb  if len(thumb)  > 0 else 'null'
         fanart = fanart if len(fanart) > 0 else 'null'
@@ -361,7 +453,7 @@ def doMenu():
         else:
             mode = _SUPERSEARCH if (choice == _SEARCH) else _SUPERSEARCHDEF
             
-        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, ADDONID, mode, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
+        cmd = 'ActivateWindow(%d,"plugin://%s/?mode=%d&keyword=%s&image=%s&fanart=%s")' % (window, ADDONID, mode, urllib.quote_plus(label), urllib.quote_plus(thumb), urllib.quote_plus(fanart))
 
         activateCommand(cmd)
 
@@ -392,14 +484,14 @@ def main():
             utils.openSettings(ADDONID, 2.1)
             return
     
+    xbmc.executebuiltin('Dialog.Close(all, true)')
     doMenu()    
 
 
 try:        
     main()
 except Exception, e:
-    print str(e)
     utils.log('Exception in capture.py %s' % str(e))
 
-xbmc.sleep(1000)
+xbmc.sleep(500)
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

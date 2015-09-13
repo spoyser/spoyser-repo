@@ -208,6 +208,7 @@
 	<string id="30215">Perform an 'Also Watched' IMDB search using [I]%s[/I]</string>	
 	<string id="30216">View fullsize images</string>
 	<string id="30217">Addon</string>	
+	<string id="30218">Clear current Super Favourites when importing</string>		
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -227,4 +228,6 @@
 	<string id="35015">The Super Favourites global menu is now configurable.</string>	
 	<string id="35016"></string>	
 	<string id="35017">Would you like to configure it now?</string>	
+	<string id="35018">Edit name when adding to Super Favourites</string>
+	<string id="35019">Additional addon items</string>	
 </strings>

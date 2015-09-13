@@ -29,7 +29,7 @@ def exists(filename):
 
 def isfile(filename):
     if not exists(filename):
-        raise Exception('sfile.isFile error %s does not exists' % filename)
+        raise Exception('sfile.isfile error %s does not exists' % filename)
 
     import stat
     return stat.S_ISREG(xbmcvfs.Stat(filename).st_mode())
@@ -37,7 +37,7 @@ def isfile(filename):
 
 def isdir(folder):
     if not exists(folder):
-        raise Exception('sfile.isDdir error %s does not exists' % folder)
+        raise Exception('sfile.isdir error %s does not exists' % folder)
 
     import stat
     return stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode())

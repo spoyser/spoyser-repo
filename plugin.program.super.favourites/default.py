@@ -36,7 +36,6 @@ import cache
 import sfile
 
 
-
 ADDONID  = utils.ADDONID
 ADDON    = utils.ADDON
 HOME     = utils.HOME
@@ -1852,6 +1851,8 @@ def externalSearch():
 def iHistoryBrowse():
     items = history.browse()
 
+    items = sorted(items, key=lambda x: x[0].lower())
+
     for item in items:
         label  = item[0]
         thumb  = item[1]
@@ -2780,24 +2781,19 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder, totalItems=totalItems)
 
-   
-def get_params(p):
-    param=[]
-    paramstring=p
-    if len(paramstring)>=2:
-        params=p
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
 
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = split[1]
+
+    return params
+   
 
 params = get_params(sys.argv[2])
 

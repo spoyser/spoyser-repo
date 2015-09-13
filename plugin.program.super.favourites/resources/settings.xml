@@ -39,21 +39,23 @@
 	<category label="35000">
    	    <setting id="MENU_MSG"                    type="bool" default="true" visible="false"/>	
 		<setting id="CONTEXT"       label="35001" type="bool" default="true" />
-		<setting id="CONTEXT_STYLE" label="35002" type="enum" lvalues="35003|35004" visible1="eq(-1,true)" />
+		<setting id="CONTEXT_STYLE" label="35002" type="enum" lvalues="35003|35004" />
+		<setting id="MENU_EDITFAVE" label="35018" type="bool" default="false" />
 		
-		<setting type="sep" visible1="eq(-2,true)" />
+		<setting type="sep" />
 		
-		<setting id="DUMMY"        label="35005" type="lsep" visible1="eq(-3,true)" />
+		<setting id="DUMMY"        label="35005" type="lsep" />
 		
-		<setting id="MENU_ADDTOFAVES"     label="35006" type="bool" default="true" visible1="eq(-4,true)" />
-		<setting id="MENU_DEF_ISEARCH"    label="35007" type="bool" default="true" visible1="eq(-5,true)" />
-		<setting id="MENU_ISEARCH"        label="35008" type="bool" default="true" visible1="eq(-6,true)" />
-		<setting id="MENU_IRECOMMEND"     label="35009" type="bool" default="true" visible1="eq(-7,true)" />
-		<setting id="MENU_COPY_PROPS"     label="35010" type="bool" default="true" visible1="eq(-8,true)" />
-		<setting id="MENU_VIEW_IMAGES"    label="35011" type="bool" default="true" visible1="eq(-9,true)" />
-		<setting id="MENU_SF_SETTINGS"    label="35012" type="bool" default="true" visible1="eq(-10,true)" />
-		<setting id="MENU_ADDON_SETTINGS" label="35013" type="bool" default="true" visible1="eq(-11,true)" />
-		<setting id="MENU_STD_MENU"       label="35014" type="bool" default="true" visible1="eq(-12,true)" />
+		<setting id="MENU_ADDTOFAVES"     label="35006" type="bool" default="true" />
+		<setting id="MENU_DEF_ISEARCH"    label="35007" type="bool" default="true" />
+		<setting id="MENU_ISEARCH"        label="35008" type="bool" default="true" />
+		<setting id="MENU_IRECOMMEND"     label="35009" type="bool" default="true" />
+		<setting id="MENU_COPY_PROPS"     label="35010" type="bool" default="true" />
+		<setting id="MENU_VIEW_IMAGES"    label="35011" type="bool" default="true" />
+		<setting id="MENU_SF_SETTINGS"    label="35012" type="bool" default="true" />
+		<setting id="MENU_ADDON_SETTINGS" label="35013" type="bool" default="true" />
+		<setting id="MENU_STD_MENU"       label="35014" type="bool" default="true" />
+		<setting id="MENU_PLUGINS"        label="35019" type="bool" default="true" />
 		
 		<setting type="sep" visible="true" />
 	</category>>
@@ -86,10 +88,11 @@
 				
 		<setting type="sep" visible="true" />
 		
-		<setting id="REMOTE"   label="30125" type="bool"                           default="false" />
-		<setting id="LOCATION" label="30126" type="text"      enable="eq(-1,true)" default="" visible="eq(-1,true)"/>
-		<setting               label="30127" type="action"    action="RunScript($CWD/importer.py,True)"  option="close" />
-		<setting               label="30128" type="action"    action="RunScript($CWD/importer.py,False)" option="close" />
+		<setting id="REMOTE"       label="30125" type="bool"                           default="false" />
+		<setting id="LOCATION"     label="30126" type="text"      enable="eq(-1,true)" default="" visible="eq(-1,true)"/>
+		<setting id="IMPORT_RESET" label="30218" type="bool"                           default="false" />
+		<setting                   label="30127" type="action"    action="RunScript($CWD/importer.py,True)"  option="close" />
+		<setting                   label="30128" type="action"    action="RunScript($CWD/importer.py,False)" option="close" />
 		
 		<setting type="sep" visible="true" />			>
 	</category>
