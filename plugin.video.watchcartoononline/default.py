@@ -31,10 +31,6 @@ import xbmcgui
 import resolve
 import common
 
-try:    import StorageServer
-except: import storageserverdummy as StorageServer
-
-cache = StorageServer.StorageServer("WCO", 0)
 
 ADDONID = 'plugin.video.watchcartoononline'
 ADDON   = xbmcaddon.Addon(ADDONID)
@@ -192,6 +188,8 @@ def PlayVideo(_url, select):
         url      = resolved[index][1]
         msg      = resolved[index][2]
 
+    url = url.split('"')[0]
+
     if not url:
         d   = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, '', msg, '')
@@ -267,12 +265,6 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
     else:
         infoLabels = { 'title' : name }
 
-    try:
-        if mode == EPISODE and cache.get(common.fixup(name)):
-            infoLabels['playcount'] = 1
-    except:
-        pass
-
     liz.setInfo(type="Video", infoLabels=infoLabels)
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
@@ -331,9 +323,7 @@ elif mode == SERIES:
 
 elif mode == EPISODE:
     try:
-        PlayVideo(url, (not AUTOPLAY))
-        if title:
-            cache.set(common.fixup(title), url)
+        PlayVideo(url, (not AUTOPLAY))        
     except Exception, e:
         print str(e)
         raise

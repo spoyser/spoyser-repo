@@ -36,7 +36,10 @@ TITLE   = ADDON.getAddonInfo('name')
 VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
+FANART  = os.path.join(HOME, 'fanart.jpg')
 URL     = 'http://www.funniermoments.com/'
+URL     = 'http://toon.is/'
+WWW     = 'http://www.toon.is/'
 
 
 ALL      = 100
@@ -161,6 +164,7 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
     if not isFolder:
         liz.setProperty("IsPlayable","true")
 
+    liz.setProperty('Fanart_Image', FANART)     
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
@@ -240,14 +244,14 @@ def GetInfo(html):
         title = None
 
     try:    
-        url = re.compile("file: 'http://funniermoments.com/vids/(.+?),primary:").search(html).group(1)
-        url = 'http://funniermoments.com/vids/' + url[:-1] #+ '|referer=http://www.funniermoments.com'
+        url = re.compile("file: '%svids/(.+?),primary:" % URL).search(html).group(1)
+        url = '%svids/' % URL + url[:-1]
     except:
         url = None
- 
+
     try:
-        img = re.compile("image: 'http://www.funniermoments.com/uploads/thumbs/(.+?)-1.jpg").search(html).group(1)
-        img = 'http://www.funniermoments.com/uploads/thumbs/%s-1.jpg' % img
+        img = re.compile("image: '%suploads/thumbs/(.+?)-1.jpg'" % WWW).search(html).group(1)
+        img = '%suploads/thumbs/%s-1.jpg' % (WWW, img)
     except:
         img = None
 
@@ -259,26 +263,8 @@ def Random():
     PlayCartoon(title, img, url, True)
 
 
-def GetInfoDELETE(html):
-    html = html.split('<section id="video">', 1)[-1]
-
-    try:    title = re.compile('<h1.+?itemprop="name">(.+?)</h1>').search(html).group(1)
-    except: pass
-
-    try:    id    = re.compile('watch.php\?vid=(.+?)"').search(html).group(1)
-    except: pass
-
-    try:    url   = 'http://www.funniermoments.com/watch.php?vid=%s'        % id
-    except: pass
-
-    try:    img   = 'http://www.funniermoments.com/uploads/thumbs/%s-1.jpg' % id
-    except: pass
-
-    return title, img, url
-
-
 def AddCartoon(title, url, image):
-    image += '|referer=http://www.funniermoments.com'
+    image += '|referer=%s' % URL
 
     menu = []
     menu.append(('Download', 'XBMC.RunPlugin(%s?mode=%d&title=%s&url=%s)' % (sys.argv[0], DOWNLOAD, urllib.quote_plus(title), urllib.quote_plus(url))))
@@ -527,10 +513,10 @@ def FixNameForLibrary(series):
 
 def GetCartoonURL(url):
     html  = GetHTML(url)
-    match = re.compile('http://funniermoments.com/vids/(.+?).mp4').search(html).group(1)
-    url   = 'http://funniermoments.com/vids/%s.mp4' % match
+    match = re.compile('%svids/(.+?).mp4' % URL).search(html).group(1)
+    url   = '%svids/%s.mp4' % (URL, match)
     url   = FixURL(url)
-    url  += '|referer=http://www.funniermoments.com'
+    url  += '|referer=%s' % URL
     return url
 
 
@@ -542,7 +528,7 @@ def PlayCartoon(title, image, url, isResolved=False):
         url = GetCartoonURL(url)
 
     if '|referer=' not in image:
-        image += '|referer=http://www.funniermoments.com'
+        image += '|referer=%s' % URL
 
     liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
