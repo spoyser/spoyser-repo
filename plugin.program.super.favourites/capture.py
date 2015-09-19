@@ -493,5 +493,5 @@ try:
 except Exception, e:
     utils.log('Exception in capture.py %s' % str(e))
 
-xbmc.sleep(500)
+xbmc.sleep(1000)
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

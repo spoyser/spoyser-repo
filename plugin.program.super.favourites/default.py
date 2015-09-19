@@ -2942,7 +2942,7 @@ elif mode == _REMOVEFOLDER:
 
 elif mode == _RENAMEFOLDER:
     doRefresh = renameFolder(path)
-
+    
 
 elif mode == _EDITFOLDER:
     if unlock(path):

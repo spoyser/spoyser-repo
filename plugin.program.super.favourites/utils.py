@@ -133,9 +133,6 @@ def CheckVersion():
         prev = ADDON.getSetting('VERSION')
         curr = VERSION
 
-        if xbmcgui.Window(10000).getProperty('OTT_RUNNING') != 'True':
-            VerifyKeymaps()
-
         if prev == curr:        
             return
 
@@ -226,6 +223,16 @@ def DeleteFile(path):
             xbmc.sleep(500)
 
 
+def verifyPlugins():
+    folder = os.path.join(ROOT, 'Plugins')
+
+    if sfile.exists(folder):
+        return
+
+    try:    sfile.makedirs(folder)
+    except: pass
+
+
 def VerifyKeymaps():
     reload = False
 
@@ -284,7 +291,7 @@ def WriteKeymap(start, end):
     while not sfile.exists(dest) and tries > 0:
         tries -= 1
         f = sfile.file(dest, 'w')
-        f.write(t)
+        f.write(cmd)
         f.close()
         xbmc.sleep(1000)
 

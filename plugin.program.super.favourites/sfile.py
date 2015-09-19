@@ -24,7 +24,10 @@ import xbmcvfs
 
 
 def exists(filename):
-    return xbmcvfs.exists(filename)
+    if xbmcvfs.exists(filename):
+        return True
+
+    return xbmcvfs.exists(filename + '/')
 
 
 def isfile(filename):
