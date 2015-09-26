@@ -96,6 +96,7 @@ def GetFave(property, path='', changeTitle=False):
         xbmc.sleep(100)
 
     xbmc.sleep(500)
+
     return len(xbmc.getInfoLabel('Skin.String(%s.Path)' % property)) > 0
 
 
@@ -195,9 +196,10 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
         self.getControl(5).setVisible(False)
         self.getControl(1).setLabel(GETTEXT(30000))
+        self.getControl(1).setVisible(False)
 
         #the remove item 
-        self.favList.addItem(xbmcgui.ListItem(GETTEXT(30100), iconImage='DefaultAddonNone.png'))
+        #self.favList.addItem(xbmcgui.ListItem(GETTEXT(30100), iconImage='DefaultAddonNone.png'))
 
         if self.mode != 'xbmc':
             self.addFolderItem()
@@ -239,10 +241,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
     def addXBMCFavouritesItem(self):
         try:
             fullpath = 'special://profile/'
-            thumb    = ''
+
+            thumb = getParam('ICON', os.path.join(PROFILE, FOLDERCFG))
+            if len(thumb) < 1:
+                thumb = 'icon_favourites.png'
 
             label    = GETTEXT(30106) % DISPLAYNAME
             listitem = xbmcgui.ListItem(label)
+
 
             listitem.setIconImage(thumb)
             listitem.setProperty('Icon',     thumb)
@@ -302,12 +308,12 @@ class MainGui(xbmcgui.WindowXMLDialog):
         if controlID == 6 or controlID == 3:
             num = self.favList.getSelectedPosition()
 
-            if num > 0:
+            if num >= 0:
                 favPath  = self.favList.getSelectedItem().getProperty('Path')
                 favLabel = self.favList.getSelectedItem().getLabel()
                 favIcon  = self.favList.getSelectedItem().getProperty('Icon')
-                isFolder = self.favList.getSelectedItem().getProperty('IsFolder')               
-               
+                isFolder = self.favList.getSelectedItem().getProperty('IsFolder')
+
                 if not isFolder:
                     fanart = self.favList.getSelectedItem().getProperty('Fanart')
                     desc   = self.favList.getSelectedItem().getProperty('Desc')

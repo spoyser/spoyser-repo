@@ -38,6 +38,7 @@ _DOWNLOAD     = 700
 _PLAYLIST     = 800
 _COPYIMAGES   = 900
 _SHOWIMAGE    = 1000
+_QUICKLAUNCH  = 1100
 
 _EXTRABASE    = 10000
 
@@ -60,6 +61,7 @@ MENU_ADDON_SETTINGS = ADDON.getSetting('MENU_ADDON_SETTINGS') == 'true'
 MENU_STD_MENU       = ADDON.getSetting('MENU_STD_MENU')       == 'true'
 MENU_EDITFAVE       = ADDON.getSetting('MENU_EDITFAVE')       == 'true'
 MENU_PLUGINS        = ADDON.getSetting('MENU_PLUGINS')        == 'true'
+MENU_QUICKLAUNCH    = ADDON.getSetting('MENU_QUICKLAUNCH')    == 'true'
 
 
 def getText(title, text=''):
@@ -165,7 +167,7 @@ def getDescription():
 
 def getPlugins():
     if not MENU_PLUGINS:
-        return
+        return []
 
     import os
 
@@ -207,18 +209,36 @@ def addPlugins(menu, plugins, params, base):
         base  += 1000
 
 
+def quickLaunch():
+    import chooser
+    if not chooser.GetFave('SF_QL'):
+        return False
+
+    path = xbmc.getInfoLabel('Skin.String(SF_QL.Path)')
+
+    if len(path) == 0 or path == 'noop':
+        return
+
+    if path.lower().startswith('activatewindow') and ',' in path: #i.e. NOT like ActivateWindow(filemanager)
+        xbmc.executebuiltin(path)
+        return
+
+    import player
+    player.playCommand(path)
+
+
 def doMenu():
     window = xbmcgui.getCurrentWindowId()
 
-    DEBUG = ADDON.getSetting('DEBUG') == 'true'
-    if DEBUG:
-        utils.DialogOK('Current Window ID %d' % window)
+    #DEBUG = ADDON.getSetting('DEBUG') == 'true'
+    #if DEBUG:
+    #    utils.DialogOK('Current Window ID %d' % window)
 
-    active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]#, 2005] 12005 is video window
-    utils.log('Window     : %d' % window)  
-    if window-10000 not in active:
-        doStandard(useScript=False)
-        return
+    #active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]#, 2005] 12005 is video window
+    #utils.log('Window     : %d' % window)  
+    #if window-10000 not in active:
+    #    doStandard(useScript=False)
+    #    return
 
     # to prevent master profile setting being used in other profiles
     if ADDON.getSetting('CONTEXT') != 'true':
@@ -302,6 +322,9 @@ def doMenu():
     menu       = []
     localAddon = None
 
+    if MENU_QUICKLAUNCH:
+        menu.append((GETTEXT(30219), _QUICKLAUNCH))
+
     #if xbmc.getCondVisibility('Player.HasVideo') == 1:
     #    if isStream:
     #        menu.append(('Download  %s' % label, _DOWNLOAD))
@@ -348,12 +371,12 @@ def doMenu():
     if MENU_SF_SETTINGS:
         menu.append((GETTEXT(30049), _SF_SETTINGS))
 
-    if window <> 10000: #Home
-        if MENU_STD_MENU:
-            menu.append((GETTEXT(30048), _STD_MENU))
+    stdMenu = False
+    if MENU_STD_MENU and len(path) > 0:
+        stdMenu = True
+        menu.append((GETTEXT(30048), _STD_MENU))
 
-
-    if len(menu) == 0 or (len(menu) == 1 and MENU_STD_MENU and window <> 10000):
+    if len(menu) == 0 or (len(menu) == 1 and stdMenu):
         doStandard(useScript=False)
         return
 
@@ -384,6 +407,10 @@ def doMenu():
         except Exception, e:
             utils.log('Error processing plugin: %s' % str(e))
 
+    if choice == _QUICKLAUNCH:
+        try:    quickLaunch()
+        except: pass
+
     if choice == _PLAYLIST:
         xbmc.executebuiltin('ActivateWindow(videoplaylist)')
 
@@ -402,6 +429,12 @@ def doMenu():
 
     if choice == _ADDTOFAVES:
         import favourite
+
+        if path.lower().startswith('addons://user/'):
+            path     = path.replace('addons://user/', 'plugin://')
+            isFolder = True
+            window   = 10025
+
         if isFolder:
             cmd =  'ActivateWindow(%d,"%s' % (window, path)
         elif path.lower().startswith('script'):
@@ -481,7 +514,7 @@ def main():
     if ADDON.getSetting('MENU_MSG') == 'true':
         ADDON.setSetting('MENU_MSG', 'false')
         if utils.DialogYesNo(GETTEXT(35015), GETTEXT(35016), GETTEXT(35017)):
-            utils.openSettings(ADDONID, 2.1)
+            utils.openSettings(ADDONID, 2.6)
             return
     
     xbmc.executebuiltin('Dialog.Close(all, true)')

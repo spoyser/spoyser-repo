@@ -48,7 +48,11 @@ def GETTEXT(id):
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
+
 ROOT    =  ADDON.getSetting('FOLDER')
+if not ROOT:
+    ROOT = 'special://profile/addon_data/plugin.program.super.favourites/'
+
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
 VERSION =  ADDON.getAddonInfo('version')
 ICON    =  os.path.join(HOME, 'icon.png')
@@ -56,6 +60,13 @@ FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY =  ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
+
+
+PLAYMEDIA_MODE      = 1
+ACTIVATEWINDOW_MODE = 2
+RUNPLUGIN_MODE      = 3
+ACTION_MODE         = 4
+
 
 DEBUG   = ADDON.getSetting('DEBUG') == 'true'
 
@@ -73,6 +84,7 @@ FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
 
 
+DEBUG = True
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, str(text))
@@ -222,6 +234,17 @@ def DeleteFile(path):
         except: 
             xbmc.sleep(500)
 
+def verifyLocation():
+    #if still set to default location reset, to workaround
+    #Android bug in browse folder dialog
+    location = ADDON.getSetting('FOLDER')
+
+    profile  = 'special://profile/addon_data/plugin.program.super.favourites/'
+    userdata = 'special://userdata/addon_data/plugin.program.super.favourites/'
+
+    if (location == profile) or (location == userdata):
+        ADDON.setSetting('FOLDER', '')
+        
 
 def verifyPlugins():
     folder = os.path.join(ROOT, 'Plugins')
@@ -466,14 +489,14 @@ def openSettings(addonID, focus=None):
     try:
         xbmc.executebuiltin('Addon.OpenSettings(%s)' % addonID)
 
-        value1, value2 = re.compile('(\d*)\.(\d*)').findall(str(focus))[0]
+        value1, value2 = str(focus).split('.')
 
         if FRODO:
             xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 200))
             xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 100))
         else:
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
             xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 100))
+            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
 
     except:
         return

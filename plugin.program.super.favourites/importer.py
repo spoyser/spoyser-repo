@@ -44,13 +44,15 @@ LOCATION     = ADDON.getSetting('LOCATION')
 IMPORT_RESET = ADDON.getSetting('IMPORT_RESET').lower() == 'true'
 
  
-def main(toImport):
+def main(toImport, settings):
     if toImport:
         doImport()
-        utils.openSettings(ADDONID, 4.6)
+        if settings:
+            utils.openSettings(ADDONID, 4.7)
     else:
         doExport()
-        utils.openSettings(ADDONID, 4.7)
+        if settings:
+            utils.openSettings(ADDONID, 4.8)
 
 
 def doImport():
@@ -100,7 +102,7 @@ def _doImportFromRemote():
             utils.DeleteFile(file)
             return success
     except Exception, e:
-        utils.log(e)
+        utils.log('Error in _doImportFromRemote %s' % str(e))
 
     return False
 
@@ -111,7 +113,7 @@ def _doImportFromLocal(filename):
         return extractAll(filename, dp, filename)
 
     except Exception, e:
-        utils.log(e)
+        utils.log('Error in _doImportFromLocal %s' % str(e))
 
     return False
 
@@ -125,14 +127,24 @@ def doExport():
         if not folder:
             return False
 
-        filename = os.path.join(folder, 'Super Favourites.zip')
+        filename = 'Super Favourites.zip'
+        src      = os.path.join(HOME,   filename)
+        dst      = os.path.join(folder, filename)
 
-        doZipfile(filename, include)
+        doZipfile(src, include)
+
+        if (src <> dst):
+            sfile.copy(src, dst)
+            sfile.remove(src)
+
         utils.DialogOK(GETTEXT(30132))
         return True
 
     except Exception, e:
-        utils.log(e)
+        utils.log('Error in doExport %s' % str(e))
+
+    try:    sfile.remove(src)
+    except: pass
 
     return False
 
@@ -164,6 +176,10 @@ def doZipfile(outputFile, includeSettings=True):
 
         for file in files:    
             if file == 'settings.xml':
+                continue
+
+            #ignore python obj
+            if len(file.split('.py')[-1]) == 1:
                 continue
 
             arcname  = os.path.join(local, file)
@@ -257,11 +273,16 @@ def getFolder(title):
 if __name__ == '__main__':
     try:
         toImport = True
+        settings = False
 
         if len(sys.argv) > 1:
             toImport = sys.argv[1].lower() != 'false'
+            settings = True
 
-        main(toImport)        
+        if len(sys.argv) > 2:
+            settings = sys.argv[2].lower() != 'false'
+
+        main(toImport, settings)
         xbmc.executebuiltin('Container.Refresh')
 
     except:

@@ -29,6 +29,7 @@ import urllib
 import re
 
 import quicknet
+import player
 import favourite
 import history
 import utils
@@ -58,10 +59,10 @@ FILENAME      = utils.FILENAME
 FOLDERCFG     = utils.FOLDERCFG
 
 
-PLAYMEDIA_MODE      = 1
-ACTIVATEWINDOW_MODE = 2
-RUNPLUGIN_MODE      = 3
-ACTION_MODE         = 4
+PLAYMEDIA_MODE      = utils.PLAYMEDIA_MODE
+ACTIVATEWINDOW_MODE = utils.ACTIVATEWINDOW_MODE
+RUNPLUGIN_MODE      = utils.RUNPLUGIN_MODE
+ACTION_MODE         = utils.ACTION_MODE
 
 MANUAL_CMD = 'SF_MANUAL_CMD_'
 
@@ -553,7 +554,7 @@ def parseFile(file):
     text = GETTEXT(30099) % DISPLAYNAME if mode == _XBMC else GETTEXT(30068)
 
     if ALPHA_SORT:
-         faves = sorted(faves, key=lambda x: x[0])
+         faves = sorted(faves, key=lambda x: x[0].lower())
 
     for fave in faves:
         label  = fave[0]
@@ -570,7 +571,7 @@ def parseFile(file):
         menu.append((text, 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s&name=%s&thumb=%s)' % (sys.argv[0], _EDITFAVE, urllib.quote_plus(file), urllib.quote_plus(cmd), urllib.quote_plus(label), urllib.quote_plus(thumb))))
 
 
-        if isPlaylist(cmd) and (not PLAY_PLAYLISTS):
+        if player.isPlaylist(cmd) and (not PLAY_PLAYLISTS):
             menu.append((GETTEXT(30084), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _PLAYLIST, urllib.quote_plus(file), urllib.quote_plus(cmd))))
 
         menu.append((GETTEXT(30178), 'XBMC.RunPlugin(%s?mode=%d&file=%s&cmd=%s)' % (sys.argv[0], _COPY, urllib.quote_plus(file), urllib.quote_plus(cmd))))
@@ -1404,10 +1405,11 @@ def manualType(name, cmd):
     options.append([action,         ACTION_MODE])
 
     import menus
-    if DLG_MENU:
-        option = menus.selectMenu(title, options)
-    else:
-        option = menus.showMenu(ADDONID, options)
+    option = menus.selectMenu(title, options)
+    #if DLG_MENU:
+    #    option = menus.selectMenu(title, options)
+    #else:
+    #    option = menus.showMenu(ADDONID, options)
 
     return option
 
@@ -2341,7 +2343,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         faves = favourite.getFavourites(file) 
 
     if ALPHA_SORT:
-         faves = sorted(faves, key=lambda x: x[0])
+         faves = sorted(faves, key=lambda x: x[0].lower())
 
     for fave in faves:
         label = fave[0]
@@ -2376,102 +2378,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
 
 def playCommand(originalCmd):
-    try:
-        xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
-
-        cmd = favourite.tidy(originalCmd)
-        
-        #if a 'Super Favourite' favourite just do it
-        if ADDONID in cmd:
-             return xbmc.executebuiltin(cmd)
-
-        #if in contentMode just do it
-        if contentMode:
-            xbmc.executebuiltin('ActivateWindow(Home)') #some items don't play nicely if launched from wrong window
-            if cmd.lower().startswith('activatewindow'):
-                cmd = cmd.replace('")', '",return)') #just in case return is missing                
-            return xbmc.executebuiltin(cmd)
-
-        if cmd.startswith('RunScript'):    
-            #workaround bug in Frodo that can cause lock-up
-            #when running a script favourite
-            if FRODO:
-                xbmc.executebuiltin('ActivateWindow(Home)')
-    
-        if isPlaylist(cmd):
-            if PLAY_PLAYLISTS:
-                return playPlaylist(cmd)      
-
-        if 'ActivateWindow' in cmd:
-            return activateWindowCommand(cmd) 
-
-        if 'PlayMedia' in cmd:
-            return playMedia(originalCmd)
-
-        if 'ExecuteBuiltin' in cmd:
-            try:    
-                cmd = cmd.split('ExecuteBuiltin("', 1)[-1]
-                cmd = cmd.rsplit('")')[0]
-            except:
-                pass
-
-        xbmc.executebuiltin(cmd)
-
-
-    except Exception, e:
-        utils.log('Error in playCommand')
-        utils.log('Command: %s' % cmd)
-        utils.log('Error:   %s' % str(e))        
-
-
-def isPlaylist(cmd):
-    if cmd.lower().replace(',return', '').endswith('.m3u")'):
-        return True
-
-    if cmd.lower().replace(',return', '').endswith('.m3u8")'):
-        return True
-
-    return False
-
-
-
-def playPlaylist(cmd):
-    if cmd.lower().startswith('activatewindow'):
-        playlist = cmd.split(',', 1)
-        playlist = playlist[-1][:-1]
-        cmd      = 'PlayMedia(%s)' % playlist
-
-    elif sfile.exists(cmd):
-        #cmd = 'PlayMedia(%s)' % cmd
-        playPlaylistFile(cmd)
-        return
-
-    xbmc.executebuiltin(cmd)
-
-
-def playPlaylistFile(path):
-    items = parsePlaylist(sfile.readlines(path))
-
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()        
-
-    #start = len(items) - 175
-    #if start < 0:
-    start = 0
-        
-    for i in range(start,len(items)):
-        item   = items[i]
-        title  = item[0]
-        image  = ICON
-        url    = item[1]
-        
-        liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-
-        liz.setInfo(type='Video', infoLabels={'Title': title})
-
-        pl.add(url, liz)
-
-    xbmc.Player().play(pl)
+    player.playCommand(originalCmd, contentMode)
 
 
 def cutCopy(file, cmd, cut=True):
@@ -2625,75 +2532,11 @@ def pasteCut(file, cmd, folder):
 
     return favourite.removeFave(file, cmd)
 
-
-def playMedia(original): 
-    cmd = favourite.tidy(original).replace(',', '') #remove spurious commas
-    
-    try:    mode = int(favourite.getOption(original, 'mode'))
-    except: mode = 0
-
-    if mode == PLAYMEDIA_MODE:       
-        xbmc.executebuiltin(cmd)
-        return
-
-    plugin = re.compile('"(.+?)"').search(cmd).group(1)
-
-
-    if len(plugin) < 1:
-        xbmc.executebuiltin(cmd)
-        return
-
-    if mode == ACTIVATEWINDOW_MODE:   
-        try:    winID = int(favourite.getOption(original, 'winID'))
-        except: winID = 10025
-
-        #check if it is a different window and if so activate it
-        id = xbmcgui.getCurrentWindowId()
-
-        if id != winID :
-            xbmc.executebuiltin('ActivateWindow(%d)', winID)
-
-        cmd = 'Container.Update(%s)' % plugin
-
-        xbmc.executebuiltin(cmd)
-        return
-
-    if mode == RUNPLUGIN_MODE:
-        cmd = 'RunPlugin(%s)' % plugin
-
-        xbmc.executebuiltin(cmd)
-        return
-
-    #if all else fails just execute it
-    xbmc.executebuiltin(cmd)
     
 
 def activateWindowCommand(cmd):
-    cmds = cmd.split(',', 1)
-
-    #special case for filemanager
-    if '10003' in cmds[0] or 'filemanager' in cmds[0].lower():
-        xbmc.executebuiltin(cmd)
-        return   
-
-    plugin   = None
-    activate = None
-
-    if len(cmds) == 1:
-        activate = cmds[0]
-    else:
-        activate = cmds[0]+',return)'
-        plugin   = cmds[1][:-1]
-
-    #check if it is a different window and if so activate it
-    id = str(xbmcgui.getCurrentWindowId())    
-
-    if id not in activate:
-        xbmc.executebuiltin(activate)
-
-    if plugin: 
-        xbmc.executebuiltin('Container.Update(%s)' % plugin)
-
+    player.activateWindowCommand(cmd)
+    
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=FANART, keyword='', imdb='', infolabels={}, totalItems=0, isPlayable=False):
     global separator
@@ -2892,7 +2735,7 @@ elif mode == _ACTIVATEWINDOW_XBMC:
     doEnd = True
     mode  = _IGNORE
 
-    if PLAY_PLAYLISTS and isPlaylist(cmd):        
+    if PLAY_PLAYLISTS and player.isPlaylist(cmd):        
         playCommand(cmd)
 
         #Container.Update removes current item from history to stop looping
@@ -2909,7 +2752,7 @@ elif mode == _ACTIVATEWINDOW_XBMC:
 
 
 elif mode == _PLAYLIST:
-    playPlaylist(cmd)
+    player.playPlaylist(cmd)
 
 
 if mode == _ACTIVATESEARCH:

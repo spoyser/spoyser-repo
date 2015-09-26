@@ -25,6 +25,7 @@ import os
 
 utils.VerifyKeymaps()
 utils.verifyPlugins()
+utils.verifyLocation()
 
 
 if utils.ADDON.getSetting('AUTOSTART') == 'true':

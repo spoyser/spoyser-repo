@@ -209,6 +209,7 @@
 	<string id="30216">View fullsize images</string>
 	<string id="30217">Addon</string>	
 	<string id="30218">Clear current Super Favourites when importing</string>		
+	<string id="30219">Quick launch Super Favourites</string>		
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -217,7 +218,7 @@
 	<string id="35004">Dialog</string>
 	<string id="35005">Menu Items</string>	
 	<string id="35006">Add to Super Favourites</string>
-	<string id="35007">Default iSearch</string>
+	<string id="35007">Default iSearch (search using the first addon in the list)</string>
 	<string id="35008">iSearch</string>
 	<string id="35009">iRecommend</string>
 	<string id="35010">Copy item properties</string>
@@ -230,4 +231,5 @@
 	<string id="35017">Would you like to configure it now?</string>	
 	<string id="35018">Edit name when adding to Super Favourites</string>
 	<string id="35019">Additional addon items</string>	
+	<string id="35020">Quick launch</string>		
 </strings>

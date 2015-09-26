@@ -85,12 +85,12 @@ class ContextMenu(xbmcgui.WindowXMLDialog):
         self.setFocus(self.list)
 
            
-    def onAction(self, action):        
+    def onAction(self, action):  
         actionId = action.getId()
 
         if actionId in [ACTION_CONTEXT_MENU, ACTION_C_KEY]:
             self.params = 0
-            #xbmc.sleep(100)
+            xbmc.sleep(100)
             return self.close()
 
         if actionId in [ACTION_PARENT_DIR, ACTION_PREVIOUS_MENU, ACTION_BACK]:
