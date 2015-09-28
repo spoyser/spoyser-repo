@@ -321,6 +321,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
                     favPath = favourite.updateSFOption(favPath, 'fanart', fanart)
                     favPath = favourite.updateSFOption(favPath, 'desc',   desc)            
 
+                favLabel = utils.fix(favLabel)
                 if favLabel.endswith(GETTEXT(30102)):
                     favLabel = favLabel.replace(GETTEXT(30102), '')
 

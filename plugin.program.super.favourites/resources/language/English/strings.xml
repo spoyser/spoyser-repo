@@ -94,7 +94,7 @@
 	<string id="30096">Super Folders inherit thumbnail and fanart</string>
 	<string id="30097">Remove thumbnail</string>
 	<string id="30098">iSearch using %s</string>
-	<string id="30099">	Edit %s Favourite</string>
+	<string id="30099">Edit %s Favourite</string>
 	<string id="30100">None (clear current settings)</string>
 	<string id="30101">(no action)</string>
 	<string id="30102"> (open folder)</string>
@@ -209,7 +209,8 @@
 	<string id="30216">View fullsize images</string>
 	<string id="30217">Addon</string>	
 	<string id="30218">Clear current Super Favourites when importing</string>		
-	<string id="30219">Quick launch Super Favourites</string>		
+	<string id="30219">Quick launch Super Favourites</string>
+	<string id="30220">Now playing</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>

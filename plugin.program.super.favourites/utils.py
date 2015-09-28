@@ -84,7 +84,6 @@ FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
 
 
-DEBUG = True
 def log(text):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, str(text))

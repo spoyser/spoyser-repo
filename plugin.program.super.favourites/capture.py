@@ -92,14 +92,17 @@ def getDefaultSearch():
     return ''
 
 
+def activateWindow(window):
+    xbmc.executebuiltin('Dialog.Close(all, true)')
+    xbmc.executebuiltin('ActivateWindow(%s)' % window)
+
+
 def doStandard(useScript=True):
     window = xbmcgui.getCurrentWindowId()
 
     if window == 12005: #video playing
-        xbmc.executebuiltin('Dialog.Close(all, true)')
-        xbmc.executebuiltin('ActivateWindow(videoplaylist)')
-        return
-
+        return activateWindow('videoplaylist')
+        
     if useScript:
         #open menu via script to prevent animation locking up (due to bug in XBMC)
         path   = utils.HOME
@@ -263,6 +266,7 @@ def doMenu():
     fanart   = xbmc.getInfoLabel('ListItem.Property(Fanart_Image)')
     fanart   = xbmc.getInfoLabel('ListItem.Art(fanart)')
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
+    hasVideo = xbmc.getCondVisibility('Player.HasVideo') == 1
     desc     = getDescription()
 
     if not thumb:
@@ -286,7 +290,7 @@ def doMenu():
             control = 21
 
         if control == 0:
-            return doStandard()
+            return doStandard(useScript=False) #sjp was no param
 
         label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
         root     = xbmc.getInfoLabel('Container(%d).ListItem.Path'  % control)
@@ -314,6 +318,7 @@ def doMenu():
     params['file']        = file
     params['isstream']    = isStream
     params['description'] = desc
+    params['hasVideo']    = hasVideo
 
     utils.log('**** Context Menu Information ****')
     for key in params:
@@ -325,7 +330,7 @@ def doMenu():
     if MENU_QUICKLAUNCH:
         menu.append((GETTEXT(30219), _QUICKLAUNCH))
 
-    #if xbmc.getCondVisibility('Player.HasVideo') == 1:
+    #if hasVideo:
     #    if isStream:
     #        menu.append(('Download  %s' % label, _DOWNLOAD))
     #        menu.append(('Now playing...',       _PLAYLIST))
@@ -375,6 +380,9 @@ def doMenu():
     if MENU_STD_MENU and len(path) > 0:
         stdMenu = True
         menu.append((GETTEXT(30048), _STD_MENU))
+    else:
+        if hasVideo:            
+            menu.append((xbmc.getLocalizedString(31040), _PLAYLIST))
 
     if len(menu) == 0 or (len(menu) == 1 and stdMenu):
         doStandard(useScript=False)
@@ -411,15 +419,15 @@ def doMenu():
         try:    quickLaunch()
         except: pass
 
+    if choice == _STD_MENU and len(path) > 0:
+        doStandard(useScript=False) #sjp was no param
+
     if choice == _PLAYLIST:
-        xbmc.executebuiltin('ActivateWindow(videoplaylist)')
+        activateWindow('videoplaylist')
 
-    if choice == _DOWNLOAD: 
-        import download
-        download.doDownload(file, 'c:\\temp\\file.mpg', 'Super Favourites', '', True)
-
-    if choice == _STD_MENU:
-        doStandard()
+    #if choice == _DOWNLOAD: 
+    #    import download
+    #    download.doDownload(file, 'c:\\temp\\file.mpg', 'Super Favourites', '', True)
 
     if choice == _SF_SETTINGS:
         utils.ADDON.openSettings()
@@ -518,13 +526,15 @@ def main():
             return
     
     xbmc.executebuiltin('Dialog.Close(all, true)')
-    doMenu()    
+    doMenu() 
 
-
-try:        
-    main()
-except Exception, e:
-    utils.log('Exception in capture.py %s' % str(e))
+if xbmc.getCondVisibility('Window.IsActive(favourites)') == 1:
+    doStandard(useScript=False)
+else: 
+    try:        
+        main()
+    except Exception, e:
+        utils.log('Exception in capture.py %s' % str(e))
 
 xbmc.sleep(1000)
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

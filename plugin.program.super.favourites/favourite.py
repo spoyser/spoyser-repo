@@ -186,17 +186,18 @@ def isValid(cmd):
 
     cmd = tidy(cmd)
 
-    if 'PlayMedia' in cmd:
+    #if 'PlayMedia' in cmd:
+    if cmd.startswith('PlayMedia'):
         return utils.verifyPlayMedia(cmd)
-        
 
-    if 'plugin' in cmd:        
-        if not utils.verifyPlugin(cmd):
-            return False
-
-    if 'RunScript' in cmd:
+    #if 'RunScript' in cmd:
+    if cmd.startswith('RunScript'):
         cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
         if not utils.verifyScript(cmd):
+            return False
+        
+    if 'plugin' in cmd:        
+        if not utils.verifyPlugin(cmd):
             return False
         
     return True
