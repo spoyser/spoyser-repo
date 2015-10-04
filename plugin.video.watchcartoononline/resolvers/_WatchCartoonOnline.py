@@ -25,12 +25,6 @@ import net
 
 def Resolve(html):
     try:    
-        #html = html1.split('.flv',   1)[0]
-        #html = html.rsplit('src="', 1)[-1]
-        #url  = html + '.flv'
-
-        #url = url.split('"')[0]
-
         results = []
 
         urls = re.compile('<iframe id.+?src="(.+?)".+?</iframe>').findall(html)
@@ -77,6 +71,6 @@ def DoResolve(url):
     except Exception, e:
         text = 'Error Resolving URL'
 
-    response = [ret, text]
+    response = [ret.split('",', 1)[0], text]
 
     return response

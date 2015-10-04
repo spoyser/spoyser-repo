@@ -46,6 +46,7 @@ SECTION  = 100
 SERIES   = 200
 EPISODE  = 300
 HOST     = 400
+DOWNLOAD = 500
 
 AUTOPLAY = ADDON.getSetting('AUTOPLAY') == 'true'
 
@@ -63,9 +64,14 @@ def CheckVersion():
 
     ADDON.setSetting('VERSION', curr)
 
-    if curr == '1.0.14':
+    if curr == '1.0.17':
         d = xbmcgui.Dialog()
-        d.ok(TITLE + ' - ' + VERSION, 'Welcome to Watch Cartoon Online', 'Now with auto-play feature.', '')
+        d.ok(TITLE + ' - ' + VERSION, 'Welcome to Watch Cartoon Online', 'Now with download feature.', '')
+
+
+def FileSystemSafe(text):
+    return re.sub('[:\\/*?\<>|"]+', '', text).strip()
+
 
 def Main():
     CheckVersion()
@@ -172,6 +178,46 @@ def selectHost(url):
     PlayVideo(url, True)
 
 
+def DownloadVideo(_url,  title):
+    resolved = resolve.ResolveURL(_url)
+
+    title = common.clean(title)
+
+    if len(resolved) == 0:
+        d = xbmcgui.Dialog()
+        d.ok(TITLE + ' - ' + VERSION, 'Unable to download', title, 'Cannot find an online source')
+        return
+
+    auto  = ADDON.getSetting('DOWNLOAD_AUTO')
+    index = GetLinkIndex(resolved, not auto)
+
+    if index < 0:
+        return
+
+    url  = resolved[index][1]
+    file = urllib.unquote_plus(url.rsplit('/')[-1])
+    file = FileSystemSafe(file)
+
+    folder = ADDON.getSetting('DOWNLOAD_FOLDER')
+    if len(folder) == 0:
+        folder = 'special://profile/addon_data/plugin.video.watchcartoononline/downloads'
+
+    import sfile
+
+    if not sfile.exists(folder):
+        sfile.makedirs(folder)
+
+    file = os.path.join(folder, file)
+
+    try:
+        import download
+        download.download(url, file, title)
+    except Exception, e:
+        print '%s - %s Error during downloading of %s' % (TITLE, VERSION, title)
+        print str(e)
+
+
+
 def PlayVideo(_url, select):
     resolved = resolve.ResolveURL(_url)
 
@@ -184,11 +230,13 @@ def PlayVideo(_url, select):
         if index == None:
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xbmcgui.ListItem(''))
             return
+
         resolver = resolved[index][0]
         url      = resolved[index][1]
         msg      = resolved[index][2]
 
-    url = url.split('"')[0]
+    if url:
+        url = url.split('"')[0]
 
     if not url:
         d   = xbmcgui.Dialog()
@@ -219,6 +267,7 @@ def PlayVideo(_url, select):
 
 def AddEpisode(name, url, image=None):
     menu = []
+    menu.append(('Download', 'XBMC.RunPlugin(%s?mode=%d&url=%s&title=%s)' % (sys.argv[0], DOWNLOAD, urllib.quote_plus(url), urllib.quote_plus(name))))
     if AUTOPLAY:
         menu.append(('Select video host', 'XBMC.RunPlugin(%s?mode=%d&url=%s)' % (sys.argv[0], HOST, urllib.quote_plus(url))))
     AddDir(name, EPISODE, url, image=image, isFolder=False, menu=menu)
@@ -323,10 +372,18 @@ elif mode == SERIES:
 
 elif mode == EPISODE:
     try:
-        PlayVideo(url, (not AUTOPLAY))        
+        PlayVideo(url, (not AUTOPLAY))
     except Exception, e:
         print str(e)
         raise
+
+elif mode == DOWNLOAD:
+    try:
+        DownloadVideo(url, title)
+    except Exception, e:
+        print str(e)
+        raise
+
 
 elif mode == HOST:
     selectHost(url)
