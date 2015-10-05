@@ -122,27 +122,25 @@ def DoSection(url):
         AddSeries(item[1], item[2])
 
 
-def DoSeries(html):#url):
+def DoSeries(html):
     title = re.compile('<title>(.+?) \| .+?').search(html).group(1)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
 
-    html  = html.split('animelist', 1)[-1]
-    match = re.compile('<a href=(.+?)<div class="ildate">').findall(html)
+    html  = html.split('<!--CAT List FINISH-->', 1)[0]
+    match = re.compile('<li>(.+?)</li>').findall(html)
 
     for item in match:
         name = None
         url  = None
-        try:
-            match1 = re.compile('<a href="(.+?)".+?title=".+?">(.+?)</a>').findall(item)
-            url    = match1[0][0]
-            name   = match1[0][1]
-        except:
-            match1 = re.compile('"(.+?)".+?title=".+?">(.+?)</a>').findall(item)
-            url    = match1[0][0]
-            name  = match1[0][1]
 
-        if name and url:
+        try:
+            url   = re.compile('<a href="(.+?)"').search(item).group(1)
+            name  = re.compile('title="(.+?)"').search(item).group(1)    
+            if name.startswith('Watch'):
+                name = name.split('Watch', 1)[-1].strip()
             AddEpisode(name, url, image)
+        except Exception, e:
+            pass
 
 
 def GetLinkIndex(resolved, select):
@@ -357,7 +355,7 @@ except: pass
 if mode == SECTION:
     DoSection(url)
 
-elif mode == SERIES:
+elif mode == SERIES:    
     html = common.getHTML(url)
 
     while('Previous Entries' in html):

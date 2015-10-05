@@ -71,6 +71,14 @@
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.metahandler" version="2.7.0" />
   </requires>
+
+   <extension point="kodi.context.item" library="capture.py">
+      <item>
+        <label>30000</label>
+        <visible>true</visible>
+      </item>
+    </extension>
+
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video audio executable</provides>
   </extension>
@@ -196,7 +204,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.17" provider-name="spoyser">
+<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.18" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simpleYT" version="0.0.1"/>
