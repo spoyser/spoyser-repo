@@ -86,6 +86,10 @@ def makedirs(path):
     xbmcvfs.mkdirs(path)
 
 
+def delete(filename):
+    return xbmcvfs.delete(filename)
+
+
 def remove(filename):
     return xbmcvfs.delete(filename)
 
@@ -122,6 +126,9 @@ def copy(src, dst):
 
 
 def rename(src, dst):
+    if src == dst:
+        return
+
     if not exists(src):
         return
 

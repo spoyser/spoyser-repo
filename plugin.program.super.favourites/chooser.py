@@ -209,8 +209,12 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
         for fave in self.faves:            
             listitem = xbmcgui.ListItem(fave[0])
+
+            icon = fave[1]
+            if not icon:
+                icon = ICON 
             
-            listitem.setIconImage(fave[1])
+            listitem.setIconImage(icon)
             listitem.setProperty('Icon', fave[1])
 
             cmd = fave[2]
@@ -247,8 +251,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
                 thumb = 'icon_favourites.png'
 
             label    = GETTEXT(30106) % DISPLAYNAME
-            listitem = xbmcgui.ListItem(label)
-
+            listitem = xbmcgui.ListItem(label) 
 
             listitem.setIconImage(thumb)
             listitem.setProperty('Icon',     thumb)

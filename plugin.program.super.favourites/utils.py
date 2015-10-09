@@ -199,16 +199,17 @@ def verifySuperSearch():
 
     import favourite
 
-    new   = favourite.getFavourites(src, validate=False)
-    line1 = GETTEXT(30123)
-    line2 = GETTEXT(30124)
+    new = favourite.getFavourites(src, validate=False)
+
+    #line1 = GETTEXT(30123)
+    #line2 = GETTEXT(30124)
 
     for item in new:
         fave, index, nFaves = favourite.findFave(dst, item[2])
         if index < 0:
-            line = line1 % item[0]
-            if DialogYesNo(line1=line, line2=line2):
-                favourite.addFave(dst, item)
+            #line = line1 % item[0]
+            #if DialogYesNo(line1=line, line2=line2):
+            favourite.addFave(dst, item)
 
 
 def UpdateKeymaps():
@@ -414,8 +415,7 @@ def fix(text):
     for ch in text:
         if ord(ch) < 128:
             ret += ch
-    return ret
-
+    return ret.strip()
 
 
 def Clean(name):
@@ -445,7 +445,19 @@ def Clean(name):
         if length == len(name):
             break
 
-    return name
+    return name.strip()
+
+
+def fileSystemSafe(text):
+    if not text:
+        return None
+
+    text = re.sub('[:\\\\/*?\<>|"]+', '', text)
+    text = text.strip()
+    if len(text) < 1:
+        return  None
+
+    return text
 
 
 def findAddon(item):

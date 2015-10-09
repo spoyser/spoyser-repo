@@ -187,18 +187,6 @@ global currentFolder
 currentFolder = PROFILE
 
 
-def clean(text):
-    if not text:
-        return None
-
-    text = re.sub('[:\\\\/*?\<>|"]+', '', text)
-    text = text.strip()
-    if len(text) < 1:
-        return  None
-
-    return text
-
-
 def main():
     addMainItems()
 
@@ -547,6 +535,13 @@ def showXBMCFolder():
     parseFile(file)
 
 
+def cleanForSort(text):
+    text = text[0]
+    text = text.lower()
+    text = utils.Clean(text)
+    return text
+
+
 def parseFile(file):
     global separator
     faves = favourite.getFavourites(file)
@@ -554,7 +549,7 @@ def parseFile(file):
     text = GETTEXT(30099) % DISPLAYNAME if mode == _XBMC else GETTEXT(30068)
 
     if ALPHA_SORT:
-         faves = sorted(faves, key=lambda x: x[0].lower())
+         faves = sorted(faves, key=lambda x: cleanForSort(x))
 
     for fave in faves:
         label  = fave[0]
@@ -945,7 +940,7 @@ def getFolder(title):
 
 
 def createNewFolder(current):
-    text = clean(getText(GETTEXT(30013)))
+    text = utils.fileSystemSafe(getText(GETTEXT(30013)))
     if not text:
         return False
 
@@ -1524,8 +1519,13 @@ def editSearch(file, cmd, name, thumb):
 
 def renameFolder(path):
     label = path.rsplit(os.sep, 1)[-1]
+    title = label
 
-    text = clean(getText(GETTEXT(30015) % label, label))
+    try:    text  = utils.fileSystemSafe(getText(GETTEXT(30015) % title, label))
+    except: title = utils.fix(title)
+
+    try:    text = utils.fileSystemSafe(getText(GETTEXT(30015) % title, label))
+    except: text = None
 
     if not text:
         return False
@@ -1556,6 +1556,7 @@ def colourFolder(path):
 
 def removeFolder(path):
     label = path.rsplit(os.sep, 1)[-1]
+    label = utils.fix(label)
     if not utils.DialogYesNo(GETTEXT(30016) % label, GETTEXT(30017), GETTEXT(30018)):
         return False
 
@@ -2343,7 +2344,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         faves = favourite.getFavourites(file) 
 
     if ALPHA_SORT:
-         faves = sorted(faves, key=lambda x: x[0].lower())
+         faves = sorted(faves, key=lambda x: cleanForSort(x))
 
     for fave in faves:
         label = fave[0]
@@ -2931,6 +2932,7 @@ elif mode == _UNSECURE:
 elif mode == _IMPORT:
     import importer
     importer.doImport()
+    doRefresh = True
 
 
 elif mode == _RECOMMEND_KEY or mode == _RECOMMEND_KEY_A:

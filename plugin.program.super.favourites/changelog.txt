@@ -1,9 +1,17 @@
 [B][COLOR blue]This file contains ALOT of useful information regarding the functionality of Super Favourites - PLEASE READ IT!![/COLOR][/B]
 
 
+1.0.40.2:
+    - automatically refresh after importing from a remote location
+    - made metahandler dependency optional
+    - add Super Favourites menu to the standard Kodi context menu (Isengard and above only)
+    - fixed alphabetical sorting when names contain formatting tags (e.g. [B])
+    - fix for when Super Folder names contain non-ascii characters
+
+
 1.0.40.1:
     - re-fix for when addon names contain non-ascii characters (in context menu)
-    - fix for context menu form favourites dialog
+    - fix for context menu from favourites dialog
     - improved logic for when Now playing menu item appears
 
 

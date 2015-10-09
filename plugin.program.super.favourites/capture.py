@@ -230,7 +230,7 @@ def quickLaunch():
     player.playCommand(path)
 
 
-def doMenu():
+def doMenu(mode):
     window = xbmcgui.getCurrentWindowId()
 
     #DEBUG = ADDON.getSetting('DEBUG') == 'true'
@@ -244,7 +244,7 @@ def doMenu():
     #    return
 
     # to prevent master profile setting being used in other profiles
-    if ADDON.getSetting('CONTEXT') != 'true':
+    if mode == 0 and ADDON.getSetting('CONTEXT') != 'true':
         doStandard(useScript=False)
         return
 
@@ -377,12 +377,13 @@ def doMenu():
         menu.append((GETTEXT(30049), _SF_SETTINGS))
 
     stdMenu = False
-    if MENU_STD_MENU and len(path) > 0:
-        stdMenu = True
-        menu.append((GETTEXT(30048), _STD_MENU))
-    else:
-        if hasVideo:            
-            menu.append((xbmc.getLocalizedString(31040), _PLAYLIST))
+    if MENU_STD_MENU:
+        if (len(path) > 0) or (window == 10034): #10034 is profile dialog
+            stdMenu = True
+            menu.append((GETTEXT(30048), _STD_MENU))
+        else:
+            if hasVideo:            
+                menu.append((xbmc.getLocalizedString(31040), _PLAYLIST)) #Now Playing
 
     if len(menu) == 0 or (len(menu) == 1 and stdMenu):
         doStandard(useScript=False)
@@ -399,7 +400,7 @@ def doMenu():
     else:
         choice = menus.showMenu(ADDONID, menu)
 
-    xbmc.executebuiltin('Dialog.Close(all, true)')
+    #xbmc.executebuiltin('Dialog.Close(all, true)')
 
     utils.log('selection\t\t: %s' % choice)
     
@@ -419,8 +420,8 @@ def doMenu():
         try:    quickLaunch()
         except: pass
 
-    if choice == _STD_MENU and len(path) > 0:
-        doStandard(useScript=False) #sjp was no param
+    if choice == _STD_MENU:
+        doStandard(useScript=True)
 
     if choice == _PLAYLIST:
         activateWindow('videoplaylist')
@@ -515,7 +516,7 @@ def doMenu():
         viewer.show(fanart, thumb, ADDONID)
 
 
-def main():
+def menu(mode):
     if xbmcgui.Window(10000).getProperty('SF_MENU_VISIBLE') == 'true':
         return
 
@@ -526,15 +527,22 @@ def main():
             return
     
     xbmc.executebuiltin('Dialog.Close(all, true)')
-    doMenu() 
+    doMenu(mode) 
 
-if xbmc.getCondVisibility('Window.IsActive(favourites)') == 1:
-    doStandard(useScript=False)
-else: 
+
+def main():
+    if xbmc.getCondVisibility('Window.IsActive(favourites)') == 1:
+        return doStandard(useScript=False)
+
+    mode = 0
+    if len(sys.argv) > 0 and sys.argv[0] == '':
+        mode = 1
+    
     try:        
-        main()
+        menu(mode)
     except Exception, e:
         utils.log('Exception in capture.py %s' % str(e))
 
+main()
 xbmc.sleep(1000)
 xbmcgui.Window(10000).clearProperty('SF_MENU_VISIBLE')

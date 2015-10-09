@@ -57,6 +57,7 @@ path		: xbmc.getInfoLabel('ListItem.FolderPath')
 folder		: xbmc.getInfoLabel('Container.FolderPath')
 label		: xbmc.getInfoLabel('ListItem.Label')
 isplayable	: xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
+hasVideo	: xbmc.getCondVisibility('Player.HasVideo') == 1
 isfolder	: xbmc.getCondVisibility('ListItem.IsFolder') == 1
 isstream	: xbmc.Player().isInternetStream()
 description	: depends upon item, and will be set to the first one of the following that contains text

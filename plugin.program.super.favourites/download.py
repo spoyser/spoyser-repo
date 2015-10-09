@@ -21,7 +21,6 @@ import urllib2
 import xbmc
 import xbmcgui
 import xbmcplugin
-import sfile
 import os
 import inspect
 
