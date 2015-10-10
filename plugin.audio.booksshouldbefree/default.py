@@ -321,6 +321,15 @@ def RemoveResume():
     ADDON.setSetting('RESUME_INFO',    '')
     ADDON.setSetting('RESUME_CHAPTER', '0')
     ADDON.setSetting('RESUME_TIME',    '0')
+
+
+def fix(text):
+    ret = ''
+    for ch in text:
+        if ord(ch) < 128:
+            ret += ch
+    return ret.strip()
+
     
 
 def AddResume():
@@ -336,13 +345,12 @@ def AddResume():
         mode  = resume[1]
         url   = resume[0]
         image = resume[4]
-        extra = resume[3]
+        extra = fix(resume[3])
 
-        resumeText = ' ' + GETTEXT(30012)
-
+        resumeText = ' [I](%s)[/I]' % GETTEXT(30012)
+       
         if not extra.endswith(resumeText):
             extra += resumeText
-
 
         menu = []
         cmd  = 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], REMOVE_RESUME)
