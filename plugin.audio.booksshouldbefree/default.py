@@ -202,7 +202,10 @@ def Book(_url, title, image, author):
     match = re.compile('name:"(.+?)".+?mp3:"(.+?)"}').findall(match[0])
     for chapter, url in match:
         if 'Chapter' in chapter:
-            chapter = GETTEXT(30004) + chapter.split('Chapter')[1]
+            num = fix(chapter).split('Chapter')[1].strip().split(' ')[0]
+            if len (num) > 0:
+                num = ' ' + num
+            chapter = GETTEXT(30004) + num
         AddChapter(url, title, clean(chapter), image, contextMenu)
 
 
