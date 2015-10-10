@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="General">
-        <setting id="SEARCH"        type="labelenum" label="Search Results per Page" values="10|15|20|25|30" default="20"    visible="true"/>
+    <category label="">
+        <setting id="VERSION"        type="text"     label="DEBUG - Current Version"  default="0.0.0" visible="false"/>
+        <setting id="RESUME_INFO"    type="text"     label="DEBUG - Resume Info"      default=""      visible="false"/>
+        <setting id="RESUME_CHAPTER" type="text"     label="DEBUG - Resume Chapter"   default=""      visible="false"/>
+        <setting id="RESUME_TIME"    type="text"     label="DEBUG - Resume Time"      default=""      visible="false"/>
 
-        <setting id="VERSION"       type="text"      label="Current Version"                                 default="0.0.0" visible="false"/>
-        <setting id="RECORD_FOLDER" type="folder"    label="Default download folder"                         default=""      visible="false"/>
-        <setting id="ASK_FOLDER"    type="bool"      label="Ask for folder"                                  default="false" visible="false"/>
-        <setting id="ASK_FILENAME"  type="bool"      label="Ask for filename"                                default="true"  visible="false"/>
-
-        <setting id="RESUME_INFO"    type="text"     label="Resume Info"                                     default=""      visible="false"/>
-        <setting id="RESUME_CHAPTER" type="text"     label="Resume Chapter"                                  default=""      visible="false"/>
-        <setting id="RESUME_TIME"    type="text"     label="Resume Time"                                     default=""      visible="false"/>
-    </category>  
-    <category label="Genres">
-        <setting id="VIEW"       type="labelenum" label="Sort by" values="Title|Author"          default="Title"       visible="true"/>
-        <setting id="SORT"       type="labelenum" label="Sort by" values="Popularity|Alphabetic" default="Popularity"  visible="true"/>
-        <setting id="RESULTS"    type="labelenum" label="Results" values="30|60|100"             default="30"          visible="true"/>
+        <setting id="VIEW"       type="enum"      label="30013" lvalues="30014|30015" default="0"  visible="true"/>
+        <setting id="SORT"       type="enum"      label="30013" lvalues="30016|30017" default="0"  visible="true"/>
+        <setting id="RESULTS"    type="labelenum" label="30018"  values="30|60|100"   default="30" visible="true"/>
     </category>  
 </settings>

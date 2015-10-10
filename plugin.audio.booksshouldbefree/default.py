@@ -29,26 +29,31 @@ import urllib2
 import re
 import os
 
-import quicknet
+import cache
+
+import loyal_book_utils as utils
 
 
-URL     = 'http://www.booksshouldbefree.com/'
-ADDONID = 'plugin.audio.booksshouldbefree'
-ADDON   = xbmcaddon.Addon(ADDONID)
-TITLE   = ADDON.getAddonInfo('name')
-VERSION = ADDON.getAddonInfo('version')
-HOME    = ADDON.getAddonInfo('path')
+URL     = utils.URL
+ADDONID = utils.ADDONID
+ADDON   = utils.ADDON
+TITLE   = utils.TITLE
+VERSION = utils.VERSION
+HOME    = utils.HOME
+GETTEXT = utils.GETTEXT
+ICON    = utils.ICON
 
 
-GENRE       = 100
-GENREMENU   = 200
-BOOK        = 300
-MORE        = 500
-SEARCH      = 600
-PLAYCHAPTER = 400
-PLAYALL     = 700
-RESUME      = 800
-RESUMEALL   = 900
+GENRE         = 100
+GENREMENU     = 200
+BOOK          = 300
+MORE          = 500
+SEARCH        = 600
+PLAYCHAPTER   = 400
+PLAYALL       = 700
+RESUME        = 800
+RESUMEALL     = 900
+REMOVE_RESUME = 1000
 
 
 def CheckVersion():
@@ -67,13 +72,18 @@ def CheckVersion():
 
 
 def clean(text):
-    text = text.replace('&#8211;', '-')
-    text = text.replace('&#8217;', '\'')
-    text = text.replace('&#8220;', '"')
-    text = text.replace('&#8221;', '"')
-    text = text.replace('&#39;',   '\'')
-    text = text.replace('<b>',     '')
-    text = text.replace('</b>',    '')
+    text = text.replace('&#x2013;', '-')
+    text = text.replace('&#x201C;', '"')
+    text = text.replace('&#x201D;', '"')
+    text = text.replace('&#8211;',  '-')
+    text = text.replace('&#8217;',  '\'')
+    text = text.replace('&#8220;',  '"')
+    text = text.replace('&#8221;',  '"')
+    text = text.replace('&#39;',    '\'')
+    text = text.replace('&quot;',   '\'')
+    text = text.replace('&amp;',    '&')
+    text = text.replace('<b>',      '')
+    text = text.replace('</b>',     '')
 
     text = text.replace('- Free at Loyal Books',  '')
     text = text.replace('- Free at Loyal ...',    '')
@@ -84,12 +94,13 @@ def clean(text):
 
 
 def GetHTML(url):
-    return quicknet.getURL(url, maxSec=7*86400)
+    return cache.getURL(url, maxSec=7*86400)
 
 
 def GetHTMLDirect(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Apple-iPhone/')
+    req.add_header('Referer', URL)
     response = urllib2.urlopen(req)
     html = response.read()
     response.close()
@@ -97,25 +108,25 @@ def GetHTMLDirect(url):
 
 
 def Genre(_url, page):
-    view    = ADDON.getSetting('VIEW').lower()
-    sort    = ADDON.getSetting('SORT').lower()
-    results = ADDON.getSetting('RESULTS').lower()
+    view    = int(ADDON.getSetting('VIEW'))
+    sort    = int(ADDON.getSetting('SORT'))
+    results = int(ADDON.getSetting('RESULTS'))
 
     requestURL = _url
 
-    if requestURL == 'http://www.booksshouldbefree.com/Top_100':
-        view = 'title'
+    if requestURL == '%sTop_100' % URL:
+        view = 0
         if page > 1:
             requestURL += '/%s' % str(page)
     else:
         requestURL += '?'
 
-        if view == 'author':
+        if view == 1:
             requestURL += '&view=author'
-        if sort == 'alphabetic':
+        if sort == 1:
             requestURL += '&sort=alphabet'
-        if results != '30':
-            requestURL += '&results=%s' % results
+        if results != 30:
+            requestURL += '&results=%d' % results
 
         if page > 1:
             requestURL += '&page=%s' % str(page)
@@ -123,12 +134,12 @@ def Genre(_url, page):
     html = GetHTML(requestURL)
     html = html.replace('\n', '')
 
-    if view == 'title':
+    if view == 0:
         GenreTitle(html)
-    if view == 'author':
+    if view == 1:
         GenreAuthor(html)
 
-    AddDir('More...', MORE, _url, 'DefaultPlaylist.png', True, page+1)
+    AddDir(GETTEXT(30001), MORE, _url, ICON, True, page+1)
 
 
 
@@ -170,7 +181,7 @@ def Book(_url, title, image, author):
 
     match = re.compile('new Playlist\((.+?)],').findall(html)
     if len(match) < 1:
-        AddDir('No Audio Book Available', 0, '', 'DefaultPlaylist.png', True)
+        AddDir(GETTEXT(30002), 0, '', ICON, True)
         return
 
     if not author:
@@ -182,11 +193,11 @@ def Book(_url, title, image, author):
     cmd        += '&menu='  + _url + urllib.quote_plus('||' + name + '||' + author + '||' + image)
     cmd        += ')'
 
-    contextMenu.append(('Play all', cmd))
+    contextMenu.append((GETTEXT(30003), cmd))
     match = re.compile('name:"(.+?)".+?mp3:"(.+?)"}').findall(match[0])
     for chapter, url in match:
         if 'Chapter' in chapter:
-            chapter = 'Chapter' + chapter.split('Chapter')[1]
+            chapter = GETTEXT(30004) + chapter.split('Chapter')[1]
         AddChapter(url, title, clean(chapter), image, contextMenu)
 
 
@@ -208,8 +219,17 @@ def GenreMenu(url):
     html = html.split('summary="All Genres">')[1]
     
     match = re.compile('<tr><td class="link menu"><a href="/(.+?)"><div id=".+?" class="g-s s-desk"></div>(.+?)</a></td></tr>').findall(html)
+    genres = []
     for url, genre in match:
-        AddGenre(genre.replace('_', ' '), url)
+        genres.append([genre.replace('_', ' '), url])
+
+    #this seems to be missing from the website
+    genres.append(['Erotic', 'genre/Erotica'])
+    
+    genres.sort()
+
+    for item in genres:
+        AddGenre(item[0], item[1])
 
 
 def Search(page, keyword):
@@ -218,22 +238,30 @@ def Search(page, keyword):
     if not keyword or keyword == '':
         return
 
-    nResults = ADDON.getSetting('SEARCH')
     keyword  = urllib.quote_plus(keyword)
-    start    = str((page-1) * int(nResults))
+    start    = 10 * (page-1)
 
-    url = 'http://www.google.com/cse?cx=partner-pub-5879764092668092%3Awdqcfbe9xi9&cof=FORID%3A10&num=' + nResults + '&q=' + keyword + '&nojs=1&start=' + start
+    url = 'https://www.google.co.uk/search?q=%s+mp3+downloads+site:www.loyalbooks.com&start=%d' % (keyword, start)
 
     html = GetHTMLDirect(url)
-    html = html.replace('\n', '')
-    main = re.compile('<li>(.+?)</li>').findall(html)
-    for item in main:
-        match = re.compile('<a class="l" href="(.+?)" onmousedown=.+?target="_top">(.+?)</a>').findall(item)
-        for url, title in match:
+
+    links = html.split('class="web_result">')
+    links = links[1:]
+
+    root = URL + 'book/'
+    for link in links:
+        try:
+            url   = root + re.compile('%s(.+?)%%26source' % root).search(link).group(1)
+            title = re.compile('>(.+?)</a').search(link.split(url, 1)[-1]).group(1)
+
             AddBook(title, None, url)
 
+        except Exception, e:
+            pass
+
     keyword = urllib.unquote_plus(keyword)
-    AddDir('More...', SEARCH, 'url', 'DefaultPlaylist.png', True, page+1, None, keyword)
+    AddDir(GETTEXT(30001), SEARCH, 'url', ICON, True, page+1, None, keyword)
+         
 
 
 def GetSearch():
@@ -244,18 +272,50 @@ def GetSearch():
 
     return kb.getText()
 
+
+
+def SearchOLD(page, keyword):
+    if not keyword or keyword == '':
+        keyword = GetSearch()
+    if not keyword or keyword == '':
+        return
+
+    nResults = ADDON.getSetting('SEARCH')
+    keyword  = urllib.quote_plus(keyword)
+    start    = str((page-1) * int(nResults))
+
+    url = 'http://www.google.com/cse?cx=partner-pub-5879764092668092%3Awdqcfbe9xi9&cof=FORID%3A10&num=' + nResults + '&q=' + keyword + '&start=' + start
+
+
+    html = GetHTMLDirect(url)
+    html = html.replace('\n', '')
+    main = re.compile('<li>(.+?)</li>').findall(html)
+    for item in main:
+        match = re.compile('<a class="l" href="(.+?)" onmousedown=.+?target="_top">(.+?)</a>').findall(item)
+        for url, title in match:
+            AddBook(title, None, url)
+
+    keyword = urllib.unquote_plus(keyword)
+    AddDir(GETTEXT(30001), SEARCH, 'url', ICON, True, page+1, None, keyword)
+
     
 def Main():   
     CheckVersion()
 
     AddResume()
     AddSearch()
-    AddGenre('Top Books',     'Top_100')
-    AddGenre('Children',      'genre/Children')
-    AddGenre('Fiction',       'genre/Fiction')
-    AddGenre('Fantasy',       'genre/Fantasy')
-    AddGenre('Mystery',       'genre/Mystery')
-    AddGenreMenu('Genres...', 'genre-menu')
+    AddGenre(GETTEXT(30005),     'Top_100')
+    AddGenre(GETTEXT(30006),     'genre/Children')
+    AddGenre(GETTEXT(30007),     'genre/Fiction')
+    AddGenre(GETTEXT(30008),     'genre/Fantasy')
+    AddGenre(GETTEXT(30009),     'genre/Mystery')
+    AddGenreMenu(GETTEXT(30010), 'genre-menu')
+
+
+def RemoveResume():
+    ADDON.setSetting('RESUME_INFO',    '')
+    ADDON.setSetting('RESUME_CHAPTER', '0')
+    ADDON.setSetting('RESUME_TIME',    '0')
     
 
 def AddResume():
@@ -273,33 +333,40 @@ def AddResume():
         image = resume[4]
         extra = resume[3]
 
-        if not ' [I](resume)[/I]' in extra:
-            extra += ' [I](resume)[/I]'
+        resumeText = ' ' + GETTEXT(30012)
 
-        AddDir(name, mode, url, image, isFolder=False, extra=extra)
+        if not extra.endswith(resumeText):
+            extra += resumeText
+
+
+        menu = []
+        cmd  = 'XBMC.RunPlugin(%s?mode=%d)' % (sys.argv[0], REMOVE_RESUME)
+
+        menu.append((GETTEXT(30019), cmd))
+
+        AddDir(name, mode, url, image, isFolder=False, extra=extra, contextMenu=menu)
 
     except Exception, e:
-        print str(e)
         raise
 
 
 def AddSearch():
-    AddDir('Search', SEARCH, 'url', 'DefaultPlaylist.png', True)
+    AddDir(GETTEXT(30011), SEARCH, 'url', ICON, True)
 
 
 def AddGenre(label, url, page=1):
-    AddDir(label, GENRE, URL+url, 'DefaultPlaylist.png', True, int(page))
+    AddDir(label, GENRE, URL+url, ICON, True, int(page))
 
 
 def AddGenreMenu(label, url):
-    AddDir(label, GENREMENU, URL+url, 'DefaultPlaylist.png', True)    
+    AddDir(label, GENREMENU, URL+url, ICON, True)    
 
 
 def AddBook(title, author, url, image=None, summary=None):
     if image:
         image = URL+image
     else:
-        image = 'DefaultPlaylist.png'
+        image = ICON
 
     AddDir(title, BOOK, url, image, True, extra=author, summary=summary) 
 
@@ -340,42 +407,8 @@ def AddDir(name, mode, url, image, isFolder, page=1, extra=None, keyword=None, c
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
 
-def GetDownloadPath():
-    downloadFolder = ADDON.getSetting('RECORD_FOLDER')
-
-    if ADDON.getSetting('ASK_FOLDER') == 'true':
-        dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Record to folder...', 'files', '', False, False, downloadFolder)
-	if downloadFolder == '' :
-	    return None
-
-    if downloadFolder is '':
-        d = xbmcgui.Dialog()
-	d.ok(TITLE, '', 'You have not set the default recordings folder.', 'Please update the add-on settings and try again.')
-	ADDON.openSettings() 
-	downloadFolder = ADDON.getSetting('RECORD_FOLDER')
-
-    if downloadFolder == '' and ADDON.getSetting('ASK_FOLDER') == 'true':
-        dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)	
-
-    if downloadFolder == '' :
-        return None
-
-    if ADDON.getSetting('ASK_FILENAME') == 'true':
-        kb = xbmc.Keyboard(TITLE, 'Record stream as...' )
-	kb.doModal()
-	if kb.isConfirmed():
-	    filename = kb.getText()
-	else:
-	    return None
-    else:
-        filename = TITLE
-
-    filename = re.sub('[:\\/*?\<>|"]+', '', filename)
-    filename = filename + '.mp3'
-
-    return os.path.join(downloadFolder, filename)
+def Refresh():
+    xbmc.executebuiltin('Container.Refresh')
 
 
 def clearResume():
@@ -384,25 +417,21 @@ def clearResume():
     ADDON.setSetting('RESUME_TIME',    '0')
     
 
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = split[1]
+
+    return params
 
 
-params  = get_params()
+params = get_params(sys.argv[2])
+
 mode    = None
 url     = None
 name    = None
@@ -412,56 +441,39 @@ page    = None
 keyword = None
 menu    = None
 
-try:
-    mode = int(params['mode'])
-except:
-    pass
+try:    mode = int(params['mode'])
+except: pass
 
-try:
-    url = urllib.unquote_plus(params['url'])
-except:
-    pass
+try:    url = urllib.unquote_plus(params['url'])
+except: pass
 
-try:
-    name = urllib.unquote_plus(params['name'])
-except:
-    pass
+try:    name = urllib.unquote_plus(params['name'])
+except: pass
 
-try:
-    extra = urllib.unquote_plus(params['extra'])
-except:
-    pass
+try:    extra = urllib.unquote_plus(params['extra'])
+except: pass
 
-try:
-    image = urllib.unquote_plus(params['image'])
-except:
-    pass
+try:    image = urllib.unquote_plus(params['image'])
+except: pass
 
-try:
-    page = int(params['page'])
-except:
-    pass
+try:    page = int(params['page'])
+except: pass
 
-try:
-    keyword = urllib.unquote_plus(params['keyword'])
-except:
-    pass
+try:    keyword = urllib.unquote_plus(params['keyword'])
+except: pass
 
-try:
-    menu = urllib.unquote_plus(params['menu'])
-except:
-    pass
+try:    menu = urllib.unquote_plus(params['menu'])
+except: pass
 
-#print TITLE
-#print sys.argv[2]
-#print mode
-#print url
-#print name
-#print extra
-#print image
-#print page
-#print keyword
-#print menu
+utils.log(sys.argv[2])
+utils.log(mode)
+utils.log(url)
+utils.log(name)
+utils.log(extra)
+utils.log(image)
+utils.log(page)
+utils.log(keyword)
+utils.log(menu)
 
 
 if mode == BOOK:
@@ -497,10 +509,15 @@ elif mode == PLAYALL:
 
 elif mode == RESUME:
     PlayChapter(url, name, extra, image)
-    xbmc.executebuiltin('Container.Refresh')
+    Refresh()
 
 elif mode == RESUMEALL:
     PlayAll(url, name, extra, image)
+
+
+elif mode == REMOVE_RESUME:
+    RemoveResume()
+    Refresh()
 
 
 else:

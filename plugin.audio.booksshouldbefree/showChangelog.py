@@ -20,5 +20,5 @@
 #
 
 if __name__ == '__main__':
-    import utils
+    import loyal_book_utils as utils
     utils.showChangelog()
