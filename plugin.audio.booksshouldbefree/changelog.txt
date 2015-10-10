@@ -2,7 +2,7 @@ v1.0.7:
     - Updated for org submission
     - Updated to new name - Loyal Books
     - Updated icon
-    - Improved quality is search results
+    - Improved quality of search results
 
 v1.0.6:
   - Fixed missing chapters, thanks to Volker Cordes for new regex

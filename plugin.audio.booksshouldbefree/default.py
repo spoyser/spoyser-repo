@@ -108,9 +108,14 @@ def GetHTMLDirect(url):
 
 
 def Genre(_url, page):
-    view    = int(ADDON.getSetting('VIEW'))
-    sort    = int(ADDON.getSetting('SORT'))
-    results = int(ADDON.getSetting('RESULTS'))
+    try:    view    = int(ADDON.getSetting('VIEW'))
+    except: view    = 0
+
+    try:    sort = int(ADDON.getSetting('SORT'))
+    except: sort = 0
+
+    try:    results = int(ADDON.getSetting('RESULTS'))
+    except: results = 30
 
     requestURL = _url
 
