@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.audio.bbcpodcasts"
        name="BBC Podcasts"
-       version="1.0.4"
+       version="1.0.5"
        provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -22,14 +22,21 @@
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
+
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>audio</provides>
   </extension>
+
   <extension point="xbmc.addon.metadata">
-    <summary>Books Should Be Free</summary>
-    <description lang="en">Free public domain audiobooks</description>
+    <summary>Loyal Books (formerly Books Should Be Free)</summary>
+    <description lang="en">Over 7000 free public domain audiobooks</description>
      <platform>all</platform>
+     <language>en</language>
+     <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+     <forum>http://forum.kodi.tv/showthread.php?tid=242478</forum>
+    <website>http://www.loyalbooks.com</website>
   </extension>
+
 </addon>
 
 <addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.2" provider-name="spoyser">

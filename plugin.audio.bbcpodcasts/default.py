@@ -1,3 +1,23 @@
+#
+#       Copyright (C) 2013-
+#       Sean Poyser (seanpoyser@gmail.com)
+#
+#  This Program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This Program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with XBMC; see the file COPYING.  If not, write to
+#  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#  http://www.gnu.org/copyleft/gpl.html
+#
+
 import urllib
 import geturllib
 import xbmcplugin
@@ -18,11 +38,12 @@ _DOWNLOAD     = 400
 _SEARCH       = 500
 _SEARCHRESULT = 600
 
-NAME  = 'plugin.audio.bbcpodcasts'
-TITLE = 'BBC Podcasts'
-ADDON = xbmcaddon.Addon(id = NAME)
-URL   = ADDON.getSetting('URL') # http://www.bbc.co.uk/podcasts.opml
-PATH  = xbmc.translatePath(os.path.join('special://profile', 'addon_data', NAME))
+
+ADDONID = 'plugin.audio.bbcpodcasts'
+ADDON   = xbmcaddon.Addon(ADDONID)
+TITLE   = ADDON.getAddonInfo('name')
+URL     = ADDON.getSetting('URL')
+
 
 global Year
 Year = 2013
@@ -40,7 +61,7 @@ def downloadPath(url):
     if downloadFolder is '':
         d = xbmcgui.Dialog()
 	d.ok(TITLE,'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
-	ADDON.openSettings(sys.argv[0])
+        ADDON.openSettings()
 	downloadFolder = ADDON.getSetting('download_folder')
 
     if downloadFolder == '' and ADDON.getSetting('ask_folder') == 'true':
@@ -175,7 +196,8 @@ def LoadStation(_networkId):
 
 
 def LoadShow(url, genre, keyname):
-    xml = ElementTree.fromstring(geturllib.GetURL(url, 3600)) # 1 hr
+    xml = geturllib.GetURL(url, 3600) # 1 hr
+    xml = ElementTree.fromstring(xml)
 
     channel = xml.find('channel')
     title   = channel.findtext('title')
@@ -201,25 +223,25 @@ def Search():
     if search == '':
         return
 
-
-    #http://www.bbc.co.uk/podcasts/search.jsonp?q=m&callback=podcastCallback
-    #url = 'http://www.bbc.co.uk/podcasts/quick_search/' + search
-    url = 'http://www.bbc.co.uk/podcasts/search.jsonp?q=' + search
-
+    url = 'http://www.bbc.co.uk/podcasts/search.json?q=' + search
 
     try:
         search = geturllib.GetURL(url, 3600) # 1 hr
-        search = search.split('(', 1)[1]
-        search = search.rsplit(')', 1)[0]
 
         jsn = json.loads(search)
 
         for item in jsn:
-            fullTitle   = item['fullTitle']
-            shortTitle  = item['shortTitle']
-            description = item['podDescription']
-            artwork     = 'http://static.bbci.co.uk/podcasts/artwork/' + shortTitle + '.jpg'
-            addSearchResult(fullTitle, shortTitle, artwork, description)
+            try:        
+                title       = item['title']
+                url         = item['link']  + '.rss' 
+                description = item['description'].replace('<span class="pc-quickfind-match">', '').replace('</span>', '')
+                thumb       = fixImage(item['image'], '256x256')
+                fanart      = fixImage(item['image'], '1280x720')
+                addSearchResult(title, url, thumb, fanart, description)
+                print artwork
+            except:
+                pass
+
     except:
         pass
 
@@ -227,54 +249,51 @@ def Search():
 
 
 def LoadSearchResult(url):
-    url = 'http://www.bbc.co.uk/podcasts/series/' + url
-
-    try:
-        response = geturllib.GetURL(url, 3600) # 1 hr
-        rss      = 'http://downloads' + re.compile('downloads(.+?)rss.xml').findall(response)[0] + 'rss.xml'
-        #keyname  = re.findall("var keyname = '(.+?)'", response)[0]
-        keyname  = re.findall('class="pc-desktop pc-keyname-(.+?)">', response)[0]
-        genres   = re.findall('ul class="pc-results-box-genres">(.+?)</ul>', response)[0]
-        genres   = re.findall('<li>(.+?)</li>', genres)
-        genre    = ''
-        for g in genres:
-            genre = genre + CleanString(g) + ', '
-        if len(genre) > 2:
-            genre = genre[:-2]
-        LoadShow(rss, genre, keyname)
-    except:
-        pass
+    LoadShow(url, '', '')
 
                          
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = split[1]
+
+    return params
 
 
-def addSearchResult(fullTitle, shortTitle, artwork, description):
-    u = sys.argv[0] + "?url=" + urllib.quote_plus(shortTitle) + "&mode=" + str(_SEARCHRESULT) + "&name=" + urllib.quote_plus(fullTitle)
+def addSearchResult(title, url, thumb, fanart, description):
+    u  =  sys.argv[0]
+    u += "?url=" + urllib.quote_plus(url)
+    u += "&mode=" + str(_SEARCHRESULT) 
 
-    liz = xbmcgui.ListItem(fullTitle, iconImage=artwork, thumbnailImage=artwork)
+    try:    u += "&name=" + urllib.quote_plus(title)
+    except: u += "&name=" + urllib.quote_plus('title')
 
-    liz.setInfo(type='music', infoLabels={"Title" : fullTitle, "comment" : description, "year" : Year, "artist" : shortTitle, "genre" : ' ', "album" : fullTitle} )        
+    liz = xbmcgui.ListItem(title, iconImage=thumb, thumbnailImage=thumb)
+
+    liz.setInfo(type='music', infoLabels={"Title" : title, "comment" : description, "year" : Year, "artist" : ' ', "genre" : ' ', "album" : title} ) 
+
+    liz.setProperty('Fanart_Image', fanart)    
 
     xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = True)        
 
 
-def addPodcast(name, url, genre, keyname, title, duration, thumbnail = 'DefaultPlaylist.png', desc=''):
+def fixImage(image, resolution):
+    image = image.replace('80x80',     resolution)
+    image = image.replace('304x304',   resolution)
+    image = image.replace('1408x1408', resolution)
+    return image
+
+
+
+def addPodcast(name, url, genre, keyname, title, duration, _thumbnail = 'DefaultPlaylist.png', desc=''):
+    thumbnail = fixImage(_thumbnail, '256x256')
+    fanart    = fixImage(_thumbnail, '1280x720')
+
     name = FixString(name)
     desc = FixString(desc)
 
@@ -287,6 +306,8 @@ def addPodcast(name, url, genre, keyname, title, duration, thumbnail = 'DefaultP
 
     liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "year" : Year, "artist" : keyname, "genre" : genre, "album" : title} )    
 
+    liz.setProperty('Fanart_Image', fanart)    
+
     contextMenu = []
     contextMenu.append(('Download', 'XBMC.RunPlugin(%s?mode=%s&url=%s)' % (sys.argv[0], str(_DOWNLOAD), url)))
     liz.addContextMenuItems(contextMenu)    
@@ -294,7 +315,10 @@ def addPodcast(name, url, genre, keyname, title, duration, thumbnail = 'DefaultP
     xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = False)
 
 
-def addStation(name, url, genre, keyname, thumbnail = 'DefaultPlaylist.png', desc=''):
+def addStation(name, url, genre, keyname, _thumbnail = 'DefaultPlaylist.png', desc=''):
+    thumbnail = fixImage(_thumbnail, '256x256')
+    fanart    = fixImage(_thumbnail, '1280x720')
+
     name = FixString(name)
     desc = FixString(desc)
 
@@ -303,6 +327,8 @@ def addStation(name, url, genre, keyname, thumbnail = 'DefaultPlaylist.png', des
     liz = xbmcgui.ListItem(name, iconImage=thumbnail, thumbnailImage=thumbnail)
 
     liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "year" : Year, "artist" : keyname, "genre" : genre, "album" : name} )        
+
+    liz.setProperty('Fanart_Image', fanart)  
 
     xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = True)        
 
@@ -327,7 +353,8 @@ if __name__ == "__main__":
         pass
 
 
-params=get_params()
+params=get_params(sys.argv[2])
+
 
 url       = None
 name      = None
@@ -337,65 +364,59 @@ keyname   = None
 duration  = None
 thumbnail = None
 
-try:
-    url=urllib.unquote_plus(params["url"])
-except:
-    pass
 
-try:
-    name=urllib.unquote_plus(params["name"])
-except:
-    pass
+try:    url=urllib.unquote_plus(params["url"])
+except: pass
 
-try:
-    mode=int(params["mode"])
-except:
-    pass
+try:    name=urllib.unquote_plus(params["name"])
+except: pass
+
+try:    mode=int(params["mode"])
+except: pass
 
 
-#print "Mode: " + str(mode)
-#print "URL: "  + str(url)
-#print "Name: " + str(name)
+#print 'Mode: %s' % str(mode)
+#print 'URL : %s' % str(url)
+#print 'Name: %s' % str(name)
 
-if (mode == None) or (url == None) or (len(url) < 1):
-    Main()
 
-elif mode == _STATION:
+if mode == _STATION:
     LoadStation(url)
 
-elif mode == _SHOW:
-    try:
-        genre=urllib.unquote_plus(params["genre"])
-    except:
-        pass
 
-    try:
-        keyname=urllib.unquote_plus(params["keyname"])
-    except:
-        pass
+elif mode == _SHOW:
+    try:    genre=urllib.unquote_plus(params["genre"])
+    except: pass
+
+    try:    keyname=urllib.unquote_plus(params["keyname"])
+    except: pass
 
     LoadShow(url, genre, keyname)
+
 
 elif mode == _DOWNLOAD:
     Download(url)
 
+
 elif mode == _PODCAST:
-    try:
-        duration=urllib.unquote_plus(params["duration"])
-    except:
-        pass
+    try:    duration=urllib.unquote_plus(params["duration"])
+    except: pass
 
-    try:
-        thumbnail=urllib.unquote_plus(params["thumbnail"])
-    except:
-        pass
-
+    try:    thumbnail=urllib.unquote_plus(params["thumbnail"])
+    except: pass
+  
     PlayPodcast(url, duration, thumbnail)
+
 
 elif mode == _SEARCH:
     Search()
 
+
 elif mode == _SEARCHRESULT:
     LoadSearchResult(url)
+
+else:
+    Main()
+
         
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
