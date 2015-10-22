@@ -30,10 +30,10 @@ def Resolve(html):
         urls = re.compile('<iframe id.+?src="(.+?)".+?</iframe>').findall(html)
         for url in urls:
             if 'cizgifilmlerizle' in url:
-                results.append(DoResolve(url))
+                DoResolve(url, results)
 
             if 'animeuploads' in url:
-                results.append(DoResolve(url))
+                DoResolve(url, results)
 
             if 'vid44.php' in url:
                 url = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
@@ -44,12 +44,13 @@ def Resolve(html):
     except:
         pass
 
+    if len(results) == 0:
+        results = ['', 'Error Resolving URL']
+
     return results
 
 
-def DoResolve(url):
-    ret  = None
-    text = ''
+def DoResolve(url, results):
     try:        
         theNet = net.Net()
 
@@ -58,19 +59,19 @@ def DoResolve(url):
 
         theNet.set_user_agent('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
 
-        html  = theNet.http_POST(url, data).content.replace('\n', '').replace('\t', '')
+        html  = theNet.http_POST(url, data).content.replace('\n', '').replace('\t', '')        
 
-        try:
-            match = re.compile('file: "(.+)",.+?image').search(html).group(1)             
-        except Exception, e:
-            match = re.compile('file=(.+?)&provider=http').search(html).group(1).split('file=', 1)[-1]
+        links = re.compile('file:.+?"(.+?)",.+?label:.+?"(.+?)"').findall(html)
+        for link in links:
+            try:    results.append([link[0], link[1]])
+            except: pass        
 
-        url = urllib.unquote(match)
-        url = url.replace(' ', '%20')
-        ret = url       
+        if len(links) == 0:
+            links = re.compile(';file=(.+?)&provider=http\'').findall(html)
+            for link in links:
+                results.append([urllib.unquote_plus(link), ''])
+
     except Exception, e:
-        text = 'Error Resolving URL'
+        pass
 
-    response = [ret.split('",', 1)[0], text]
-
-    return response
+    return results

@@ -148,6 +148,7 @@ def GetLinkIndex(resolved, select):
         return 0
 
     current = ''
+    prev    = ''
     part    = 1
 
     hosts = []
@@ -156,13 +157,15 @@ def GetLinkIndex(resolved, select):
         resolver = item[0]
 
         if resolver == current:
-            hosts[-1] = resolver + ' # %d' % part
+            hosts[-1] = resolver + ' # %d %s' % (part, prev)
             part     += 1
-            hosts.append(resolver + ' # %d' % part)
+            hosts.append(resolver + ' # %d %s' % (part,  item[2]))
         else:
             current = resolver
             part    = 1
-            hosts.append(resolver)
+            hosts.append(resolver + ' %s' % item[2])
+
+        prev = item[2]
 
     index = xbmcgui.Dialog().select('Please Select Video Host', hosts)   
         
@@ -235,6 +238,7 @@ def PlayVideo(_url, select):
 
     if url:
         url = url.split('"')[0]
+        url = url.replace(' ', '%20')
 
     if not url:
         d   = xbmcgui.Dialog()
@@ -317,25 +321,20 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
     
 
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = split[1]
+
+    return params
 
 
-params = get_params()
+params = get_params(sys.argv[2])
 
 mode   = None
 url    = None

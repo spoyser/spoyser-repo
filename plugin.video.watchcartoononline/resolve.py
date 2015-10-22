@@ -51,12 +51,12 @@ def ResolveURL(url):
 
     resolved = []
 
-    match = re.compile('<div class=\'postTabs_divs(.+?)</div>').findall(html)
+    match = re.compile('<div class=\'postTabs_divs(.+?)</div>').findall(html)   
 
     for item in match:
         for module in MODULES:                        
             items = MODULES[module].Resolve(item)
-            for item in items:
+            for item in items:               
                 if item[0] != None:
                     resolved.append([module.replace('_', ''), item[0], item[1]])
 
