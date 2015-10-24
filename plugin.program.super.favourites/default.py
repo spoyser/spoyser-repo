@@ -158,6 +158,10 @@ VIEWTYPE              = int(ADDON.getSetting('VIEWTYPE'))
 DLG_MENU              = ADDON.getSetting('CONTEXT_STYLE')         == '1'
 
 
+if ADDON.getSetting('SHOW_STARTUP_TXT') == 'true':
+    utils.DialogOK(ADDON.getSetting('STARTUP_TXT'))
+    ADDON.setSetting('SHOW_STARTUP_TXT', 'false')
+
 
 if REMOTE:
     LOCATION = len(ADDON.getSetting('LOCATION')) > 0
@@ -2932,7 +2936,7 @@ elif mode == _UNSECURE:
 elif mode == _IMPORT:
     import importer
     importer.doImport()
-    doRefresh = True
+    #doRefresh = True
 
 
 elif mode == _RECOMMEND_KEY or mode == _RECOMMEND_KEY_A:

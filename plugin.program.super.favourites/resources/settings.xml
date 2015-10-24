@@ -28,11 +28,14 @@
 		<setting id="INHERIT"          label="30096" type="bool"      default="true"  />	
         <setting id="SHOW_FANART"      label="30064" type="bool"      default="true"  />
         <setting id="DEFAULT_FANART"   label="30113" type="enum"      default="30114" lvalues="30114|30115|30116"/>
-        <setting id="DEFAULT_IMAGE"    label="30117" type="file"      default=""      enable="eq(-1,1)" visible="eq(-1,1)"/>		
+        <setting id="DEFAULT_IMAGE"    label="30117" type="file"      default=""      />		
 		<setting id="SHOWIMPORT"       label="30139" type="bool"      default="false"  />
 		<setting id="VIEWTYPE"         label="30203" type="number"    default="0"      />	
 		<setting id="DISABLEMOVIEVIEW" label="30208" type="bool"      default="false"  />		
-				
+		
+		<setting id="SHOW_STARTUP_TXT"   type="bool"  label="30221"  default="false" />	
+		<setting id="STARTUP_TXT"        type="text"  label="30222"  default="[COLOR chartreuse][B]Please enter the startup message[CR]you would like to display[/B][/COLOR]" enable="eq(-1,true)"/>	
+		
 		<setting type="sep" visible="true" />
 	</category>
 	

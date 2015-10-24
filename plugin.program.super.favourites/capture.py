@@ -251,6 +251,9 @@ def doMenu(mode):
     folder = xbmc.getInfoLabel('Container.FolderPath')
     path   = xbmc.getInfoLabel('ListItem.FolderPath')
 
+    print folder
+    print path
+
     #ignore if in Super Favourites
     if (ADDONID in folder) or (ADDONID in path):
         doStandard(useScript=False)

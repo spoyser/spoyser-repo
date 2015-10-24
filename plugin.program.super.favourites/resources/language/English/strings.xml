@@ -211,6 +211,8 @@
 	<string id="30218">Clear current Super Favourites when importing</string>		
 	<string id="30219">Quick launch Super Favourites</string>
 	<string id="30220">Now playing</string>
+	<string id="30221">Show startup message</string>	
+	<string id="30222">Startup message text</string>	
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
