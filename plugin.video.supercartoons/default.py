@@ -99,6 +99,9 @@ def GetUrlAndNext(url, page):
 
 
 def Clean(text):
+    text = text.replace('&rsquo;', '\'')
+    text = text.replace('&ldquo;', '"')
+    text = text.replace('&rdquo;', '"')
     text = text.replace('&#8211;', '-')
     text = text.replace('&#8217;', '\'')
     text = text.replace('&#8220;', '"')
@@ -216,9 +219,13 @@ def KidsTime():
         try:
             title, image, url = GetRandom()  
 
+            image += getUserAgent()
+
             liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
             liz.setInfo( type="Video", infoLabels={"Title": title})
+
+            url += getUserAgent()
 
             pl.add(url, liz)
 
@@ -335,7 +342,6 @@ def Search(page, keyword):
 
         if len(item) > 0:
             link  = 'http://www.supercartoons.net/cartoon/' + item[0][0] + '.html'
-            print link
             title = GetSearchTitle(item[0][1])
             image = GetSearchImage(link)
             desc  = Clean(item[0][2])
@@ -346,8 +352,33 @@ def Search(page, keyword):
         AddMore(SEARCH, '', page+1, keyword)
 
 
+def getUserAgent():
+    agents = []
+    #agents.append('Mozilla/5.0 (Android; Mobile; rv:29.0) Gecko/29.0 Firefox/29.0')
+    #agents.append('Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36')
+    #agents.append('Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) CriOS/34.0.1847.18 Mobile/11B554a')
+    #agents.append('Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.53')
+    #agents.append('Mozilla/5.0 (iPhone; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.53')
+    #agents.append('Mozilla/5.0 (Android; Mobile; rv:30.0) Gecko/30.0 Firefox/30.0')
+
+    agents.append('Mozilla/5.0 (Android; Mobile; rv:%d.0) Gecko/%d.0 Firefox/%d.0')
+    agents.append('Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.%d (KHTML, like Gecko) Chrome/%d.0.1847.114 Mobile Safari/537.%d')
+    agents.append('Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/5%d.51.1 (KHTML, like Gecko) CriOS/%d.0.1847.%d Mobile/11B554a')
+    agents.append('Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/5%d.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B5%da Safari/9537.%d')
+    agents.append('Mozilla/5.0 (iPhone; CPU OS 7_0_4 like Mac OS X) AppleWebKit/5%d.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B%d4a Safari/9537.%d')
+    agents.append('Mozilla/5.0 (Android; Mobile; rv:%d.0) Gecko/%d.0 Firefox/%d.0')
+
+    agent = random.choice(agents) % (random.randint(10, 40), random.randint(10, 40), random.randint(10, 40))
+
+    return '?|User-Agent=%s' % agent
+
+
+
 def PlayCartoon(title, image, url):
-    liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+    url   += getUserAgent()
+    image += getUserAgent()
+
+    liz  = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
     liz.setInfo( type="Video", infoLabels={ "Title": title} )
     liz.setPath(url)
@@ -448,9 +479,10 @@ def AddCartoon(title, img, link, desc):
     link = link.replace('/cartoon/', '/video/')
     link = link.replace('.html', '.mp4')
 
-    infoLabels = {'title':title, 'plot':desc}
+    infoLabels = {'title':title, 'plot':Clean(desc)}
 
     menu = []
+    menu.append(('Info', 'Action(Info)'))
     menu.append(('Download', 'XBMC.RunPlugin(%s?mode=%d&title=%s&url=%s)' % (sys.argv[0], DOWNLOAD, urllib.quote_plus(title), urllib.quote_plus(link))))
 
     AddDir(title, CARTOON, url=link, image=img, isFolder=False, infoLabels=infoLabels, contextMenu=menu)
@@ -460,7 +492,7 @@ def AddCharacter(title, img, link, desc):
 
     if desc.upper().startswith('WATCH FREE'):
         desc = desc.split('. ', 1)[1]
-    infoLabels = {'title':title, 'plot':desc}
+    infoLabels = {'title':title, 'plot':Clean(desc)}
 
     AddDir(title, CHARACTER, url=link, image=img, isFolder=True, infoLabels=infoLabels)
 
@@ -580,28 +612,24 @@ def DownloadPath(title, url):
     return os.path.join(downloadFolder, filename)
     
 
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
 
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = split[1]
+
+    return params
+  
 
 import geturllib
 geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
 
-params = get_params()
+params = get_params(sys.argv[2])
+
 mode   = None
 
 try:    mode = int(urllib.unquote_plus(params['mode']))

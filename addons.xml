@@ -184,7 +184,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.supercartoons" name="Super Cartoons" version="1.0.11" provider-name="spoyser">
+<addon id="plugin.video.supercartoons" name="Super Cartoons" version="1.0.12" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
