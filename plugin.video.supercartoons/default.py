@@ -250,9 +250,10 @@ def GetRandom():
     cartoons = []
 
     html  = GetHTML(url)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<span class="title">.+?<a href="(.+?)".+?">(.+?)</a>').findall(html)
 
-    for desc, img, link, title in match:
+    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=".+?title=".+?">(.+?)</a></span></div>').findall(html)
+
+    for link, dec, img, title in match:
         link = link.replace('/cartoon/', '/video/')
         link = link.replace('.html', '.mp4')
         cartoons.append([title, img, link])
@@ -512,6 +513,8 @@ def AddMore(mode, url, page, keyword = None):
 def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, contextMenu=None):
     if not image:
         image = ICON
+    elif image.lower().startswith('http'):
+        image += getUserAgent()
 
     u  = sys.argv[0] 
     u += '?mode='  + str(mode)
