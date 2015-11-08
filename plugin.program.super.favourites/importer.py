@@ -33,7 +33,7 @@ CHANGELOG = None
 
 ADDON    = utils.ADDON
 ADDONID  = utils.ADDONID
-HOME     = xbmc.translatePath(ADDON.getAddonInfo('profile')) #has to be a real path
+HOME     = xbmc.translatePath('special://userdata')
 ROOT     = utils.ROOT
 TITLE    = utils.TITLE
 
@@ -58,11 +58,6 @@ def main(toImport, settings):
 def doImport():
     try:
         success = False
-
-        if IMPORT_RESET:
-            profile = os.path.join(ROOT, 'Super Favourites')
-            try:    sfile.rmtree(profile)
-            except: pass
 
         if REMOTE:
             success = _doImportFromRemote()
@@ -97,7 +92,7 @@ def _doImportFromRemote():
         import urllib
         download.doDownload(urllib.quote_plus(location), urllib.quote_plus(file), urllib.quote_plus(TITLE), quiet=True)
 
-        if os.path.exists(file):
+        if os.path.exists(file):            
             success = extractAll(file, dp, location.replace('%20', ' '))
             utils.DeleteFile(file)
             return success
@@ -133,9 +128,8 @@ def doExport():
 
         doZipfile(src, include)
 
-        if (src <> dst):
-            sfile.copy(src, dst)
-            sfile.remove(src)
+        sfile.remove(dst)
+        sfile.rename(src, dst)
 
         utils.DialogOK(GETTEXT(30132))
         return True
@@ -152,9 +146,11 @@ def doExport():
 def doZipfile(outputFile, includeSettings=True):
     zip = None
 
-    source  = os.path.join(HOME, 'Temp')
+    source  = os.path.join(HOME, 'SF_Temp')
+
     if sfile.exists(source):
         sfile.rmtree(source)
+
     sfile.copytree(ROOT, source)
 
     relroot = os.path.abspath(os.path.join(source, os.pardir))
@@ -191,7 +187,8 @@ def doZipfile(outputFile, includeSettings=True):
             zip = zipfile.ZipFile(output_filename, 'w', zipfile.ZIP_DEFLATED)
 
         arcname  = 'settings.xml'
-        filename = os.path.join(HOME, arcname)
+        filename = os.path.join(ADDON.getAddonInfo('profile'), arcname)
+        filename = xbmc.translatePath(filename) #has to be a real path
 
         zip.write(filename, arcname)
 
@@ -206,8 +203,12 @@ def extractAll(filename, dp, location):
 
     relroot = os.path.abspath(os.path.join(ROOT, os.pardir))
 
-    root    = os.path.join(HOME, 'Temp')
+    root    = os.path.join(HOME, 'SF_Temp')
     profile = os.path.join(root, 'Super Favourites')
+
+    if IMPORT_RESET:
+        try:    sfile.rmtree(os.path.join(ROOT, 'Super Favourites'))
+        except: pass
 
     try:
         nItem = float(len(zin.infolist()))
@@ -223,7 +224,7 @@ def extractAll(filename, dp, location):
 
             if filename == 'settings.xml':
                 if utils.DialogYesNo(GETTEXT(30135), line2='', line3=GETTEXT(30136), noLabel=None, yesLabel=None):
-                    zin.extract(item, HOME)
+                    zin.extract(item, root)
             elif filename == 'changelog.txt':
                 try:
                     zin.extract(item, root)      
@@ -246,7 +247,7 @@ def extractAll(filename, dp, location):
 
     except Exception, e:
         utils.log('Error whilst unzipping %s' % location)
-        utils.log(e)
+        utils.log(e)        
         return False
 
     sfile.copytree(root, ROOT)

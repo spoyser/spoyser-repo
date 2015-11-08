@@ -60,10 +60,11 @@ def playCommand(originalCmd, contentMode=False):
             #when running a script favourite
             if FRODO:
                 xbmc.executebuiltin('ActivateWindow(Home)')
-    
-        if isPlaylist(cmd):
-            if PLAY_PLAYLISTS:
-                return playPlaylist(cmd)      
+
+        if PLAY_PLAYLISTS:
+            import playlist
+            if playlist.isPlaylist(cmd):
+                return playlist.play(cmd)      
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd) 
@@ -78,7 +79,6 @@ def playCommand(originalCmd, contentMode=False):
             except:
                 pass
 
-
         xbmc.executebuiltin(cmd)
 
 
@@ -86,53 +86,6 @@ def playCommand(originalCmd, contentMode=False):
         utils.log('Error in playCommand')
         utils.log('Command: %s' % cmd)
         utils.log('Error:   %s' % str(e))    
-
-
-def isPlaylist(cmd):
-    if cmd.lower().replace(',return', '').endswith('.m3u")'):
-        return True
-
-    if cmd.lower().replace(',return', '').endswith('.m3u8")'):
-        return True
-
-    return False
-
-    
-def playPlaylist(cmd):
-    if cmd.lower().startswith('activatewindow'):
-        playlist = cmd.split(',', 1)
-        playlist = playlist[-1][:-1]
-        cmd      = 'PlayMedia(%s)' % playlist
-
-    elif sfile.exists(cmd):
-        #cmd = 'PlayMedia(%s)' % cmd
-        playPlaylistFile(cmd)
-        return
-
-    xbmc.executebuiltin(cmd)
-
-
-def playPlaylistFile(path):
-    items = parsePlaylist(sfile.readlines(path))
-
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()        
-
-    start = 0
-        
-    for i in range(start,len(items)):
-        item   = items[i]
-        title  = item[0]
-        image  = ICON
-        url    = item[1]
-        
-        liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-
-        liz.setInfo(type='Video', infoLabels={'Title': title})
-
-        pl.add(url, liz)
-
-    xbmc.Player().play(pl)
 
 
 def activateWindowCommand(cmd):

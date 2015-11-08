@@ -32,7 +32,8 @@ def exists(filename):
 
 def isfile(filename):
     if not exists(filename):
-        raise Exception('sfile.isfile error %s does not exists' % filename)
+        #raise Exception('sfile.isfile error %s does not exists' % filename)
+        return False
 
     import stat
     return stat.S_ISREG(xbmcvfs.Stat(filename).st_mode())
@@ -40,7 +41,8 @@ def isfile(filename):
 
 def isdir(folder):
     if not exists(folder):
-        raise Exception('sfile.isdir error %s does not exists' % folder)
+        #raise Exception('sfile.isdir error %s does not exists' % folder)
+        return False
 
     import stat
     return stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode())
@@ -87,10 +89,13 @@ def makedirs(path):
 
 
 def delete(filename):
-    return xbmcvfs.delete(filename)
+    return remove(filename)
 
 
 def remove(filename):
+    if isdir(filename):
+        return rmtree(filename)
+
     return xbmcvfs.delete(filename)
 
 
@@ -109,10 +114,13 @@ def rmtree(folder):
 
 def copytree(src, dst):
     import os
-    current, dirs, files = walk(src)
 
-    if not exists(dst):
-        makedirs(dst)
+    if exists(dst):
+        rmtree(dst)
+
+    makedirs(dst)
+
+    current, dirs, files = walk(src)
 
     for file in files:
         copy(os.path.join(current, file), os.path.join(dst, file))
@@ -121,7 +129,13 @@ def copytree(src, dst):
         copytree(os.path.join(src, dir), os.path.join(dst, dir))
 
 
-def copy(src, dst):
+def copy(src, dst, overWrite=True):
+    if not overWrite and exists(dst):
+        return False
+
+    if isdir(src):
+        return copytree(src, dst)
+
     return xbmcvfs.copy(src, dst)
 
 
@@ -163,3 +177,27 @@ def ctime(filename):
 #
 #    status = xbmcvfs.Stat(filename)
 #    return status
+
+
+def getfolder(path):
+    import os
+    path = path.replace('/', os.sep)
+    try:    return path.rsplit(os.sep, 1)[0]       
+    except: return ''
+
+
+def getfilename(path):
+    import os
+    path = path.replace('/', os.sep)
+    try:    return path.rsplit(os.sep, 1)[-1]
+    except: return ''
+
+
+def removeextension(path):
+    try:    return path.rsplit('.', 1)[0]
+    except: path
+
+
+def getextension(path):
+    try:    return path.rsplit('.')[-1]
+    except: return ''

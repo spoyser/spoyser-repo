@@ -4,7 +4,7 @@
 		<setting id="VERSION"    type="text" label="" default="0.0.0" visible="false"/>	
 		<setting id="MANUAL_ID"  type="text" label="" default="1"     visible="false"/>	
 		
-		<setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30122|30121"/>
+		<setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30122|30121" visible="false"/>
         <setting id="FOLDER"      label="30056" type="folder"    default="special://profile/addon_data/plugin.program.super.favourites/" />
 		
         <setting id="HOTKEY"      label="30026" type="labelenum" lvalues="30027|30028|30029|30030|30031|30032|30033|30034|30035|30036|30037|30038|30039|30058|30111"/>		
@@ -21,6 +21,7 @@
 	
 	<category label="30022">	
 		<setting id="ALPHA_SORT"       label="30213" type="bool"      default="false" />	
+		<setting id="LABEL_NUMERIC"    label="30223" type="bool"      default="false" />			
 		<setting id="SHOWNEW"          label="30023" type="bool"      default="true"  />
 		<setting id="SHOWXBMC"         label="30024" type="bool"      default="true"  />		
 		<setting id="SHOWSEP"          label="30051" type="bool"      default="true"  />			
@@ -74,6 +75,9 @@
 		<setting id="RECOMMENDFIRST"  label="30214" type="bool"  enable="eq(-5,true)+eq(-3,true)"  default="false" visible="eq(-5,true)+eq(-3,true)"/>
 		<setting id="CACHERECOMMEND"  label="30089" type="bool"  enable="eq(-6,true)+eq(-4,true)"  default="true" visible="eq(-6,true)+eq(-4,true)"/>
 		<setting id="STRIPNUMBERS"    label="30095" type="bool"  enable="eq(-7,true)"              default="true" visible="eq(-7,true)"/>
+		
+		<setting id="DUMMY"                 label="30225" type="lsep"/>	
+		<setting id="SHOWIEXPLORE"          label="30224" type="bool" default="true" />
 		
         <setting id="DUMMY"                 label="30151" type="lsep"/>	
 		<setting id="SHOWIPLAY"             label="30145" type="bool" default="true" />

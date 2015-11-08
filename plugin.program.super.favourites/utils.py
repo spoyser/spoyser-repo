@@ -36,13 +36,14 @@ def GetXBMCVersion():
 
 
 def GETTEXT(id):
-    text = ADDON.getLocalizedString(id)
-    name = ADDON.getLocalizedString(30121)
+    return ADDON.getLocalizedString(id)
+    #text = ADDON.getLocalizedString(id)
+    #name = ADDON.getLocalizedString(30121)
 
-    if name == DISPLAY:
-        return text
-    text = text.replace(name, DISPLAY)
-    return text
+    #if name == DISPLAY:
+    #    return text
+    #text = text.replace(name, DISPLAY)
+    #return text
 
 
 ADDONID = 'plugin.program.super.favourites'
@@ -60,6 +61,12 @@ FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY =  ADDON.getSetting('DISPLAYNAME')
 TITLE   =  GETTEXT(30000)
+
+
+PLAYABLE = xbmc.getSupportedMedia('video') + '|' + xbmc.getSupportedMedia('music')
+PLAYABLE = PLAYABLE.replace('|.zip', '')
+#PLAYABLE = 'mp3|mp4|m4v|avi|flv|mpg|mov|txt|%s' % SRC
+PLAYABLE = PLAYABLE.split('|')
 
 
 PLAYMEDIA_MODE      = 1
@@ -574,6 +581,106 @@ def showChangelog(addonID=None):
 
     except:
         pass
+
+
+def getAllPlayableFiles(folder):
+    files = {}
+ 
+    _getAllPlayableFiles(folder, files)
+
+    return files
+
+
+def _getAllPlayableFiles(folder, theFiles):
+    current, dirs, files = sfile.walk(folder)
+
+    for dir in dirs:        
+        path = os.path.join(current, dir)
+        _getAllPlayableFiles(path, theFiles)
+
+    for file in files:
+        path = os.path.join(current, file)
+        if isPlayable(path):
+            size = sfile.size(path)
+            theFiles[path] = [path, size]
+
+
+def isFilePlayable(path):
+    try:    return ('.' + sfile.getextension(path) in PLAYABLE)
+    except: return False
+
+
+def isPlayable(path):
+    if not sfile.exists(path):
+        return False
+
+    if sfile.isfile(path):
+        playable = isFilePlayable(path)
+        return playable
+         
+    current, dirs, files = sfile.walk(path)
+
+    for file in files:
+        if isPlayable(os.path.join(current, file)):
+            return True
+
+    for dir in dirs:        
+        if isPlayable(os.path.join(current, dir)):
+            return True
+
+    return False
+
+
+
+def parseFolder(folder, subfolders=True):
+    items = []
+
+    current, dirs, files = sfile.walk(folder)
+
+    if subfolders:
+        for dir in dirs:        
+            path = os.path.join(current, dir)
+            if isPlayable(path):
+                items.append([dir, path, False])
+
+    for file in files:
+        path = os.path.join(current, file)
+        if isPlayable(path):
+            items.append([file, path, True])
+
+    return items
+
+
+
+def playItems(items, id=-1): 
+    if items == None or len(items) < 1:
+        return
+
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear() 
+
+    resolved = False
+
+    for item in items:
+        title     = item[0]
+        url       = item[1]
+        if len(item) > 2:
+            iconImage = item[2]
+        else:
+            iconImage = ICON
+
+        liz   = xbmcgui.ListItem(title, iconImage=iconImage, thumbnailImage=iconImage)
+        liz.setInfo(type='Video', infoLabels={'Title':title})
+        pl.add(url, liz)
+
+        if id >= 0 and (not resolved):
+            import xbmcplugin
+            resolved = True
+            xbmcplugin.setResolvedUrl(id, True, liz)
+    
+    if id == -1:
+        xbmc.Player().play(pl)
+
 
 if __name__ == '__main__':
     pass

@@ -71,8 +71,8 @@
 	<string id="30073">1 minute</string>	
 	<string id="30074">5 minutes</string>	
 	<string id="30075">15 minutes</string>	
-	<string id="30076">Add Super Folder lock</string>	
-	<string id="30077">Remove Super Folder lock</string>	
+	<string id="30076">Lock Super Folder</string>	
+	<string id="30077">Remove lock</string>	
 	<string id="30078">Enter the password to the remove lock from %s</string>	
 	<string id="30079">Enter the password you wish to use to lock %s</string>	
 	<string id="30080">Sorry the password entered was incorrect.</string>	
@@ -213,6 +213,20 @@
 	<string id="30220">Now playing</string>
 	<string id="30221">Show startup message</string>	
 	<string id="30222">Startup message text</string>	
+	<string id="30223">Label favourites numerically</string>
+	<string id="30224">Show iExplore menu item</string>			
+	<string id="30225">iExplore</string>
+	<string id="30226">Browse to folder to iExplore</string>
+	<string id="30227">Browse for playable media</string>
+	<string id="30228">Browse [I]%s[/I]  for playable media</string>
+	<string id="30229">Play [I]%s[/I]</string>	
+	<string id="30230">Play from here</string>	
+	<string id="30231">Play folder</string>	
+	<string id="30232">Play Super Folder</string>	
+    <string id="30233">Enable autoplay</string>	
+    <string id="30234">Disable autoplay</string>
+	<string id="30235">Explore Super Folder</string>	
+    <string id="30236"> (play folder)</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>

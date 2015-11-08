@@ -277,13 +277,20 @@ class MainGui(xbmcgui.WindowXMLDialog):
             fullpath = os.path.join(utils.PROFILE, self.path)
             thumb    = getFolderThumb(fullpath) if self.mode != 'root' else ICON
 
-            listitem = xbmcgui.ListItem(path + GETTEXT(30102))
-                     
+            #open folder
+            listitem = xbmcgui.ListItem(path + GETTEXT(30102))                     
             listitem.setIconImage(thumb)
             listitem.setProperty('Icon',     thumb)
             listitem.setProperty('Path',     self.path)
             listitem.setProperty('IsFolder', 'open')
+            self.favList.addItem(listitem)
 
+            #play folder
+            listitem = xbmcgui.ListItem(path + GETTEXT(30236))                     
+            listitem.setIconImage(thumb)
+            listitem.setProperty('Icon',     thumb)
+            listitem.setProperty('Path',     self.path)
+            listitem.setProperty('IsFolder', 'play')
             self.favList.addItem(listitem)
 
         except Exception, e:
@@ -327,6 +334,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
                 favLabel = utils.fix(favLabel)
                 if favLabel.endswith(GETTEXT(30102)):
                     favLabel = favLabel.replace(GETTEXT(30102), '')
+                if favLabel.endswith(GETTEXT(30236)):
+                    favLabel = favLabel.replace(GETTEXT(30236), '')
 
                 if isFolder:
                     if isFolder.lower() == 'true':
@@ -339,6 +348,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
                         cmd += 'folder=%s' % urllib.quote_plus(favPath)
                         cmd += '",return)'
                         favPath = cmd
+                    if isFolder.lower() == 'play':
+                        cmd  = 'PlayMedia("plugin://'
+                        cmd += utils.ADDONID + '/?'
+                        cmd += 'label=%s&' % urllib.quote_plus(favLabel)
+                        cmd += 'mode=%s&'  % urllib.quote_plus('5400')
+                        cmd += 'folder=%s' % urllib.quote_plus(favPath)
+                        cmd += '")'
+                        favPath = cmd                        
                 
                 if self.changeTitle:
                     keyboard = xbmc.Keyboard(favLabel, xbmc.getLocalizedString(528), False)
