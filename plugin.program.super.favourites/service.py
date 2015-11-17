@@ -23,6 +23,7 @@ import xbmc
 import os
 
 
+utils.VerifyZipFiles()
 utils.VerifyKeymaps()
 utils.verifyPlugins()
 utils.verifyLocation()

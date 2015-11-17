@@ -170,7 +170,6 @@ def ctime(filename):
     return status.st_ctime()
 
 
-
 #def status(filename):
 #    if not exists(filename):
 #        raise Exception('sfile.status error %s does not exists' % filename)
@@ -182,6 +181,9 @@ def ctime(filename):
 def getfolder(path):
     import os
     path = path.replace('/', os.sep)
+    if path.endswith(os.sep):
+        path += 'filename'
+
     try:    return path.rsplit(os.sep, 1)[0]       
     except: return ''
 
@@ -201,3 +203,15 @@ def removeextension(path):
 def getextension(path):
     try:    return path.rsplit('.')[-1]
     except: return ''
+
+
+def isempty(folder):
+    current, dirs, files = walk(folder)
+
+    if len(dirs) > 0:
+        return False
+
+    if len(files) > 0:
+        return False
+
+    return True

@@ -75,6 +75,10 @@ RUNPLUGIN_MODE      = 3
 ACTION_MODE         = 4
 
 
+HOMESPECIAL = 'special://home/'
+HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
+
+
 DEBUG   = ADDON.getSetting('DEBUG') == 'true'
 
 
@@ -155,6 +159,8 @@ def CheckVersion():
             return
 
         verifySuperSearch()
+        VerifySettinngs()
+        VerifyZipFiles()
 
         src = os.path.join(ROOT, 'cache')
         dst = os.path.join(ROOT, 'C')
@@ -171,6 +177,19 @@ def CheckVersion():
         xbmc.executebuiltin(cmd)
     except:
         pass
+
+
+def VerifyZipFiles():
+    #cleanup corrupt zip files
+    sfile.remove(os.path.join('special://userdata', '_sf_temp.zip'))
+    sfile.remove(os.path.join('special://userdata', 'SF_Temp'))
+
+
+def VerifySettinngs():
+    #patch any settings that have changed types or values
+    if ADDON.getSetting('DISABLEMOVIEVIEW') == 'true':
+        ADDON.setSetting('DISABLEMOVIEVIEW', 'false')
+        ADDON.setSetting('CONTENTTYPE', '')
 
 
 def verifySuperSearch():
@@ -680,6 +699,14 @@ def playItems(items, id=-1):
     
     if id == -1:
         xbmc.Player().play(pl)
+
+
+def convertToHome(text):
+    if text.startswith(HOMEFULL):
+        text = text.replace(HOMEFULL, HOMESPECIAL)
+
+    return text
+
 
 
 if __name__ == '__main__':

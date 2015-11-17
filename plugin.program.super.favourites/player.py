@@ -128,7 +128,6 @@ def playMedia(original):
 
     plugin = re.compile('"(.+?)"').search(cmd).group(1)
 
-
     if len(plugin) < 1:
         xbmc.executebuiltin(cmd)
         return
@@ -141,8 +140,8 @@ def playMedia(original):
         id = xbmcgui.getCurrentWindowId()
 
         if id != winID :
-            xbmc.executebuiltin('ActivateWindow(%d)', winID)
-
+            xbmc.executebuiltin('ActivateWindow(%d)' % winID)
+            
         cmd = 'Container.Update(%s)' % plugin
 
         xbmc.executebuiltin(cmd)

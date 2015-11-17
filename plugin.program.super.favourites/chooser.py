@@ -223,12 +223,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
             fanart = favourite.getFanart(cmd) 
             desc   = favourite.getOption(cmd, 'desc')
+            mode   = favourite.getOption(cmd, 'mode')
 
             cmd = favourite.removeSFOptions(cmd)
 
             listitem.setProperty('Path',   cmd)
             listitem.setProperty('Fanart', fanart)
             listitem.setProperty('Desc',   desc)
+            listitem.setProperty('Mode',   mode)
             
             if len(fave) > 3 and fave[3]:
                 listitem.setProperty('IsFolder', 'true')
@@ -327,9 +329,11 @@ class MainGui(xbmcgui.WindowXMLDialog):
                 if not isFolder:
                     fanart = self.favList.getSelectedItem().getProperty('Fanart')
                     desc   = self.favList.getSelectedItem().getProperty('Desc')
+                    mode   = self.favList.getSelectedItem().getProperty('Mode')
 
                     favPath = favourite.updateSFOption(favPath, 'fanart', fanart)
-                    favPath = favourite.updateSFOption(favPath, 'desc',   desc)            
+                    favPath = favourite.updateSFOption(favPath, 'desc',   desc)
+                    favPath = favourite.updateSFOption(favPath, 'mode',   mode)
 
                 favLabel = utils.fix(favLabel)
                 if favLabel.endswith(GETTEXT(30102)):

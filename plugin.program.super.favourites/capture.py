@@ -100,6 +100,9 @@ def activateWindow(window):
 def doStandard(useScript=True):
     window = xbmcgui.getCurrentWindowId()
 
+    if window == 10000: #home
+        return
+
     if window == 12005: #video playing
         return activateWindow('videoplaylist')
         

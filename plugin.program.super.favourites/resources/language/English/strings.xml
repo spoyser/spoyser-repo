@@ -193,7 +193,7 @@
 	<string id="30200">Populate iSearch with [I]%s.[/I]</string>	
 	<string id="30201">View your previously iRemembered keywords.[CR]Saves repeatedly typing searches you perform frequently.</string>	
 	<string id="30202">Perform an 'Also Watched' IMDB search using [I]%s[/I]  (%s)</string>	
-	<string id="30203">Set view type (0 - default)</string>		
+	<string id="30203">Set view list type (0 - default)</string>		
 	<string id="30204">Remember current view type</string>		
 	<string id="30205">Perform a keyword IMDB search using [I]%s.[/I]</string>		
 	<string id="30206">Search %s for [I]%s.[/I]</string>	
@@ -227,6 +227,10 @@
     <string id="30234">Disable autoplay</string>
 	<string id="30235">Explore Super Folder</string>	
     <string id="30236"> (play folder)</string>
+    <string id="30237">Set sort order</string>	
+    <string id="30238">Default (see settings)</string>	
+    <string id="30239">Alphabetical</string>	
+    <string id="30240">Manual</string>				
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -248,5 +252,24 @@
 	<string id="35017">Would you like to configure it now?</string>	
 	<string id="35018">Edit name when adding to Super Favourites</string>
 	<string id="35019">Extensions</string>	
-	<string id="35020">Quick launch</string>		
+	<string id="35020">Quick launch</string>	
+		
+    <string id="35021">Artwork settings</string>	
+	<string id="35022">Thumbnail</string>
+	<string id="35023">Fanart</string>	
+	<string id="35024">None</string>	
+	<string id="35025">Landscape image</string>
+	<string id="35026">Banner image</string>
+	<string id="35027">Poster image</string>
+	
+	<string id="35028">Set view content type</string>
+	<string id="35029">Files</string>
+	<string id="35030">Songs</string>
+	<string id="35031">Artists</string>
+	<string id="35032">Albums</string>
+	<string id="35033">Movies</string>
+	<string id="35034">TV shows</string>
+	<string id="35035">Episodes</string>
+	<string id="35036">Music videos</string>
+	<string id="35037">Default</string>
 </strings>

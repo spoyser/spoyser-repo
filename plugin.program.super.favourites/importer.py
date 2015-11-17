@@ -117,7 +117,7 @@ def _doImportFromLocal(filename):
 def doExport():
     try:
         include = utils.DialogYesNo(GETTEXT(30129), line2='', line3=GETTEXT(30130), noLabel=None, yesLabel=None)
-        folder  = getFolder(GETTEXT(30131))
+        folder  = getFolder(GETTEXT(30131))        
 
         if not folder:
             return False
@@ -266,7 +266,7 @@ def getFile(title, ext):
 
 
 def getFolder(title):
-    folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, os.sep)
+    folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, '')
 
     return xbmc.translatePath(folder)
 

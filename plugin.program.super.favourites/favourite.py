@@ -28,8 +28,6 @@ import utils
 import sfile
 
 
-HOMESPECIAL = 'special://home/'
-HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
 
 SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 
@@ -141,7 +139,7 @@ def writeFavourites(file, faves):
             if isKodi and cmd.lower().startswith('playmedia'):
                 cmd = removeSFOptions(cmd)
 
-            thumb = convertToHome(thumb)
+            thumb = utils.convertToHome(thumb)
 
             name  = 'name="%s" '  % name
             thumb = 'thumb="%s">' % thumb
@@ -382,7 +380,7 @@ def addFanart(cmd, fanart):
     if len(fanart) < 1:
         return cmd
 
-    return updateSFOption(cmd, 'fanart', convertToHome(fanart))
+    return updateSFOption(cmd, 'fanart', utils.convertToHome(fanart))
 
 
 def updateSFOption(cmd, option, value):
@@ -454,13 +452,6 @@ def removeSFOptions(cmd):
     cmd = cmd.replace('/")', '")')
 
     return cmd
-
-
-def convertToHome(text):
-    if text.startswith(HOMEFULL):
-        text = text.replace(HOMEFULL, HOMESPECIAL)
-
-    return text
 
 
 def getFanart(cmd):
