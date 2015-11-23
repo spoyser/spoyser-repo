@@ -28,6 +28,7 @@ def Resolve(html):
         results = []
 
         urls = re.compile('<iframe id.+?src="(.+?)".+?</iframe>').findall(html)
+
         for url in urls:
             if 'cizgifilmlerizle' in url:
                 DoResolve(url, results)
@@ -45,7 +46,7 @@ def Resolve(html):
         pass
 
     if len(results) == 0:
-        results = ['', 'Error Resolving URL']
+        results = [['', 'Error Resolving URL']]
 
     return results
 
