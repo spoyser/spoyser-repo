@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<category label="Configuration">
+	    <setting id="ABRV"       type="text" label="abrv"   default="" visible="false"/>
+	    <setting id="LABEL"      type="text" label="label"  default="" visible="false"/>
+	    <setting id="SERVER"     type="text" label="server" default="" visible="false"/>
+	    <setting id="LOGIN_TIME" type="text" label="login"  default="" visible="false"/>
+	
+		<setting id="CONTEXT"   type="bool"      label="Enable VPNicity context menu" default="false"  visible="true"/>		
+		<setting id="AUTO"      type="bool"      label="Autoselect VPNicity"          default="true"   visible="true"/>
+        <setting id="SFPLUGIN"  type="bool"      label="SF-Plugin Installed"          default="false"  visible="false"/>
+
+	    <setting id="USER"      type="text"      label="VPN Username"         default=""/>
+	    <setting id="PASS"      type="text"      label="VPN Password"         default=""       option="hidden"/>
+         <!-- <setting id="dummy"        type="action"    label="[COLOR orange][B]Click to[/B] - Verify my login details[/COLOR]"    option="close"    action="XBMC.RunScript(special://home/addons/plugin.program.vpnicity/verify.py)"/> -->
+	    <setting id="OS"        type="labelenum" label="Operating System"     default=" "      values = " |Windows|Linux|MacOS|Android|OpenELEC 5.x|OpenELEC 6.x|OpenELEC R-Pi|TLBBv2 OpenELEC|RaspBMC|Raspian"/>
+		
+		<setting id="dummy"		option="close"   label="Install OpenVPN" type="action" action="RunScript($CWD/install.py)" enable="!eq(-1,0)+!eq(-1,1)+!eq(-1,4)"/>
+		
+	    <setting id="SUDO"      type="bool"      label="Use Sudo (Enter your OS user account password below)"       default="false" enable="!eq(-2,0)+!eq(-2,1)+!eq(-2,4)+!eq(-2,5)+!eq(-2,6)+!eq(-2,7)+!eq(-2,8)" option="hidden"/>
+	    <setting id="SUDOPASS"  type="text"      label="[COLOR orange]Sudo Password[/COLOR]"   default=""      enable="!eq(-3,0)+!eq(-3,1)+!eq(-3,4)+!eq(-3,5)+!eq(-3,6)+!eq(-3,7)+!eq(-3,8)+eq(-1,true)" option="hidden"/>
+		
+		<setting id="VERSION"   type="text"      label="Current Version"               default="0.0.0"  visible="false"/>
+		<setting id="VIDEO"     type="bool"      label="Video shown"                   default="false"  visible="false"/>
+		<setting id="messageID" type="text"      label="messageID"                     default="0"      visible="false" />
+	</category>
+    <category label="Advanced">
+		<setting id="PORT"      type="labelenum" label="Port"                values = "1194|443"        default="1194"/>
+		<setting id="TIMEOUT"   type="labelenum" label="Connection Timeout"  values = "15|30|45|60|Off" default="30"/>
+    </category>
+    <category label="Maintenance">
+		<setting id="DEBUG" label="[B]Enable VPNicity Debug Mode[/B]" type="bool" default="false"/>
+ 		<setting id="dummy"	label="[B]Click to - Upload Log[/B]" type="action"    option="close"    action="XBMC.RunScript(special://home/addons/plugin.program.vpnicity/uploadLog.py)"/>
+ 		<setting type="lsep" label="If you want to receive a confirmation email"/>
+ 		<setting type="lsep" label="Please set-up your email address"/>
+ 		<setting id="email" type="text" label="Email address"/>
+	    <setting id="skip_oldlog" type="bool" label="Always skip Kodi.old.log (log from previous run)" default="true"/>
+    </category>
+	
+	   <category label="Autostart Addons">
+	   	<setting id="ADDON_0" label="Addon"   type="select" source="../../addons/" mask="/" default=""/>
+	    <setting id="VPN_0"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+	    <setting type="sep"   label="Addon 1" visible="!eq(-1,)"/>
+	    <setting id="ADDON_1" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_1"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+	    
+		<setting type="sep"  label="Addon 2" visible="!eq(-1,)"/>
+	    <setting id="ADDON_2" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_2"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 3" visible="!eq(-1,)"/>
+	    <setting id="ADDON_3" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_3"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 4" visible="!eq(-1,)"/>
+	    <setting id="ADDON_4" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_4"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 5" visible="!eq(-1,)"/>
+	    <setting id="ADDON_5" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_5"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 6" visible="!eq(-1,)"/>
+	    <setting id="ADDON_6" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_6"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 7" visible="!eq(-1,)"/>
+	    <setting id="ADDON_7" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_7"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 8" visible="!eq(-1,)"/>
+	    <setting id="ADDON_8" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_8"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+		
+		<setting type="sep"  label="Addon 9" visible="!eq(-1,)"/>
+	    <setting id="ADDON_9" label="Addon"   type="select" source="../../addons/" mask="/" default="" visible="!eq(-2,)"/>
+	    <setting id="VPN_9"   label="Country" type="select" source="../../userdata/addon_data/plugin.program.vpnicity/countries/" visible="!eq(-1,)"/>
+	</category>
+</settings>

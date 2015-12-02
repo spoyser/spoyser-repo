@@ -1,0 +1,104 @@
+v1.3.6:
+   - Updated flags and graphics.
+
+v1.3.5:
+   - Version bump to force refresh repo.
+   - Added Canadian and GB(London) servers.
+   - Added Super Favourites Global Menu plugin.
+   - Added Kodi context menu item (15.x and above).
+   - Changed IP Check website.
+     Some results are still false but VPN connection is correct.
+   - VPN utilities file fix.
+
+v1.3.3:
+   - Script error fix.
+
+v1.3.2:
+   - Added Canadian and GB(London) servers.
+   - Added Super Favourites Global Menu plugin.
+   - Added Kodi context menu item (15.x and above).
+   - Changed IP Check website.
+     Some results are still false but VPN connection is correct.
+   - VPN utilities file fix.
+
+v1.3.1:
+   - Added Canadian and GB(London) servers.
+   - Added Super Favourites Global Menu plugin.
+   - Added Kodi context menu item (15.x and above).
+   - Changed IP Check website.
+     Some results are still false but VPN connection is correct.
+
+v1.3.0:
+   - Changed install method for OpenELEC.
+
+v1.2.9:
+   - Fix for Wetek Play boxes and TLBBv2.
+
+v1.2.8:
+   - Minor bug fix for Android.
+
+v1.2.7:
+   - Fix for OpenELEC Beta versions. OE now works with 5.95.x and above.
+
+v1.2.6:
+   - On-Tapp.TV compatibility fix.
+
+v1.2.5:
+   - Changed IP Check method.
+   - Fixed Isengard context menu display.
+   - Code changes.
+
+v1.2.4:
+   - Added built-in install method for OpenELEC. Now fully automated.
+
+v1.2.3:
+   - Fix for Kodi 15 Beta (Isengard). 'Add-on Settings => Install OpenVPN' should now work without errors.
+
+v1.2.2:
+   - Option to automatically start a country specific VPN when configured addons are started - see 'Autostart Addons' tab on the settings page.
+   - Better install process.
+   - Partial fix for OpenELEC 5.x.x installs. OpenVPN has been moved to a different location on newer builds.
+
+v1.2.1:
+   - Fix for Upload Log feature.
+
+v1.2.0:
+   - Fixed issue when installing OpenVPN For Android from the PlayStore.
+   - Added new live messaging system.
+   - Improved login routines.
+   - Added Debug-mode to help resolve issues.
+
+v1.1.9:
+   - Changed Dialog boxes to Notifications.
+
+v1.1.8:
+   - Option to automatically start VPNicity on Kodi startup
+
+v1.1.7:
+   - Final context menu fix for Helix and Gotham
+
+v1.1.6:
+   - Context menu fix reverted back due to display issue in Gotham
+
+v1.1.5:
+   - Context menu fix for Helix
+
+v1.1.4:
+   - Now compatible with Kodi(Helix)
+   - Added Raspian install option in Add-on Settings
+   - Fixed proper use of 'Use sudo' and 'Install OpenVPN' in Add-on Settings
+
+v1.1.3:
+   - Minor code change to help debug logs
+
+v1.1.2:
+   - Added Location checker
+   
+v1.1.1:
+   - Version bump due to erroneous version being made availalble by 3rd party (you know who you are!)
+
+v1.0.2:
+   - Added fix to install script to prevent error on slower hardware
+
+v1.0.1:
+   - First public release
