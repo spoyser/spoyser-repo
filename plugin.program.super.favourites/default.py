@@ -24,7 +24,6 @@ import xbmcplugin
 import xbmcgui
 import os
 
-
 import urllib
 import re
 
@@ -35,7 +34,6 @@ import history
 import utils
 import cache
 import sfile
-
 
 ADDONID  = utils.ADDONID
 ADDON    = utils.ADDON
@@ -2943,7 +2941,7 @@ def get_params(path):
     for pair in pairs:
         split = pair.split('=')
         if len(split) > 1:
-            params[split[0]] = split[1]
+            params[split[0]] = urllib.unquote_plus(split[1])
 
     return params
    
@@ -2955,25 +2953,25 @@ thepath   = ''
 try:    mode = int(params['mode'])
 except: mode = _MAIN
 
-try:    file = urllib.unquote_plus(params['file'])
+try:    file = params['file']
 except: file = None
 
-try:    cmd = urllib.unquote_plus(params['cmd'])
+try:    cmd = params['cmd']
 except: cmd = None
 
-try:    path = urllib.unquote_plus(params['path'])
+try:    path = params['path']
 except: path = None
 
-try:    name = urllib.unquote_plus(params['name'])
+try:    name = params['name']
 except: name = ''
 
-try:    label = urllib.unquote_plus(params['label'])
+try:    label = params['label']
 except: label = ''
 
-try:    folder = urllib.unquote_plus(params['folder'])
+try:    folder = params['folder']
 except: folder = ''
 
-try:    content = urllib.unquote_plus(params['content'])
+try:    content = params['content']
 except: content = ''
 
 try:    contentMode = params['contentMode'].lower() == 'true'
@@ -3010,7 +3008,7 @@ if len(content) > 0:
 
             prams = get_params(plugin)
 
-            try:    folder = urllib.unquote_plus(prams['folder'])
+            try:    folder = prams['folder']
             except: pass
 
             if len(folder) == 0:
@@ -3122,13 +3120,13 @@ elif mode == _EDITFOLDER:
 
 
 elif mode == _EDITFAVE:
-    try:    thumb = urllib.unquote_plus(params['thumb'])
+    try:    thumb = params['thumb']
     except: thumb = 'null'
     doRefresh = editFave(file, cmd, name, thumb)
 
 
 elif mode == _EDITSEARCH:
-    try:    thumb = urllib.unquote_plus(params['thumb'])
+    try:    thumb = params['thumb']
     except: thumb = 'null'
     doRefresh = editSearch(file, cmd, name, thumb)
 
@@ -3146,7 +3144,7 @@ elif mode == _COPY:
 
 
 elif mode == _PASTE:
-    try:    folder = urllib.unquote_plus(params['paste'])
+    try:    folder = params['paste']
     except: folder
     doRefresh = paste(folder)
 
@@ -3160,7 +3158,7 @@ elif mode == _COPYFOLDER:
 
 
 elif mode == _PASTEFOLDER:
-    try:    folder = urllib.unquote_plus(params['paste'])
+    try:    folder = params['paste']
     except: folder
     doRefresh = pasteFolder(folder)
 
@@ -3174,8 +3172,8 @@ elif mode == _RENAMEFAVE:
 
 
 elif mode == _ADDTOXBMC:
-    thumb   = urllib.unquote_plus(params['thumb'])
-    keyword = urllib.unquote_plus(params['keyword'])
+    thumb   = params['thumb']
+    keyword = params['keyword']
     addToXBMC(name, thumb, cmd, keyword)
 
 
@@ -3193,7 +3191,7 @@ elif mode == _PLAYBACKMODE:
 
 elif mode == _SETTINGS:
     try :
-        addonID = urllib.unquote_plus(params['addon'])
+        addonID = params['addon']
         utils.openSettings(addonID)
     except:
         utils.openSettings(ADDONID)
@@ -3209,16 +3207,16 @@ elif mode == _EXTSEARCH:
 
 
 elif mode == _SUPERSEARCH or mode == _SUPERSEARCHDEF:
-    try:    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = params['keyword']
     except: keyword = ''
 
-    try:    imdb = urllib.unquote_plus(params['imdb'])
+    try:    imdb = params['imdb']
     except: imdb = ''
 
-    try:    image = urllib.unquote_plus(params['image'])
+    try:    image = params['image']
     except: image = BLANK
 
-    try:    fanart = urllib.unquote_plus(params['fanart'])
+    try:    fanart = params['fanart']
     except: fanart = BLANK
 
     cacheToDisc = False #len(keyword) > 0 and mode == _SUPERSEARCH
@@ -3234,7 +3232,7 @@ elif mode == _SUPERSEARCH or mode == _SUPERSEARCHDEF:
 
 
 elif mode == _EDITTERM:
-    try:    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = params['keyword']
     except: keyword = ''
     editSearchTerm(keyword)
     cacheToDisc=True
@@ -3256,7 +3254,7 @@ elif mode == _IMPORT:
 
 
 elif mode == _RECOMMEND_KEY or mode == _RECOMMEND_KEY_A:
-    try:    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = params['keyword']
     except: keyword = ''
 
     cacheToDisc = True
@@ -3270,15 +3268,15 @@ elif mode == _RECOMMEND_KEY or mode == _RECOMMEND_KEY_A:
 
 
 elif mode == _RECOMMEND_IMDB:
-    try:    imdb = urllib.unquote_plus(params['imdb'])
+    try:    imdb = params['imdb']
     except: imdb = ''
 
-    try:    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = params['keyword']
     except: keyword = ''
 
     try:
         if ADDON.getSetting('CACHERECOMMEND') != 'true':
-            callback = urllib.unquote_plus(params['callback'])
+            callback = params['callback']
 
         cacheToDisc = True
         doEnd       = True
@@ -3310,7 +3308,7 @@ elif mode == _PLAYLISTFILE:
 
 
 elif mode == _PLAYLISTITEM:
-    try:    image = urllib.unquote_plus(params['image'])
+    try:    image = params['image']
     except: image = BLANK
 
     iPlaylistItem(path, label, image)
@@ -3326,13 +3324,13 @@ elif mode == _DELETEPLAYLIST:
 
 elif mode == _COPY_TO_SF:
     doRefresh = False
-    thumb     = urllib.unquote_plus(params['thumb'])
+    thumb     = params['thumb']
     copyToSF(path, label, thumb, playMedia=False)
 
 
 elif mode == _COPY_TO_SF_ITEM:
     doRefresh = False
-    thumb     = urllib.unquote_plus(params['thumb'])
+    thumb     = params['thumb']
     copyToSF(path, label, thumb, playMedia=True)
 
 
@@ -3345,25 +3343,19 @@ elif mode == _HISTORYSHOW:
 
 
 elif mode == _HISTORYADD:
-    try:    keyword = urllib.unquote_plus(params['keyword'])
+    try:    keyword = params['keyword']
     except: keyword = ''
 
-    try:    image = urllib.unquote_plus(params['image'])
+    try:    image = params['image']
     except: image = BLANK
 
-    try:    fanart = urllib.unquote_plus(params['fanart'])
+    try:    fanart = params['fanart']
     except: fanart = FANART
-
-    try:    refres = urllib.unquote_plus(params['refresh']) == 'true'
-    except: refres = True
 
     image  = image.replace('SF@V', '/')
     fanart = fanart.replace('SF@V', '/')
 
     doRefresh = iHistoryAdd(keyword, image, fanart)
-    #if not refres:
-    #    doRefresh = False
-
 
 elif mode == _HISTORYREMOVE:
     doRefresh = iHistoryRemove(name)
@@ -3431,16 +3423,17 @@ if nItem < 1:
 if doRefresh:
     refresh()
 
+handle = int(sys.argv[1])
 
 if doEnd:
     if len(contentType) > 0:
-        xbmcplugin.setContent(int(sys.argv[1]), contentType)
+        xbmcplugin.setContent(handle, contentType)
 
-    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
+    if handle > -1:
+        xbmcplugin.endOfDirectory(handle, cacheToDisc=cacheToDisc)
 
     if VIEWTYPE > 0:        
         xbmc.executebuiltin('Container.SetViewMode(%d)' % VIEWTYPE)
-
 
 
 if mode == _PLAYMEDIA:

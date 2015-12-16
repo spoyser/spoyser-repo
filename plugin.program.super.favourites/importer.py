@@ -92,7 +92,7 @@ def _doImportFromRemote():
         import urllib
         download.doDownload(urllib.quote_plus(location), urllib.quote_plus(file), urllib.quote_plus(TITLE), quiet=True)
 
-        if os.path.exists(file):            
+        if os.path.exists(file): 
             success = extractAll(file, dp, location.replace('%20', ' '))
             utils.DeleteFile(file)
             return success
@@ -205,6 +205,11 @@ def extractAll(filename, dp, location):
 
     root    = os.path.join(HOME, 'SF_Temp')
     profile = os.path.join(root, 'Super Favourites')
+
+    #copy existing settings to root
+    dst = os.path.join(root, 'settings.xml')
+    src = os.path.join(ROOT, 'settings.xml')
+    sfile.copy(src, dst)
 
     if IMPORT_RESET:
         try:    sfile.rmtree(os.path.join(ROOT, 'Super Favourites'))

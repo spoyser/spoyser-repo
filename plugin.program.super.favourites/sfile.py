@@ -147,6 +147,11 @@ def rename(src, dst):
         return
 
     if isdir(src):
+        if src.lower() == dst.lower():
+            newSrc = src +'sfile_temp_name'
+            rename(src, newSrc)
+            src = newSrc
+        
         copytree(src, dst)
         rmtree(src)
         return
