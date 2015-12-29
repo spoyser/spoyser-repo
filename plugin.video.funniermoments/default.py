@@ -172,7 +172,8 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 def All():
     html  = GetHTML(URL)
    
-    match = re.compile('<li class=""><b><a href="(.+?)" class="">(.+?)</br></b></a> <p>\((.+?)\)</p></li>').findall(html)
+    #match = re.compile('<li class=""><h4><a href="(.+?)" class="">(.+?)</br></b></a> <p>\((.+?)\)</p></li>').findall(html)
+    match = re.compile('<li class=""><h4><a href="(.+?)" class="">(.+?)</a></h4><h6>\((.+?)\)</h6><br/></li>').findall(html)
                       
     list = []
 
@@ -208,7 +209,7 @@ def New(page):
     split = 'Recently added videos'
     html  = html.split(split, 1)[-1]  
 
-    pagination = '<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>'
+    pagination = '<a href="index.html?&page=%d"' % (page+1)
     parseCartoons(html, NEW, _url, page, pagination)
 
 
@@ -224,7 +225,7 @@ def Top(page):
     split = 'Most popular episodes</h1>'
     html  = html.split(split, 1)[-1]
 
-    pagination = '<li class=""><a href="index.php\?&page=(.+?)">.+?</a></li>'
+    pagination = '<a href="index.html?&page=%d"' % (page+1)
     parseCartoons(html, TOP, _url, page, pagination)
 
 
@@ -516,6 +517,7 @@ def GetCartoonURL(url):
     match = re.compile('%svids/(.+?).mp4' % URL).search(html).group(1)
     url   = '%svids/%s.mp4' % (URL, match)
     url   = FixURL(url)
+    url   = urllib.unquote_plus(url)
     url  += '|referer=%s' % URL
     return url
 
@@ -592,14 +594,14 @@ def SearchResults(url, page):
     html = GetHTML(url)
     html = html.split('Search Results')[-1]
 
-    pagination = '<li class=""><a href="search.php\?.+?&page=(.+?)">.+?</a></li>'
+    pagination = 'search.php' + url.split('search.php', 1)[-1].split('&page=')[0] + '&page=%d' % (page+1)
     parseCartoons(html, RESULTS, _url, page, pagination) 
 
 
 def parseCartoons(html, mode, _url, page, pagination):
     items = html.split('<li>')
     for item in items:
-        match = re.compile('<a href="(.+?)">.+?<img.+?src="(.+?)" alt="(.+?)".+?</li>').findall(item)
+        match = re.compile('<a href="(.+?)">.+?<img.+?src="(.+?)" alt="(.+?)"').findall(item.split('</li>', 1)[0])
         for url, img, title in match:
             url = url.split('"', 1)[0]
 
@@ -607,83 +609,90 @@ def parseCartoons(html, mode, _url, page, pagination):
 
     if pagination in html:
         AddMore(mode, pagination, page+1) 
+        return
+
+    pagination = pagination.replace('index.html', 'index.php')
+    if pagination in html:
+        AddMore(mode, pagination, page+1) 
+ 
 
     
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = urllib.unquote_plus(split[1])
+
+    return params
 
 
 
 import geturllib
 geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
 
-params = get_params()
+
+params = get_params(sys.argv[2])
 mode   = None
 
-try:    mode = int(urllib.unquote_plus(params['mode']))
+try:    mode = int(params['mode'])
 except: pass
 
+doEnd = True
 
 if mode == ALL:
     All()
 
 elif mode == NEW:
-    page = urllib.unquote_plus(params['page'])
+    page = params['page']
     New(page)
 
 elif mode == TOP:
-    page = urllib.unquote_plus(params['page'])
+    page = params['page']
     Top(page)
 
 elif mode == PROGRAM:
-    url  = urllib.unquote_plus(params['url'])
-    page = urllib.unquote_plus(params['page'])
+    url  = params['url']
+    page = params['page']
     Program(url, page)
 
 
 elif mode == MORE:
-    url = urllib.unquote_plus(params['url'])
+    url = params['url']
     More(url)
 
 
 elif mode == CARTOON:
-    url   = urllib.unquote_plus(params['url'])
-    title = urllib.unquote_plus(params['title'])
-    image = urllib.unquote_plus(params['image'])
+    url   = params['url']
+    title = params['title']
+    image = params['image']
+    doEnd = False
     PlayCartoon(title, image, url)
 
 
 elif mode == LIBRARY:
-    url   = urllib.unquote_plus(params['url'])
-    title = urllib.unquote_plus(params['title'])
+    url   = params['url']
+    title = params['title']
     AddToLibrary(title, url, 1)
 
 
 elif mode == DOWNLOAD:
-    url   = urllib.unquote_plus(params['url'])
-    title = urllib.unquote_plus(params['title'])
+    url   = params['url']
+    title = params['title']
+    doEnd = False
     Download(title, url)
 
 
 elif mode == RANDOM:
+    doEnd = False
     Random()
 
 
 elif mode == KIDSTIME:
+    doEnd = False
     KidsTime()
 
 
@@ -691,24 +700,23 @@ elif mode == SEARCH:
     page    = 1
     keyword = ''
     try:
-        page    = urllib.unquote_plus(params['page'])
-        keyword = urllib.unquote_plus(params['keyword'])
+        page    = params['page']
+        keyword = params['keyword']
     except:
         pass
     Search(page, keyword)
 
 
 elif mode == RESULTS:
-    url  = urllib.unquote_plus(params['url'])
-    page = urllib.unquote_plus(params['page'])
-    SearchResults(url, page)
+    url  = params['url']
+    page = params['page']
+    url  = url.rsplit('=', 1)[0] + '=' 
+    SearchResults(URL+url, page)
 
 else:
     Main()
         
-try:
-    #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-except:
-    pass
 
+if doEnd:
+    #xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=True)
