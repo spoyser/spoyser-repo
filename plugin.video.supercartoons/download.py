@@ -74,8 +74,8 @@ def doDownload(url, dest, title, referrer):
     try:    resumable = 'bytes' in resp.headers['Accept-Ranges'].lower()
     except: resumable = False
     
-    #print "Download Header"
-    #print resp.headers
+    print "Download Header"
+    print resp.headers
     if resumable:
         print "Download is resumable"
     
