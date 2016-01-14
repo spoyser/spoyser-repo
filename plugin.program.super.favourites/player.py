@@ -43,7 +43,7 @@ def playCommand(originalCmd, contentMode=False):
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
 
         cmd = favourite.tidy(originalCmd)
-        
+     
         #if a 'Super Favourite' favourite just do it
         if ADDONID in cmd:
              return xbmc.executebuiltin(cmd)
@@ -115,9 +115,9 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
 
-def playMedia(original): 
+def playMedia(original):
     import re
-    cmd = favourite.tidy(original).replace(',', '') #remove spurious commas
+    cmd = favourite.tidy(original) #.replace(',', '') #remove spurious commas
     
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0

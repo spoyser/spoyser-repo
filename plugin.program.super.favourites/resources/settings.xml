@@ -62,17 +62,19 @@
 		
     <setting id="DUMMY"        label="35005" type="lsep" />
 		
-    <setting id="MENU_QUICKLAUNCH"    label="35020" type="bool" default="true" />
-    <setting id="MENU_ADDTOFAVES"     label="35006" type="bool" default="true" />
-    <setting id="MENU_DEF_ISEARCH"    label="35007" type="bool" default="true" />
-    <setting id="MENU_ISEARCH"        label="35008" type="bool" default="true" />
-    <setting id="MENU_IRECOMMEND"     label="35009" type="bool" default="true" />
-    <setting id="MENU_COPY_PROPS"     label="35010" type="bool" default="true" />
-    <setting id="MENU_VIEW_IMAGES"    label="35011" type="bool" default="true" />
-    <setting id="MENU_SF_SETTINGS"    label="35012" type="bool" default="true" />
-    <setting id="MENU_ADDON_SETTINGS" label="35013" type="bool" default="true" />
-    <setting id="MENU_STD_MENU"       label="35014" type="bool" default="true" />
-    <setting id="MENU_PLUGINS"        label="35019" type="bool" default="true" />
+    <setting id="MENU_QUICKLAUNCH"    label="35020" type="bool"   default="true" />
+    <setting id="MENU_ADDTOFAVES"     label="35006" type="bool"   default="true" />
+    <setting id="MENU_DEF_ISEARCH"    label="35007" type="bool"   default="true" />
+    <setting id="MENU_ISEARCH"        label="35008" type="bool"   default="true" />
+    <setting id="MENU_IRECOMMEND"     label="35009" type="bool"   default="true" />
+    <setting id="MENU_COPY_PROPS"     label="35010" type="bool"   default="true" />
+    <setting id="MENU_VIEW_IMAGES"    label="35011" type="bool"   default="true" />
+    <setting id="MENU_SF_SETTINGS"    label="35012" type="bool"   default="true" />
+    <setting id="MENU_ADDON_SETTINGS" label="35013" type="bool"   default="true" />
+    <setting id="MENU_STD_MENU"       label="35014" type="bool"   default="true" />
+    <setting id="MENU_PLUGINS"        label="35019" type="bool"   default="true" />
+    <setting id="MENU_DOWNLOADS"      label="30241" type="bool"   default="true" />	
+    <setting id="DOWNLOAD_FOLDER"     label="30242" type="folder" default="special://profile/addon_data/plugin.program.super.favourites/downloads" visible="eq(-1,true)"/>
 		
     <setting type="sep" visible="true" />
 </category>>

@@ -30,6 +30,7 @@ import utils
 
 def getResponse(url, size, referer, agent, cookie):
     try:
+        #url = urllib.quote_plus(url)
         req = urllib2.Request(url)
 
         if len(referer) > 0:
@@ -51,15 +52,26 @@ def getResponse(url, size, referer, agent, cookie):
         return None
 
 
+def getRandomUserAgent():
+    import random
+    agents = []  
+    agents.append('Mozilla/5.0 (Android; Mobile; rv:%d.0) Gecko/%d.0 Firefox/%d.0')
+
+    agent = random.choice(agents) % (random.randint(10, 40), random.randint(10, 40), random.randint(10, 40))
+
+    return agent
+
+
 def download(url, dest, title=None, referer=None, agent=None, cookie=None, quiet=False):
     if not title:
         title  = 'Kodi Download'
 
     if not referer:
-        referer  = ''
+        items   = url.split('/', 3)       
+        referer = items[0] + '//' + items[2]
 
     if not agent:
-        agent  = ''
+        agent  = getRandomUserAgent()
 
     if not cookie:
         cookie  = ''
@@ -74,7 +86,6 @@ def download(url, dest, title=None, referer=None, agent=None, cookie=None, quiet
 
     script = inspect.getfile(inspect.currentframe())
     cmd    = 'RunScript(%s, %s, %s, %s, %s, %s, %s, %s)' % (script, url, dest, title, referer, agent, cookie, quiet)
-
     xbmc.executebuiltin(cmd)
 
 
@@ -100,7 +111,7 @@ def done(title, dest, downloaded):
 
 def doDownload(url, dest, title, referer='', agent='', cookie='', quiet=False):
     #unquote parameters
-    url     = urllib.unquote_plus(url)
+    url     = urllib.unquote_plus(url).split('|')[0]
     dest    = urllib.unquote_plus(dest)
     title   = urllib.unquote_plus(title)
     referer = urllib.unquote_plus(referer)
@@ -158,7 +169,7 @@ def doDownload(url, dest, title, referer='', agent='', cookie='', quiet=False):
         percent = min(100 * downloaded / content, 100)
         if percent >= notify:
             if not quiet:
-                xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i)" % ( title + ' - Download Progress - ' + str(percent)+'%', dest, 10000))
+                xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i)" % ( title.replace(',', '') + ' - Download Progress - ' + str(percent)+'%', dest, 10000))
 
             utils.log('Download percent : %s %s %dMB downloaded : %sMB File Size : %sMB' % (str(percent)+'%', dest, mb, downloaded / 1000000, content / 1000000))
 

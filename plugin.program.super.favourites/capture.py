@@ -62,6 +62,7 @@ MENU_STD_MENU       = ADDON.getSetting('MENU_STD_MENU')       == 'true'
 MENU_EDITFAVE       = ADDON.getSetting('MENU_EDITFAVE')       == 'true'
 MENU_PLUGINS        = ADDON.getSetting('MENU_PLUGINS')        == 'true'
 MENU_QUICKLAUNCH    = ADDON.getSetting('MENU_QUICKLAUNCH')    == 'true'
+MENU_DOWNLOADS      = ADDON.getSetting('MENU_DOWNLOADS')      == 'true'
 
 
 def getText(title, text=''):
@@ -101,7 +102,8 @@ def doStandard(useScript=True):
     window = xbmcgui.getCurrentWindowId()
 
     if window == 10000: #home
-        return
+        if xbmc.getCondVisibility('Window.IsActive(favourites)') <> 1:
+            return
 
     if window == 12005: #video playing
         return activateWindow('videoplaylist')
@@ -233,18 +235,59 @@ def quickLaunch():
     player.playCommand(path)
 
 
+def getExt(url):
+    url  = url.lower()
+    exts = ['.mp4', '.avi', '.mpg', '.flv', '.mkv', '.m4v', '.mov']
+    for ext in exts:
+        if ext in url:
+            return ext
+
+    return '.avi'
+
+
+def getDownloadTitle(url):
+    import re
+
+    title = xbmc.getInfoLabel('VideoPlayer.Title')
+
+    try:
+        season = int(xbmc.getInfoLabel('VideoPlayer.Season'))
+        title += ' S%02d' % season 
+    except:
+        pass
+
+    try:
+        episode = int(xbmc.getInfoLabel('VideoPlayer.Episode'))
+        title += 'E%02d' % episode 
+    except:
+        pass
+
+    title  = re.sub('[:\\/*?\<>|"]+', '', title)
+    title  = title.strip()
+    title += getExt(url)
+
+    return title
+        
+         
 def doMenu(mode):
+    utils.log('**** Context Menu Information ****')
+
     window = xbmcgui.getCurrentWindowId()
 
-    #DEBUG = ADDON.getSetting('DEBUG') == 'true'
-    #if DEBUG:
-    #    utils.DialogOK('Current Window ID %d' % window)
+    DEBUG = ADDON.getSetting('DEBUG') == 'true'
+    if DEBUG:
+        utils.DialogOK('Current Window ID %d' % window)
 
-    #active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601]#, 2005] 12005 is video window
-    #utils.log('Window     : %d' % window)  
+    utils.log('Capture window\t: %d' % window)
+
+    #active = [0, 1, 2, 3, 25, 40, 500, 501, 502, 601, 2005]
     #if window-10000 not in active:
     #    doStandard(useScript=False)
     #    return
+
+    if window > 12999:
+        doStandard(useScript=False)
+        return
 
     # to prevent master profile setting being used in other profiles
     if mode == 0 and ADDON.getSetting('CONTEXT') != 'true':
@@ -280,9 +323,10 @@ def doMenu(mode):
 
     isStream = False
    
-    if hasattr(xbmc.Player(), 'isInternetStream'):
-        isStream = xbmc.Player().isInternetStream()
-    elif file:
+    #if hasattr(xbmc.Player(), 'isInternetStream'):
+    #    isStream = xbmc.Player().isInternetStream()
+    #elif file:
+    if file:
         isStream = file.startswith('http')
 
     if window == 10003: #filemanager
@@ -293,7 +337,7 @@ def doMenu(mode):
             control = 21
 
         if control == 0:
-            return doStandard(useScript=False) #sjp was no param
+            return doStandard(useScript=False)
 
         label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
         root     = xbmc.getInfoLabel('Container(%d).ListItem.Path'  % control)
@@ -323,7 +367,6 @@ def doMenu(mode):
     params['description'] = desc
     params['hasVideo']    = hasVideo
 
-    utils.log('**** Context Menu Information ****')
     for key in params:
         utils.log('%s\t\t: %s' % (key, params[key]))
 
@@ -332,11 +375,6 @@ def doMenu(mode):
 
     if MENU_QUICKLAUNCH:
         menu.append((GETTEXT(30219), _QUICKLAUNCH))
-
-    #if hasVideo:
-    #    if isStream:
-    #        menu.append(('Download  %s' % label, _DOWNLOAD))
-    #        menu.append(('Now playing...',       _PLAYLIST))
 
     plugins    = []
     try:
@@ -364,7 +402,8 @@ def doMenu(mode):
                 menu.append((GETTEXT(30098) % default, _SEARCHDEF))
 
 
-        if MENU_ISEARCH: menu.append(   (GETTEXT(30054), _SEARCH))
+        if MENU_ISEARCH: menu.append((GETTEXT(30054), _SEARCH))
+
         if MENU_IRECOMMEND: menu.append((GETTEXT(30088), _RECOMMEND))
 
 
@@ -385,9 +424,11 @@ def doMenu(mode):
             stdMenu = True
             menu.append((GETTEXT(30048), _STD_MENU))
         else:
-            if hasVideo:            
+            if hasVideo:  
                 menu.append((xbmc.getLocalizedString(31040), _PLAYLIST)) #Now Playing
-
+                if MENU_DOWNLOADS and isStream:  
+                    menu.append((GETTEXT(30241), _DOWNLOAD))
+                    
     if len(menu) == 0 or (len(menu) == 1 and stdMenu):
         doStandard(useScript=False)
         return
@@ -403,8 +444,6 @@ def doMenu(mode):
     else:
         choice = menus.showMenu(ADDONID, menu)
 
-    #xbmc.executebuiltin('Dialog.Close(all, true)')
-
     utils.log('selection\t\t: %s' % choice)
     
     if choice >= _EXTRABASE:       
@@ -419,25 +458,38 @@ def doMenu(mode):
         except Exception, e:
             utils.log('Error processing plugin: %s' % str(e))
 
+
     if choice == _QUICKLAUNCH:
         try:    quickLaunch()
         except: pass
 
+
     if choice == _STD_MENU:
         doStandard(useScript=True)
+
 
     if choice == _PLAYLIST:
         activateWindow('videoplaylist')
 
-    #if choice == _DOWNLOAD: 
-    #    import download
-    #    download.doDownload(file, 'c:\\temp\\file.mpg', 'Super Favourites', '', True)
+
+    if choice == _DOWNLOAD:
+        utils.log('download url: %s' % file)
+        dst = os.path.join(ADDON.getSetting('DOWNLOAD_FOLDER'), getDownloadTitle(file))  
+
+        if utils.DialogYesNo(GETTEXT(30243), GETTEXT(30244)):            
+            xbmc.Player().stop()
+       
+        import download            
+        download.download(file, dst, 'Super Favourites')
+
 
     if choice == _SF_SETTINGS:
         utils.ADDON.openSettings()
 
+
     if choice == _SETTINGS:
         xbmcaddon.Addon(localAddon).openSettings()
+
 
     if choice == _ADDTOFAVES:
         import favourite
@@ -471,8 +523,10 @@ def doMenu(mode):
 
         copyFave(label, thumb, cmd)
 
+
     if choice == _LAUNCH_SF:
         utils.LaunchSF()
+
 
     if choice in [_SEARCH, _SEARCHDEF, _RECOMMEND]:
         if utils.ADDON.getSetting('STRIPNUMBERS') == 'true':
@@ -486,10 +540,10 @@ def doMenu(mode):
         _SUPERSEARCHDEF =   10
         _RECOMMEND_KEY  = 2700
 
-        videoID = 10025 #video
+        valid = [10001, 10002, 10025, 10502]
 
-        if window == 10000: #don't activate on home screen, push to video
-            window = videoID
+        if window not in valid:
+            window = 10025 #video window
 
         import urllib   
 

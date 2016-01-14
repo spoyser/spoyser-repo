@@ -230,7 +230,22 @@
     <string id="30237">Set sort order</string>	
     <string id="30238">Default (see settings)</string>	
     <string id="30239">Alphabetical</string>	
-    <string id="30240">Manual</string>				
+    <string id="30240">Manual</string>
+	<string id="30241">Download</string>	
+	<string id="30242">Download folder</string>	
+	<string id="30243">Do you wish to stop the current playback?</string>
+	<string id="30244">(This maybe necessary to allow download)</string>
+	<string id="30245">[COLOR forestgreen]Download succeeded[/COLOR]</string>
+	<string id="30246">[COLOR red]Download failed[/COLOR]</string>
+	<string id="30247">Download failed</string>
+    <string id="30248">No response from server</string>
+	<string id="30249">Unknown filesize</string>
+	<string id="30250">Unable to download</string>
+	<string id="30251">%s - Confirm Download</string>
+	<string id="30252">Complete file is %dMB</string>
+	<string id="30253">Continue with download?</string>
+	<string id="30254">Confirm</string>
+	<string id="30255">%s - Download Progress - %s%%</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -252,7 +267,7 @@
 	<string id="35017">Would you like to configure it now?</string>	
 	<string id="35018">Edit name when adding to Super Favourites</string>
 	<string id="35019">Extensions</string>	
-	<string id="35020">Quick launch</string>	
+	<string id="35020">Quick launch</string>
 		
     <string id="35021">Artwork settings</string>	
 	<string id="35022">Thumbnail</string>

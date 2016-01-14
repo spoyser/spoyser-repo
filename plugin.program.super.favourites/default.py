@@ -74,8 +74,8 @@ DISPLAYNAME = 'Kodi'
 # -----Addon Modes ----- #
 _IGNORE                = -10
 _MAIN                  = -2
-_SUPERSEARCH           = 0
-_SUPERSEARCHDEF        = 10
+_SUPERSEARCH           = 0  #also in capture.py
+_SUPERSEARCHDEF        = 10 #also in capture.py
 _EXTSEARCH             = 25 #used to trigger new Super Search from outside of addon
 _SEPARATOR             = 50
 _SETTINGS              = 100
@@ -103,7 +103,7 @@ _UNSECURE              = 2300
 _PLAYLIST              = 2400
 _COLOURFOLDER          = 2500
 _COLOURFAVE            = 2600
-_RECOMMEND_KEY         = 2700
+_RECOMMEND_KEY         = 2700 #also in capture.py
 _RECOMMEND_KEY_A       = 2710
 _RECOMMEND_IMDB        = 2800
 _PLAYTRAILER           = 2900
@@ -1625,9 +1625,7 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
             cmd = cmd.split('ExecuteBuiltin("', 1)[-1]
             cmd = cmd.rsplit('")')[0]
         else:
-            cmd = re.compile('\((.+?)\)').search(cmd).group(1)
-
-        cmd = cmd.lower()
+            cmd = cmd.split('(', 1)[-1].rsplit(')', 1)[0] #split only on very outer brackets
 
         if _cmd.lower().startswith('activatewindow'):
             if cmd == originalID:
@@ -3061,7 +3059,8 @@ elif mode == _ACTIVATEWINDOW_XBMC:
     doEnd = True
     mode  = _IGNORE
 
-    if PLAY_PLAYLISTS and player.isPlaylist(cmd):        
+    import playlist
+    if PLAY_PLAYLISTS and playlist.isPlaylist(cmd):        
         playCommand(cmd)
 
         #Container.Update removes current item from history to stop looping
