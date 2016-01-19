@@ -35,14 +35,16 @@ ADDON    = xbmcaddon.Addon(ADDONID)
 HOME     = ADDON.getAddonInfo('path')
 TITLE    = 'RAM FM Eighties Hits'
 VERSION  =  ADDON.getAddonInfo('version')
-URL      = 'http://ramfm.org/ram.pls'
+URL_HI   = 'http://ramfm.org/ram.pls'
+URL_LO   = 'http://webcast-connect.net/value/usa3/8018/listen.pls'
 PODCASTS = 'http://www.spreaker.com/show/816525/episodes/feed'
 ICON     =  os.path.join(HOME, 'icon.png')
 FANART   =  os.path.join(HOME, 'fanart.jpg')
 GETTEXT  = ADDON.getLocalizedString
 
 
-_PLAYNOW     = 100
+_PLAYNOW_HI  = 100
+_PLAYNOW_LO  = 150
 _REQUEST     = 200
 _LETTER      = 300
 _TRACK       = 400
@@ -131,7 +133,7 @@ def Record():
     if dest == None or dest == '':
         return
 
-    pls  = urllib2.urlopen(URL).read().replace('\n','')
+    pls  = urllib2.urlopen(getURL()).read().replace('\n','')
     info = re.compile('File1=(.+?)Title1=(.+?)Length1=').findall(pls)
     url  = info[0][0]
     
@@ -149,7 +151,7 @@ def Record():
 def Play():
     pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
     pl.clear()    
-    pl.add(URL)
+    pl.add(getURL())
 
     xbmc.Player().play(pl)
 
@@ -311,6 +313,12 @@ def addUnavailable(title, artist, image, reason):
     xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = False) 
 
 
+def getURL():
+    if ADDON.getSetting('STREAM') == 'true':
+        return URL_HI
+
+    return URL_LO
+
 
 def RequestURL(url):  
     if not IsPlaying(GETTEXT(30030)):
@@ -335,7 +343,8 @@ def ShowError(text):
 def Main():   
     CheckVersion()
 
-    addDir(GETTEXT(30036), _PLAYNOW,     False)
+    addDir(GETTEXT(30036), _PLAYNOW_HI,  False)
+    addDir(GETTEXT(30045), _PLAYNOW_LO,  False)
     addDir(GETTEXT(30037), _RECORD,      False)
     addDir(GETTEXT(30031), _REQUEST,     True)
     addDir(GETTEXT(30040), _PODCASTS,    True)
@@ -367,60 +376,49 @@ def addDir(name, mode, isFolder):
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
 
    
-def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = urllib.unquote_plus(split[1])
+
+    return params
 
 
-
-params = get_params()
+params = get_params(sys.argv[2])
 mode   = None
 
+try:    mode=int(params['mode'])
+except: pass
 
-try:
-    mode=int(params['mode'])
-except:
-    pass
 
-if mode == None:
-    Main()
-
-elif mode == _PLAYNOW:
+if mode == _PLAYNOW_LO or mode == _PLAYNOW_HI:
+    ADDON.setSetting('STREAM', str(mode == _PLAYNOW_HI).lower())
     Play()
+
 
 elif mode == _RECORD:
     Record()
+
 
 elif mode == _REQUEST:
     if IsPlaying(GETTEXT(30030)):
         Request()
 
+
 elif mode == _LETTER:
-    try:
-        letter=urllib.unquote_plus(params['letter'])
-        RequestLetter(letter)
-    except:
-        pass
+    try:    RequestLetter(params['letter'])
+    except: pass
+
 
 elif mode == _TRACK:    
-    try:
-        url=urllib.unquote_plus(params['url'])
-        RequestURL(url)
-    except:
-        pass
+    try:    RequestURL(params['url'])
+    except: pass
+
 
 elif mode == _PODCASTS:
     ShowPodcasts()
@@ -428,8 +426,8 @@ elif mode == _PODCASTS:
 
 elif mode == _PLAYPODCAST:
     try:
-        name = urllib.unquote_plus(params['name'])
-        url  = urllib.unquote_plus(params['url'])
+        name = params['name']
+        url  = params['url']
         PlayPodcast(name, url)
     except:
         pass
@@ -442,8 +440,9 @@ elif mode == MODE_SONG:
 elif mode == MODE_ARTIST:
     ShowError(GETTEXT(30044))
 
+
+else:
+    Main()
+
     
-try:    
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-except:
-    pass
+xbmcplugin.endOfDirectory(int(sys.argv[1]))

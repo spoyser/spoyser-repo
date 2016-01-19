@@ -19,11 +19,12 @@
 	<string id="30033">Thank you for using</string>
 	<string id="30034">Oooooops......</string>
 	<string id="30035">We're sorry but we can't play your request</string>
-	<string id="30036">Listen to Stream</string>
+	<string id="30036">Listen to Stream (High Quality)</string>
 	<string id="30037">Record Stream</string>
 	<string id="30040">Podcasts</string>
 	<string id="30043">Song recently played</string>
 	<string id="30044">Artist recently played</string>
+	<string id="30045">Listen to Stream (Medium Quality)</string>	
 	<string id="30100">General</string>
 	<string id="30101">Play stream automatically</string>
 	<string id="30102">Hide recently requested artists</string>
