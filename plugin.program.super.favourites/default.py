@@ -368,19 +368,33 @@ def getCurrentWindowId():
     return winID if winID != 10000 else 10025
 
 
+def removeNumeric(text):
+    root = text.split(NUMBER_SEP, 1)[0]
+    if root.startswith('['):
+        root = root.rsplit(']', 1)[0] + ']'
+    else:
+        root = ''
+        
+    return root + text.split(NUMBER_SEP, 1)[-1]
+
+
 def addToXBMC(name, thumb, cmd,  keyword):
     p = get_params(cmd.replace('?', '&'))
 
-    if LABEL_NUMERIC:
-        name = name.split(NUMBER_SEP, 1)[-1]
+    if LABEL_NUMERIC:        
+        name = removeNumeric(name)
 
     try: 
         mode = int(p['mode'])
         if mode == _FOLDER:
             label = urllib.unquote_plus(p['label'])
             path  = urllib.unquote_plus(p['path'])
-            path  = utils.convertToHome(path)
-            cmd   = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], label, _FOLDER, urllib.quote_plus(path))
+            path  = utils.convertToHome(path)            
+
+            if LABEL_NUMERIC:        
+                label = removeNumeric(label)
+
+            cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], label, _FOLDER, urllib.quote_plus(path))
     except:
         mode = _IGNORE
 
@@ -464,7 +478,6 @@ def addToXBMC(name, thumb, cmd,  keyword):
 
 def refresh():
     xbmc.executebuiltin('Container.Refresh')
-    #xbmc.executebuiltin('Container.Refresh(%s)' % (sys.argv[0] + sys.argv[2]))
 
 
 def removeAutoplay(path):
@@ -935,6 +948,8 @@ def parseFolder(folder):
 
         if colour:
             dir = '[COLOR %s]%s[/COLOR]' % (colour, dir)
+        else:
+            dir = '[COLOR %s]%s[/COLOR]' % ('', dir)
         
         mode       = _PLAY_SUPER_FOLDER if autoplay else _FOLDER
         isFolder   = not autoplay
@@ -2525,7 +2540,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
                 mode = _SUPERSEARCH
                 cmd  = '%s?mode=%d&keyword=%s&image=%s&fanart=%s' % (sys.argv[0], mode, keyword, image, fanart)
                 xbmc.executebuiltin('XBMC.Container.Update(%s)' % cmd)
-                return False
+                return
 
     if len(keyword) < 1:
         return
@@ -2803,10 +2818,6 @@ def pasteCopy(file, cmd, folder):
 
     file = os.path.join(folder, FILENAME)
 
-    #xbmc = os.path.join('special://profile', FILENAME)  
-    #if xbmc == file:
-    #    return addToXBMC(copy[0], copy[1], copy[2], '')
-
     return favourite.copyFave(file, copy)
 
 
@@ -2872,6 +2883,8 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     if CONTENTMODE:
         u += '&contentMode=true'
+ 
+    u += '&content_type=' + urllib.quote_plus(launchMode)
 
     if len(thumbnail) == 0:
         thumbnail = BLANK
@@ -3029,6 +3042,17 @@ if len(folder) > 0:
     path = os.path.join(PROFILE, folder)
 
 
+isHome = False
+winID  = 0
+try:    
+    winID, cmd = cmd.split('_:_', 1)
+    winID  = int(winID)
+    isHome = winID == 10000
+except: 
+    pass
+
+
+
 utils.log('------------------ Launch Parameters ------------------')
 utils.log(sys.argv[2])
 utils.log(sys.argv)
@@ -3039,6 +3063,8 @@ utils.log('params      = %s' % params)
 utils.log('launchMode  = %s' % launchMode)
 utils.log('contentType = %s' % contentType)
 utils.log('viewType    = %s' % VIEWTYPE)
+utils.log('isHome      = %s' % str(isHome))
+utils.log('winID       = %d' % winID)
 utils.log('-------------------------------------------------------')
 
 
@@ -3049,14 +3075,13 @@ if mode == _PLAYMEDIA:
 
  
 elif mode == _ACTIVATEWINDOW:
-    if not contentMode:
-        doEnd = False
+    if not contentMode and not isHome:
         mode  = _IGNORE
+        doEnd = False
         playCommand(cmd)
 
 
-elif mode == _ACTIVATEWINDOW_XBMC:
-    doEnd = True
+elif mode  == _ACTIVATEWINDOW_XBMC:
     mode  = _IGNORE
 
     import playlist
@@ -3066,13 +3091,14 @@ elif mode == _ACTIVATEWINDOW_XBMC:
         #Container.Update removes current item from history to stop looping
         update = '%s' % (sys.argv[0])
         update = 'Container.Update(%s,replace)' % update
+
         xbmc.executebuiltin(update)
 
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
         xbmc.executebuiltin('ActivateWindow(Home)')
     else:
         script = os.path.join(HOME, 'cmdLauncher.py')
-        cmd    = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % ('changelog', script, cmd, 0)
+        cmd    = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % ('SF_CMDLAUNCHER', script, cmd, 0)
         xbmc.executebuiltin(cmd)
 
 
@@ -3445,13 +3471,17 @@ elif mode == _ACTIVATESEARCH:
         pass
     else:
         xbmc.sleep(250)
-        doEnd = False
         playCommand(cmd)
 
 
 elif mode == _ACTIVATEWINDOW:
-    xbmc.sleep(250)
-    playCommand(cmd)
+    if len(launchMode) == 0:
+        script = os.path.join(HOME, 'cmdLauncher.py')
+        cmd    = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % ('SF_CMDLAUNCHER', script, cmd.replace('"', ''), 0)
+        xbmc.executebuiltin(cmd)
+    else:
+        xbmc.sleep(250)
+        playCommand(cmd)
 
 
 elif mode == _SUPERSEARCHDEF:

@@ -56,7 +56,7 @@ def getFolderThumb(path):
         #return 'DefaultFolder.png'
         return ICON
 
-    faves = favourite.getFavourites(os.path.join(path, FILENAME), 1)   
+    faves = favourite.getFavourites(os.path.join(path, FILENAME), 1, chooser=True)   
 
     if len(faves) < 1:
         return ICON
@@ -172,7 +172,7 @@ class Main:
             except Exception, e:
                 pass
             
-        faves.extend(favourite.getFavourites(file))
+        faves.extend(favourite.getFavourites(file, chooser=True))
         
         return faves
             
@@ -366,6 +366,10 @@ class MainGui(xbmcgui.WindowXMLDialog):
                     keyboard.doModal()
                     if (keyboard.isConfirmed()):
                         favLabel = keyboard.getText()
+
+                if favPath.lower().startswith('activatewindow') and '?' in favPath:
+                    text    = '?content_type=%s&' % urllib.quote_plus('Chooser')
+                    favPath = favPath.replace('?', text)
                         
                 xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Path'),   favPath.decode('string-escape')))
                 xbmc.executebuiltin('Skin.SetString(%s,%s)' % ( '%s.%s' % ( self.property, 'Label'), favLabel))

@@ -18,13 +18,13 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-import os
 import xbmc
+
+import os
 import re
-import re
+import urllib
 
 import utils
-
 import sfile
 
 
@@ -32,8 +32,10 @@ import sfile
 SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 
 
-def getFavourites(file, limit=10000, validate=True, superSearch=False):
+def getFavourites(file, limit=10000, validate=True, superSearch=False, chooser=False):
     import xbmcgui
+
+    winID = str(xbmcgui.getCurrentWindowId()) + '_:_'
 
     xml  = '<favourites></favourites>'
     if sfile.exists(file):
@@ -81,13 +83,36 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False):
                     win  = xbmcgui.getCurrentWindowId()
                     cmd  = updateSFOption(cmd, 'winID', win)
 
-            cmd = patch(cmd)
+            name = resolve(name)
+            cmd  = patch(cmd)
+            cmd  = resolve(cmd)
+
+            if not chooser:
+                cmd = winID + cmd
 
             items.append([name, thumb, cmd])
             if len(items) > limit:
                 return items
 
     return items
+
+
+def resolve(text):
+    try:
+        if '$LOCALIZE' in text:
+            id   = int(re.compile('\$LOCALIZE\[(.+?)\]').search(text).group(1))
+            text = text.replace('$LOCALIZE[%d]' % id, xbmc.getLocalizedString(id))
+            return resolve(text)
+
+        if '$INFO' in text:
+            str  = re.compile('\$INFO\[(.+?)\]').search(text).group(1)
+            text = text.replace('$INFO[%s]' % str, xbmc.getInfoLabel(str))
+            return resolve(text)
+
+    except:
+        pass
+
+    return text
 
 
 def patch(cmd):
@@ -316,18 +341,45 @@ def removeFave(file, cmd):
     return True
 
 
+def _shiftUpIndex(index, max, faves):
+    index -= 1
+    if index < 0:
+        index = max
+    
+    cmd = faves[index][2]
+    if isValid(cmd):
+        return index
+
+    return _shiftUpIndex(index, max, faves)
+
+
+def _shiftDownIndex(index, max, faves):
+    index += 1
+    if index > max:
+        index = 0
+
+    cmd = faves[index][2]
+    if isValid(cmd):
+        return index
+
+    return _shiftDownIndex(index, max, faves)
+
+
 def shiftFave(file, cmd, up):
+    faves = getFavourites(file, validate=True)
+    if len(faves) < 2:
+        return
+
+    faves = getFavourites(file, validate=False)
+
     fave, index, nFaves = findFave(file, cmd)
 
     max = nFaves - 1
+
     if up:
-        index -= 1
-        if index < 0:
-            index = max
-    else: #down
-        index += 1
-        if index > max:
-            index = 0
+        index = _shiftUpIndex(index, max, faves)
+    else:
+        index = _shiftDownIndex(index, max, faves)
 
     removeFave(file, cmd)
     return insertFave(file, fave, index)
@@ -397,8 +449,6 @@ def updateSFOptions(cmd, options):
     if len(options) == 0:
         return cmd
 
-    import urllib 
-
     hasReturn = False
     if cmd.endswith(',return)'):
         hasReturn = True
@@ -431,8 +481,6 @@ def updateSFOptions(cmd, options):
 
 
 def getSFOptions(cmd):
-    import urllib 
-
     try:    options = urllib.unquote_plus(re.compile('sf_options=(.+?)_options_sf').search(cmd).group(1))
     except: return {}
 
@@ -503,8 +551,7 @@ def _removeFanart(cmd):
 #used only during upgrade process
 def _getFanart(cmd):
     cmd = cmd.replace(',return', '')
-
-    import urllib 
+ 
     try:    return urllib.unquote_plus(re.compile('sf_fanart=(.+?)_"\)').search(cmd).group(1))
     except: pass
 

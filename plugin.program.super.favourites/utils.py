@@ -35,15 +35,6 @@ def GetXBMCVersion():
     return int(version[0]), int(version[1]) #major, minor eg, 13.9.902
 
 
-def GETTEXT(id):
-    return ADDON.getLocalizedString(id)
-    #text = ADDON.getLocalizedString(id)
-    #name = ADDON.getLocalizedString(30121)
-
-    #if name == DISPLAY:
-    #    return text
-    #text = text.replace(name, DISPLAY)
-    #return text
 
 
 ADDONID = 'plugin.program.super.favourites'
@@ -60,12 +51,12 @@ ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 DISPLAY =  ADDON.getSetting('DISPLAYNAME')
+GETTEXT = ADDON.getLocalizedString
 TITLE   =  GETTEXT(30000)
 
 
 PLAYABLE = xbmc.getSupportedMedia('video') + '|' + xbmc.getSupportedMedia('music')
 PLAYABLE = PLAYABLE.replace('|.zip', '')
-#PLAYABLE = 'mp3|mp4|m4v|avi|flv|mpg|mov|txt|%s' % SRC
 PLAYABLE = PLAYABLE.split('|')
 
 
