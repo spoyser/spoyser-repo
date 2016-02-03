@@ -35,7 +35,9 @@ SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 def getFavourites(file, limit=10000, validate=True, superSearch=False, chooser=False):
     import xbmcgui
 
-    winID = str(xbmcgui.getCurrentWindowId()) + '_:_'
+    prefix = ''
+    if not chooser:
+        prefix = 'HOME:' if xbmcgui.getCurrentWindowId() == 10000 else ''    
 
     xml  = '<favourites></favourites>'
     if sfile.exists(file):
@@ -86,9 +88,7 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False, chooser=F
             name = resolve(name)
             cmd  = patch(cmd)
             cmd  = resolve(cmd)
-
-            if not chooser:
-                cmd = winID + cmd
+            cmd  = prefix + cmd
 
             items.append([name, thumb, cmd])
             if len(items) > limit:

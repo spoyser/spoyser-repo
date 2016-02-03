@@ -3043,11 +3043,10 @@ if len(folder) > 0:
 
 
 isHome = False
-winID  = 0
 try:    
-    winID, cmd = cmd.split('_:_', 1)
-    winID  = int(winID)
-    isHome = winID == 10000
+    if cmd.startswith('HOME:'):
+        cmd    = cmd.split(':', 1)[-1]
+        isHome = True
 except: 
     pass
 
@@ -3064,7 +3063,6 @@ utils.log('launchMode  = %s' % launchMode)
 utils.log('contentType = %s' % contentType)
 utils.log('viewType    = %s' % VIEWTYPE)
 utils.log('isHome      = %s' % str(isHome))
-utils.log('winID       = %d' % winID)
 utils.log('-------------------------------------------------------')
 
 
