@@ -95,7 +95,7 @@ Independent music for the free spirited soul</description>
   </extension>
 </addon>
 
-<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.46.1" provider-name="spoyser">
+<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.47" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
 	<import addon="script.module.metahandler" optional="true" />

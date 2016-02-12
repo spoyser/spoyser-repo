@@ -144,8 +144,7 @@ class Main:
 
                 
     def getFaves(self):
-        file     = os.path.join(self.FULLPATH, FILENAME).decode('utf-8')
-        
+        file  = os.path.join(self.FULLPATH, FILENAME).decode('utf-8')        
         faves = []        
 
         if self.MODE != 'xbmc':        
@@ -250,7 +249,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
             thumb = getParam('ICON', os.path.join(PROFILE, FOLDERCFG))
             if len(thumb) < 1:
-                thumb = 'icon_favourites.png'
+                thumb = os.path.join(HOME, 'resources', 'media', 'icon_favourites.png')
 
             label    = GETTEXT(30106) % DISPLAYNAME
             listitem = xbmcgui.ListItem(label) 

@@ -381,7 +381,7 @@ def removeNumeric(text):
 def addToXBMC(name, thumb, cmd,  keyword):
     p = get_params(cmd.replace('?', '&'))
 
-    if LABEL_NUMERIC:        
+    if LABEL_NUMERIC:
         name = removeNumeric(name)
 
     try: 
@@ -654,9 +654,41 @@ def parseFile(file, sortorder=0, label_numeric=None, index=0):
 
         label, index = addPrefixToLabel(index, label, label_numeric)
 
-        addDir(label, type, cmd=cmd, thumbnail=thumb, isFolder=isFolder, menu=menu, fanart=fanart, infolabels=infolabel)
+        path = checkForSuperFolderLink(cmd)
+
+        if path:    
+            addDir(label, _FOLDER, path=path, thumbnail=thumb, isFolder=True, menu=menu, fanart=fanart, infolabels=infolabel)
+        else:           
+            addDir(label, type, cmd=cmd, thumbnail=thumb, isFolder=isFolder, menu=menu, fanart=fanart, infolabels=infolabel)
 
     separator = len(faves) > 0
+
+
+def checkForSuperFolderLink(cmd):
+    try:
+        if not cmd.startswith('ActivateWindow'):
+            return None
+
+        if 'plugin://plugin.program.super.favourites' not in cmd:
+            return None
+
+        params = get_params(cmd)
+
+        mode = int(params['mode'])
+
+        if mode <> _FOLDER:
+            return None
+
+        path = params['path'].replace('\\', '/')
+
+        if not path.replace('\\', '/').startswith(PROFILE):
+            return None
+
+        return path
+    except:
+        pass
+
+    return None
 
 
 def getPrefix(index):
@@ -944,12 +976,10 @@ def parseFolder(folder):
 
         if label_numeric:
             prefix, index = getPrefix(index)
-            dir = prefix + dir
+            dir = prefix + dir       
 
-        if colour:
+        if colour and colour.lower() <> 'none':
             dir = '[COLOR %s]%s[/COLOR]' % (colour, dir)
-        else:
-            dir = '[COLOR %s]%s[/COLOR]' % ('', dir)
         
         mode       = _PLAY_SUPER_FOLDER if autoplay else _FOLDER
         isFolder   = not autoplay
@@ -1632,6 +1662,9 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     manualUnset = MANUAL_CMD in cmd
 
     title = GETTEXT(30170) % name
+
+    sfOptions = ''
+    prefix    = ''
  
     if manualUnset:
         newCmd = getText(title, '', allowEmpty=True)
@@ -1665,10 +1698,21 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
 
         cmd = cmd.replace('"', '')
 
+        if '?sf_options' in cmd:
+            prefix = '?sf_options'
+            cmd, sfOptions = cmd.split(prefix)            
+
+        elif '&sf_options' in cmd:
+            prefix = '&sf_options'
+            cmd, sfOptions = cmd.split(prefix)
+
         newCmd = getText(title, cmd, allowEmpty=True)
 
     if newCmd == None:
         return False
+
+    if len(prefix) > 0 and len(sfOptions) > 0:
+        newCmd += prefix + sfOptions
 
     newCmd = buildManualFave(type, newCmd, windowID)
 
@@ -2063,7 +2107,7 @@ def hasIMDBRecommendations(imdb):
     return len(items) > 0
 
 
-def recommendIMDB(imdb, keyword, fallback=True):
+def recommendIMDB(imdb, keyword, fallback=True):    
     grabber = None
     if METARECOMMEND:
         try:
@@ -2108,9 +2152,9 @@ def recommendIMDB(imdb, keyword, fallback=True):
             menu = getMovieMenu(infolabels)
             getHistoryItem(menu, name, thumbnail, fanart, False)
 
-            name, count = addPrefixToLabel(count, name)
+            label, count = addPrefixToLabel(count, name)
 
-            addDir(name, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
+            addDir(label, _SUPERSEARCH, thumbnail=thumbnail, isFolder=True, menu=menu, fanart=fanart, keyword=name, imdb=imdb, infolabels=infolabels, totalItems=len(items))
 
         except:
             pass
@@ -2848,7 +2892,7 @@ def addArtwork(setting, thumbnail, fanart):
     
 def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=True, menu=None, fanart=FANART, keyword='', imdb='', infolabels={}, totalItems=0, isPlayable=False):
     global separator
-
+   
     u  = sys.argv[0]
 
     u += '?label='
@@ -2890,6 +2934,12 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         thumbnail = BLANK
        
     label = label.replace('&apos;', '\'')
+
+    #sanity check on empty [COLOR] block
+    if label.startswith('[COLOR ]'):
+        label = label.split('[COLOR ]', 1)[-1]
+        if label.endswith('[/COLOR]'):
+            label = label.rsplit('[/COLOR]', 1)[0]
 
     liz = xbmcgui.ListItem(label, iconImage='Default', thumbnailImage=thumbnail)
 
@@ -2958,17 +3008,36 @@ def get_params(path):
    
 params = get_params(sys.argv[2])
 
+
 theFolder = ''
 thepath   = ''
+
 
 try:    mode = int(params['mode'])
 except: mode = _MAIN
 
+try:    cmd = params['cmd']
+except: cmd = None
+
+#----------------------------------------------------------------
+#if mode == _ACTIVATEWINDOW:
+#    #if cmd is a SF cmd then pull out params from cmd and use them
+#    inSF = xbmc.getInfoLabel('Container.FolderName') == TITLE
+#    isSF = 'plugin://%s' % ADDONID in cmd
+#    if inSF and isSF:
+#        params = get_params(cmd)
+#
+#        try:    mode = int(params['mode'])
+#        except: mode = _MAIN
+#
+#        try:    cmd = params['cmd']
+#        except: cmd = None
+#----------------------------------------------------------------
+
+
 try:    file = params['file']
 except: file = None
 
-try:    cmd = params['cmd']
-except: cmd = None
 
 try:    path = params['path']
 except: path = None
@@ -3049,7 +3118,6 @@ try:
         isHome = True
 except: 
     pass
-
 
 
 utils.log('------------------ Launch Parameters ------------------')

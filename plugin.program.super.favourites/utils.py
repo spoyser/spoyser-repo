@@ -70,7 +70,7 @@ HOMESPECIAL = 'special://home/'
 HOMEFULL    = xbmc.translatePath(HOMESPECIAL)
 
 
-DEBUG   = ADDON.getSetting('DEBUG') == 'true'
+DEBUG = ADDON.getSetting('DEBUG') == 'true'
 
 
 KEYMAP_HOT  = 'super_favourites_hot.xml'
@@ -85,6 +85,9 @@ ISENGARD     = (MAJOR == 15) or (MAJOR == 14 and MINOR == 9)
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
 
+
+def Log(text):
+    log(text)
 
 def log(text):
     try:
