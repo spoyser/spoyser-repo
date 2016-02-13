@@ -369,6 +369,9 @@ def getCurrentWindowId():
 
 
 def removeNumeric(text):
+    if not LABEL_NUMERIC:
+        return text
+
     root = text.split(NUMBER_SEP, 1)[0]
     if root.startswith('['):
         root = root.rsplit(']', 1)[0] + ']'
@@ -381,8 +384,7 @@ def removeNumeric(text):
 def addToXBMC(name, thumb, cmd,  keyword):
     p = get_params(cmd.replace('?', '&'))
 
-    if LABEL_NUMERIC:
-        name = removeNumeric(name)
+    name = removeNumeric(name)
 
     try: 
         mode = int(p['mode'])
@@ -391,8 +393,7 @@ def addToXBMC(name, thumb, cmd,  keyword):
             path  = urllib.unquote_plus(p['path'])
             path  = utils.convertToHome(path)            
 
-            if LABEL_NUMERIC:        
-                label = removeNumeric(label)
+            label = removeNumeric(label)
 
             cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], label, _FOLDER, urllib.quote_plus(path))
     except:
@@ -679,12 +680,16 @@ def checkForSuperFolderLink(cmd):
         if mode <> _FOLDER:
             return None
 
-        path = params['path'].replace('\\', '/')
+        if 'path' in params:
+            path = params['path'].replace('\\', '/')
+            if path.replace('\\', '/').startswith(PROFILE):
+                return path
 
-        if not path.replace('\\', '/').startswith(PROFILE):
-            return None
+        if 'folder' in params:
+            folder = params['folder'].replace('\\', '/')
+            folder = os.path.join(PROFILE, folder)
+            return folder
 
-        return path
     except:
         pass
 
@@ -2761,7 +2766,7 @@ def paste(folder):
 
 
 def pasteFolder(dst):
-    if len(dst) < 1:
+    if len(dst) == 0:
         return False
 
     src = xbmcgui.Window(10000).getProperty('SF_FILE')
@@ -2815,9 +2820,14 @@ def pasteFolderLink(src, dst, folderName):
     if colour:
         folderName = '[COLOR %s]%s[/COLOR]' % (colour, folderName)
 
-    path  = utils.convertToHome(src)
+    path = utils.convertToHome(src)
+    path = path.replace(PROFILE, '')
+    path = path.replace('\\', '/')
+    if path.startswith('/'):
+        path = path[1:]
 
-    cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
+    #cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
+    cmd = '%s?label=%s&mode=%d&folder=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
     cmd = '"%s"' % cmd  
     cmd = cmd.replace('+', '%20')
     cmd = 'ActivateWindow(%d,%s)' % (getCurrentWindowId(), cmd) 
@@ -2966,7 +2976,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 
     #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
     #or in Python via: xbmc.getInfoLabel('ListItem.Property(Super_Favourites_Folder)')
-    liz.setProperty('Super_Favourites_Folder', theFolder)
+    liz.setProperty('Super_Favourites_Folder', removeNumeric(theFolder))
 
     if not menu:
         menu = []   

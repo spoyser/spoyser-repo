@@ -155,10 +155,14 @@ class Main:
 
                 for dir in dirs:
                     path = os.path.join(self.FULLPATH, dir)
+                   
                 
                     folderCfg = os.path.join(path, FOLDERCFG)
+                    lock      = getParam('LOCK',   folderCfg)
+                    if lock:
+                        continue
                     colour    = getParam('COLOUR', folderCfg)
-                    thumb     = getFolderThumb(path)
+                    thumb     = getFolderThumb(path)               
 
                     label = dir
                 
