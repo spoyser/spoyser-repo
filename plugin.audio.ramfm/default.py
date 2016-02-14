@@ -58,6 +58,8 @@ MODE_ARTIST = 1200
 MODE_IGNORE = 1300
 
 
+def DialogOK(title, line1, line2, line3):
+    xbmcgui.Dialog().ok(title, line1, line2, line3)
 
 def CheckVersion():
     prev = ADDON.getSetting('VERSION')
@@ -69,8 +71,7 @@ def CheckVersion():
     ADDON.setSetting('VERSION', curr)
 
     #if prev == '0.0.0':
-    d = xbmcgui.Dialog()
-    d.ok(TITLE + ' - ' + VERSION, GETTEXT(30017), GETTEXT(30018) , GETTEXT(30019)+' :-)')
+    DialogOK(TITLE + ' - ' + VERSION, GETTEXT(30017), GETTEXT(30018) , GETTEXT(30019)+' :-)')
 
 
 def DownloaderClass(url, dest, dp): 
@@ -100,8 +101,7 @@ def GetRecordPath():
 	    return None
 
     if downloadFolder is '':
-        d = xbmcgui.Dialog()
-	d.ok(TITLE, '', GETTEXT(30023), GETTEXT(30024))
+        DialogOK(TITLE, '', GETTEXT(30023), GETTEXT(30024))
 	ADDON.openSettings() 
 	downloadFolder = ADDON.getSetting('RECORD_FOLDER')
 
@@ -210,13 +210,45 @@ def Request():
         addLetter(chr(i))
 
 
-def IsPlayingRAM():
-    if not xbmc.Player().isPlayingAudio():
-        return False
+def IsLive():
+    return False
+    try:
+        if not xbmc.Player().isPlayingAudio():
+            return False
 
-    pl         = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
-    label      = pl[0].getLabel().upper()
-    return label == 'RAM FM EIGHTIES HIT RADIO'
+        count = 10 
+        genre = xbmc.getInfoLabel('MusicPlayer.Genre')
+        while not genre and count > 0:
+            xbmc.sleep(100)
+            genre = xbmc.getInfoLabel('MusicPlayer.Genre')
+            count -= 1
+            
+        if xbmc.getInfoLabel('MusicPlayer.Genre').upper() == '80S':
+            return False
+
+    except Exception, e:
+        pass
+
+    return False
+   
+
+def IsPlayingRAM():
+    try:
+        if not xbmc.Player().isPlayingAudio():
+            return False
+
+        pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)[0]
+ 
+        if 'RAM FM' in pl.getLabel().upper():  #expect: 'RAM FM EIGHTIES HIT RADIO'
+            return True
+
+        if pl.getfilename() == 'http://usa3-vn.webcast-server.net:8018/':
+            return True
+
+    except:
+        pass
+
+    return False
     
 
 def IsPlaying(message):
@@ -333,11 +365,11 @@ def RequestURL(url):
         ShowError(match[0])
         return        
 
-    xbmcgui.Dialog().ok(GETTEXT(30031), GETTEXT(30032), GETTEXT(30033), GETTEXT(30031))
+    DialogOK(GETTEXT(30031), GETTEXT(30032), GETTEXT(30033), GETTEXT(30031))
 
 
 def ShowError(text):
-    xbmcgui.Dialog().ok(GETTEXT(30031), GETTEXT(30034), GETTEXT(30035), text)
+    DialogOK(GETTEXT(30031), GETTEXT(30034), GETTEXT(30035), text)
             
 
 def Main():   
@@ -407,7 +439,11 @@ elif mode == _RECORD:
 
 elif mode == _REQUEST:
     if IsPlaying(GETTEXT(30030)):
-        Request()
+        xbmc.sleep(500)
+        if IsLive():
+            DialogOK(GETTEXT(30031), GETTEXT(30046), GETTEXT(30047), GETTEXT(30048))
+        else:
+            Request()
 
 
 elif mode == _LETTER:

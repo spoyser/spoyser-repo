@@ -1,5 +1,5 @@
 v2.0.4:
-  - Fixed detection of medium quality RAM FM stream
+  - Fixed detection of medium quality RAM FM strea
 
 v2.0.3:
   - Added medium quality 64kbps AAC+ stream

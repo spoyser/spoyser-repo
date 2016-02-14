@@ -39,7 +39,7 @@
 
 </addon>
 
-<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.3" provider-name="spoyser">
+<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.4" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
