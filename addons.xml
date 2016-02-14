@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.audio.bbcpodcasts"
        name="BBC Podcasts"
-       version="1.0.5"
+       version="1.0.6"
        provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

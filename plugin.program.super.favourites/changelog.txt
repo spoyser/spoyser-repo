@@ -1,9 +1,9 @@
 [B][COLOR chartreuse]This file contains ALOT of useful information regarding the functionality of Super Favourites - PLEASE READ IT!![/COLOR][/B]
 
 
-[COLOR chartreuse]1.0.47.1: xxth February 2016[/COLOR]
+[COLOR chartreuse]1.0.47.1: 13th February 2016[/COLOR]
     - linked Super Folders that use the 'folder=' format now maintain the navigation history 
-    - linked Fuper Folder are now created using the 'folder=' format (instead of 'path=')
+    - linked Super Folder are now created using the 'folder=' format (instead of 'path=')
     - fixed 'Super_Favourites_Folder' infolabel when displaying numeric labels
     - locked Super Folders no longer appear on quick launch dialog
 

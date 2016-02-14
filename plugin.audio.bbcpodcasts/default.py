@@ -19,16 +19,19 @@
 #
 
 import urllib
-import geturllib
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
+
 import time
 import re
 import os
 from xml.etree import ElementTree
 import threading
-import json
+
+
+import quicknet
+import pc_utils as utils
 
 
 _STATION      = 100
@@ -39,10 +42,10 @@ _SEARCH       = 500
 _SEARCHRESULT = 600
 
 
-ADDONID = 'plugin.audio.bbcpodcasts'
-ADDON   = xbmcaddon.Addon(ADDONID)
-TITLE   = ADDON.getAddonInfo('name')
-URL     = ADDON.getSetting('URL')
+ADDON   = utils.ADDON
+TITLE   = utils.TITLE
+PROFILE = utils.PROFILE
+URL     = utils.URL
 
 
 global Year
@@ -99,12 +102,21 @@ def downloadPath(url):
 
 
 def Download(url):
-    savePath   = downloadPath(url)
+    savePath = downloadPath(url)
+  
+    if not savePath:
+        return
+
+    tempPath = savePath.replace('\\', '/')
+    tempPath = xbmc.translatePath(os.path.join(PROFILE, savePath.rsplit('/', 1)[-1]))
    
-    if savePath:
-        time = str(225*len(savePath))
-        xbmc.executebuiltin("XBMC.Notification(" + TITLE + ", Downloading: " + savePath + "," + time + ")")
-        urllib.urlretrieve(url, savePath)
+    time = str(225*len(savePath))
+    xbmc.executebuiltin('XBMC.Notification(' + TITLE + ', Downloading: ' + savePath + ',' + time + ')')
+    urllib.urlretrieve(url, tempPath)
+
+    import sfile
+    sfile.copy(tempPath, savePath)
+    sfile.delete(tempPath)
 
 
 def PlayPodcast(url, duration, thumbnail):
@@ -118,13 +130,15 @@ def PlayPodcast(url, duration, thumbnail):
     liz = xbmcgui.ListItem(name, iconImage = thumbnail, thumbnailImage = thumbnail)
     liz.setInfo('music', {'Title': name, "Duration" : duration})
     liz.setProperty('mimetype', 'audio/mpeg')
-    liz.setProperty('IsPlayable', 'true')
 
-    pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
-    pl.clear()    
-    pl.add(url, liz)
+    #pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+    #pl.clear()    
+    #pl.add(url, liz)
 
-    xbmc.Player(xbmc.PLAYER_CORE_MPLAYER).play(pl)
+    #xbmc.Player(xbmc.PLAYER_CORE_MPLAYER).play(pl)
+
+    liz.setPath(url)
+    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
 
 
 def find(f, seq):
@@ -136,7 +150,7 @@ def find(f, seq):
 
 def GetOPML():
     global Year
-    opml = ElementTree.fromstring(geturllib.GetURL(URL, 3600)) # 1 hr  
+    opml = ElementTree.fromstring(quicknet.getURL(URL, 3600)) # 1 hr  
 
     try:
         head = opml.find('head')
@@ -148,14 +162,14 @@ def GetOPML():
     return opml
 
 
-def FixString(_str):
-    return _str.encode('utf-8', 'replace')   
+def FixString(str):
+    return str.encode('utf-8', 'replace')   
 
 
-def CleanString(_str):
-    _str = _str.replace('&gt;', '>')
-    _str = _str.replace('&amp;', '&')
-    return _str
+def CleanString(str):
+    str = str.replace('&gt;', '>')
+    str = str.replace('&amp;', '&')
+    return str
 
 
 def Main():          
@@ -196,7 +210,7 @@ def LoadStation(_networkId):
 
 
 def LoadShow(url, genre, keyname):
-    xml = geturllib.GetURL(url, 3600) # 1 hr
+    xml = quicknet.getURL(url, 3600) # 1 hr
     xml = ElementTree.fromstring(xml)
 
     channel = xml.find('channel')
@@ -226,9 +240,11 @@ def Search():
     url = 'http://www.bbc.co.uk/podcasts/search.json?q=' + search
 
     try:
-        search = geturllib.GetURL(url, 3600) # 1 hr
+        import json as simplejson 
 
-        jsn = json.loads(search)
+        search = quicknet.getURL(url, 3600) # 1 hr
+
+        jsn = simplejson.loads(search)
 
         for item in jsn:
             try:        
@@ -260,26 +276,26 @@ def get_params(path):
     for pair in pairs:
         split = pair.split('=')
         if len(split) > 1:
-            params[split[0]] = split[1]
+            params[split[0]] = urllib.unquote_plus(split[1])
 
     return params
-
+   
 
 def addSearchResult(title, url, thumb, fanart, description):
     u  =  sys.argv[0]
-    u += "?url=" + urllib.quote_plus(url)
-    u += "&mode=" + str(_SEARCHRESULT) 
+    u += '?url='  + urllib.quote_plus(url)
+    u += '&mode=' + str(_SEARCHRESULT) 
 
-    try:    u += "&name=" + urllib.quote_plus(title)
-    except: u += "&name=" + urllib.quote_plus('title')
+    try:    u += '&name=' + urllib.quote_plus(title)
+    except: u += '&name=' + urllib.quote_plus('title')
 
     liz = xbmcgui.ListItem(title, iconImage=thumb, thumbnailImage=thumb)
 
-    liz.setInfo(type='music', infoLabels={"Title" : title, "comment" : description, "year" : Year, "artist" : ' ', "genre" : ' ', "album" : title} ) 
+    liz.setInfo(type='music', infoLabels={'Title':title, 'comment':description, 'year':Year, 'artist':' ', 'genre':' ', 'album':title} ) 
 
     liz.setProperty('Fanart_Image', fanart)    
 
-    xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = True)        
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)        
 
 
 def fixImage(image, resolution):
@@ -287,7 +303,6 @@ def fixImage(image, resolution):
     image = image.replace('304x304',   resolution)
     image = image.replace('1408x1408', resolution)
     return image
-
 
 
 def addPodcast(name, url, genre, keyname, title, duration, _thumbnail = 'DefaultPlaylist.png', desc=''):
@@ -307,6 +322,7 @@ def addPodcast(name, url, genre, keyname, title, duration, _thumbnail = 'Default
     liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "year" : Year, "artist" : keyname, "genre" : genre, "album" : title} )    
 
     liz.setProperty('Fanart_Image', fanart)    
+    liz.setProperty('IsPlayable', 'true')
 
     contextMenu = []
     contextMenu.append(('Download', 'XBMC.RunPlugin(%s?mode=%s&url=%s)' % (sys.argv[0], str(_DOWNLOAD), url)))
@@ -346,12 +362,6 @@ def addDir(name, url, mode, thumbnail = 'DefaultPlaylist.png'):
     xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = True)
 
 
-if __name__ == "__main__":
-    try:
-        geturllib.SetCacheDir(xbmc.translatePath(os.path.join("special://profile", "addon_data", 'plugin.audio.bbcpodcasts','cache' ) ) )
-    except:
-        pass
-
 
 params=get_params(sys.argv[2])
 
@@ -365,13 +375,13 @@ duration  = None
 thumbnail = None
 
 
-try:    url=urllib.unquote_plus(params["url"])
+try:    url = params['url']
 except: pass
 
-try:    name=urllib.unquote_plus(params["name"])
+try:    name = params['name']
 except: pass
 
-try:    mode=int(params["mode"])
+try:    mode = int(params['mode'])
 except: pass
 
 
@@ -385,10 +395,10 @@ if mode == _STATION:
 
 
 elif mode == _SHOW:
-    try:    genre=urllib.unquote_plus(params["genre"])
+    try:    genre = params['genre']
     except: pass
 
-    try:    keyname=urllib.unquote_plus(params["keyname"])
+    try:    keyname = params['keyname']
     except: pass
 
     LoadShow(url, genre, keyname)
@@ -399,10 +409,10 @@ elif mode == _DOWNLOAD:
 
 
 elif mode == _PODCAST:
-    try:    duration=urllib.unquote_plus(params["duration"])
+    try:    duration = params['duration']
     except: pass
 
-    try:    thumbnail=urllib.unquote_plus(params["thumbnail"])
+    try:    thumbnail = params['thumbnail']
     except: pass
   
     PlayPodcast(url, duration, thumbnail)
