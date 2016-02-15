@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.47.1" provider-name="spoyser">
+<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.48" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
 	<import addon="script.module.metahandler" optional="true" />
@@ -26,7 +26,7 @@
   <extension point="kodi.context.item" library="capture.py">		
       <item>
         <label>30000</label>
-        <visible>true</visible>
+        <visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>					
       </item>
     </extension>
 </addon>

@@ -2974,7 +2974,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         if len(art) > 0:
             liz.setArt(art) 
 
-    #this propery can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
+    #this property can be accessed in a skin via: $INFO[ListItem.Property(Super_Favourites_Folder)]
     #or in Python via: xbmc.getInfoLabel('ListItem.Property(Super_Favourites_Folder)')
     liz.setProperty('Super_Favourites_Folder', removeNumeric(theFolder))
 

@@ -267,6 +267,26 @@ def getDownloadTitle(url):
     title += getExt(url)
 
     return title
+
+
+def whitelisted():   
+    #folder = xbmc.getInfoLabel('Container.FolderPath')
+    #if not folder.startswith('addons'):
+    #    return False
+
+    filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
+
+    try:
+        addon = filename.split('://', 1)[-1].split('/', 1)[0]  
+        addon = xbmcaddon.Addon(addon).getAddonInfo('path')
+        addon = addon.rsplit(os.path.sep, 1)[-1]     
+     
+        return addon in ADDON.getSetting('WHITELIST')
+    except:
+        pass
+   
+    return False
+
         
          
 def doMenu(mode):
@@ -301,6 +321,10 @@ def doMenu(mode):
     if (ADDONID in folder) or (ADDONID in path):
         doStandard(useScript=False)
         return
+
+    if mode == 0 and whitelisted():
+        doStandard(useScript=False)
+        return
         
     choice   = 0
     label    = xbmc.getInfoLabel('ListItem.Label')
@@ -314,7 +338,7 @@ def doMenu(mode):
     isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
     hasVideo = xbmc.getCondVisibility('Player.HasVideo') == 1
     desc     = getDescription()
-
+   
     if not thumb:
         thumb = icon
 
@@ -366,6 +390,7 @@ def doMenu(mode):
     params['isstream']    = isStream
     params['description'] = desc
     params['hasVideo']    = hasVideo
+
 
     for key in params:
         utils.log('%s\t\t: %s' % (key, params[key]))
@@ -593,7 +618,7 @@ def main():
 
     mode = 0
     if len(sys.argv) > 0 and sys.argv[0] == '':
-        mode = 1
+        mode = 1 #launched via std context menu
     
     try:        
         menu(mode)

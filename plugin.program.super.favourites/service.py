@@ -20,6 +20,7 @@
 
 import utils
 import xbmc
+import xbmcgui
 import os
 
 
@@ -46,13 +47,19 @@ def checkDisabled():
 class MyMonitor(xbmc.Monitor):
     def __init__(self):
         xbmc.Monitor.__init__(self)
-        self.hotkey  = utils.ADDON.getSetting('HOTKEY')
-        self.context = utils.ADDON.getSetting('CONTEXT')  == 'true'
+        self.hotkey      = utils.ADDON.getSetting('HOTKEY')
+        self.context     = utils.ADDON.getSetting('CONTEXT')     == 'true'
+        self.std_context = utils.ADDON.getSetting('CONTEXT_STD') == 'true'
+
+        self.updateStdContextMenuItem()
 
 
     def onSettingsChanged(self):
-        hotkey  = utils.ADDON.getSetting('HOTKEY')
-        context = utils.ADDON.getSetting('CONTEXT')  == 'true'
+        hotkey           = utils.ADDON.getSetting('HOTKEY')
+        context          = utils.ADDON.getSetting('CONTEXT')     == 'true'
+        self.std_context = utils.ADDON.getSetting('CONTEXT_STD') == 'true'
+
+        self.updateStdContextMenuItem()
 
         utils.VerifyKeymaps()
 
@@ -63,6 +70,13 @@ class MyMonitor(xbmc.Monitor):
         self.context = context
 
         utils.UpdateKeymaps()
+
+    def updateStdContextMenuItem(self):
+        #<visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
+        if self.std_context:            
+            xbmcgui.Window(10000).setProperty('SF_STD_CONTEXTMENU_ENABLED', 'True')  
+        else:
+            xbmcgui.Window(10000).clearProperty('SF_STD_CONTEXTMENU_ENABLED')            
 
 
 monitor = MyMonitor()
@@ -76,6 +90,5 @@ while (not xbmc.abortRequested):
 
 
 checkDisabled()
-
 
 del monitor
