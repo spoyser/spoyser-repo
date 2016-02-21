@@ -171,9 +171,14 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
 
 def All():
     html  = GetHTML(URL)
+
+    xbmc.log(html)
    
     #match = re.compile('<li class=""><h4><a href="(.+?)" class="">(.+?)</br></b></a> <p>\((.+?)\)</p></li>').findall(html)
-    match = re.compile('<li class=""><h4><a href="(.+?)" class="">(.+?)</a></h4><h6>\((.+?)\)</h6><br/></li>').findall(html)
+    #match = re.compile('<li class=""><h4><a href="(.+?)" class="">(.+?)</a></h4><h6>\((.+?)\)</h6><br/></li>').findall(html)
+    match = re.compile('li class=""><a href="(.+?)" class="">(.+?)</a><p>\((.+?)\)</p></li>').findall(html)  
+
+
                       
     list = []
 
