@@ -19,14 +19,8 @@
 #
 
 
-import re
-
-
 def Resolve(html):
     if not 'rutube' in html:
         return []
 
-    #ad9e500c1d2eeed5512ace80ddca52dc
-
     return [[None, 'Currently unable to resolve RuTube hosted videos']]
-    #id   = re.compile('rutube.ru/(.+?)"').search(html).group(1)    

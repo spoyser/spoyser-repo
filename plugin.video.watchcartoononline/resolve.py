@@ -18,18 +18,14 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
-import geturllib
-import urllib
 import re
-
-import common
-import xbmcaddon
 import os
 import sys
 
-ADDONID = 'plugin.video.watchcartoononline'
-ADDON   = xbmcaddon.Addon(ADDONID)
-HOME    = ADDON.getAddonInfo('path')
+import wco_utils as utils
+
+
+HOME = utils.ADDON.getAddonInfo('path')
 
 def ResolveURL(url):
     #print url
@@ -45,7 +41,7 @@ def ResolveURL(url):
     ImportModules()
 
 
-    html = common.getHTML(url)
+    html = utils.getHTML(url)
     html = html.replace('"Click Here!!"</a></div>', '')
 
     url = None
@@ -53,14 +49,17 @@ def ResolveURL(url):
 
     resolved = []
 
-    match = re.compile('<div class=\'postTabs_divs(.+?)</div>').findall(html)   
+    match = re.compile('<div class=\'postTabs_divs(.+?)</div>').findall(html)  
 
-    for item in match:        
-        for module in MODULES:                        
-            items = MODULES[module].Resolve(item)
-            for item in items:               
-                if item[0] != None:
-                    resolved.append([module.replace('_', ''), item[0], item[1]])
+    try:
+        for item in match:   
+            for module in MODULES:                        
+                links = MODULES[module].Resolve(item)
+                for link in links:                                   
+                    if link[0] != None:                       
+                        resolved.append([module.replace('_', ''), link[0], link[1]])
+    except Exception, e:
+        pass
 
     return resolved
 

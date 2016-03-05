@@ -29,17 +29,17 @@ import xbmcplugin
 import xbmcgui
 
 import resolve
-import common
+import wco_utils as utils
 
 
-ADDONID = 'plugin.video.watchcartoononline'
-ADDON   = xbmcaddon.Addon(ADDONID)
-HOME    = ADDON.getAddonInfo('path')
-TITLE   = ADDON.getAddonInfo('name')
-VERSION = ADDON.getAddonInfo('version')
-ARTWORK = os.path.join(HOME, 'resources', 'artwork')
-ICON    = os.path.join(HOME, 'icon.png')
-URL     = 'http://www.watchcartoononline.com/'
+ADDONID = utils.ADDONID
+ADDON   = utils.ADDON
+HOME    = utils.HOME
+TITLE   = utils.TITLE
+VERSION = utils.VERSION
+ARTWORK = utils.ARTWORK
+ICON    = utils.ICON
+URL     = utils.URL
 
 
 SECTION  = 100
@@ -49,10 +49,6 @@ HOST     = 400
 DOWNLOAD = 500
 
 AUTOPLAY = ADDON.getSetting('AUTOPLAY') == 'true'
-
-
-import geturllib
-geturllib.SetCacheDir(xbmc.translatePath(os.path.join('special://profile', 'addon_data', ADDONID ,'cache')))
 
 
 def CheckVersion():
@@ -76,7 +72,7 @@ def FileSystemSafe(text):
 def Main():
     CheckVersion()
 
-    html = common.getHTML(URL)
+    html = utils.getHTML(URL)
 
     match = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(html)
     for url, name in match:
@@ -93,7 +89,7 @@ def DoSection(url):
     if url == 'http://www.watchcartoononline.com/ova-list':
         mode = EPISODE
 
-    html = common.getHTML(url)
+    html = utils.getHTML(url)
 
     html = html.split('<div id="ddmcc_container">', 1)[-1]
 
@@ -182,7 +178,7 @@ def selectHost(url):
 def DownloadVideo(_url,  title):
     resolved = resolve.ResolveURL(_url)
 
-    title = common.clean(title)
+    title = utils.clean(title)
 
     if len(resolved) == 0:
         d = xbmcgui.Dialog()
@@ -247,10 +243,10 @@ def PlayVideo(_url, select):
         print 'WATCHCARTOONSONLINE - (%s) Failed to locate video for %s' % (msg, _url)
         return
 
-    html  = common.getHTML(_url)
+    html  = utils.getHTML(_url)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
     title = re.compile('<title>(.+?)</title>').search(html).group(1).split(' |', 1)[0]
-    title = common.clean(title)
+    title = utils.clean(title)
 
     liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
@@ -289,7 +285,7 @@ def AddSection(name, image, url):
 
 
 def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, infoLabels=None, menu=None):
-    name = common.clean(name)
+    name = utils.clean(name)
 
     if not image:
         image = ICON
@@ -355,12 +351,12 @@ if mode == SECTION:
     DoSection(url)
 
 elif mode == SERIES:    
-    html = common.getHTML(url)
+    html = utils.getHTML(url)
 
     while('Previous Entries' in html):
         DoSeries(html)
         url  = re.compile('<div class="alignleft"><a href="(.+?)".+?Previous Entries</a>').search(html).group(1)
-        html = common.getHTML(url)
+        html = utils.getHTML(url)
 
     DoSeries(html)
     try:    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)

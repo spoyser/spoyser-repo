@@ -19,12 +19,9 @@
 #
 
 
-import re
-
 
 def Resolve(html):
     if not 'veevr' in html:
         return []
 
     return [[None, 'Currently unable to resolve Veevr hosted videos']]
-    #id   = re.compile('.veevr.com/embed/(.+?)">').search(html).group(1)

@@ -19,10 +19,11 @@
 #
 
 
-import common
+
 import re
 import json
 
+import wco_utils as utils
 
 def Resolve(html):
     if not 'movieweb' in html:
@@ -33,7 +34,7 @@ def Resolve(html):
     try:
         id   = re.compile('http://www.movieweb.com/v/(.+?)"').search(html).group(1)
         url  = 'http://www.movieweb.com/v/%s/play?s=1&idx=0&e=1' % id
-        html = common.getHTML(url, useCache=False)
+        html = utils.getHTML(url, useCache=False)
         
         jsn = json.loads(html)
 
@@ -46,9 +47,7 @@ def Resolve(html):
         url += '?'
         url += jsn['iiii']
         ret  = url
-    except Exception, e:
-        print str(e)
-        raise
+    except Exception, e:        
         text = 'Error Resolving Movieweb URL'
 
     return [[ret, text]]

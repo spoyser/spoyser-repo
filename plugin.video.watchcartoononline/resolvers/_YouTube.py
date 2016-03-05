@@ -20,9 +20,9 @@
 
 import re
 
-def Resolve(html):
+def Resolve(html):   
     try:
-        from simpleYT import yt
+        import yt
         return DoResolve(html)
     except:
         pass
@@ -35,10 +35,10 @@ def DoResolve(html):
     text = ''
 
     if not 'youtube' in html:
-        return []
+        return [[None, 'Error Resolving URL']]
 
     try:
-        from simpleYT import yt
+        import yt
         match = re.compile('src="http://.+?.com/v/(.+?)">').findall(html)
         if len(match) < 1:
             return DoResolve2(html)
@@ -55,16 +55,17 @@ def DoResolve(html):
         pass
 
     if len(ret) < 1:
-        ret.append([None, 'Error Resolving YouTube URL'])
+        ret.append([[None, 'Error Resolving URL']])
 
     return ret
+
 
 def DoResolve2(html):
     ret  = []
     text = ''
 
     if not 'youtube' in html:
-        return []
+        return [[None, 'Error Resolving URL']]
 
     try:
         from simpleYT import yt
@@ -89,7 +90,7 @@ def UseAddon(html):
     text = ''
 
     if not 'youtube' in html:
-        return []
+        return [[None, 'Error Resolving URL']]
 
     try:
         match = re.compile('src="http://.+?.com/v/(.+?)">').findall(html)

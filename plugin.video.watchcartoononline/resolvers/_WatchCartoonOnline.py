@@ -22,6 +22,8 @@ import re
 import urllib
 import net
 
+import wco_utils as utils
+
 
 def Resolve(html):
     try:    
@@ -38,7 +40,7 @@ def Resolve(html):
 
             if 'vid44.php' in url:
                 url = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
-                html = common.GetHTML(url)
+                html = utils.GetHTML(url)
                 url = re.compile('file: \"(.+)\",\\r  height').search(html).group(1)
                 results.append([url, text])
 
@@ -46,19 +48,21 @@ def Resolve(html):
         pass
 
     if len(results) == 0:
-        results = [['', 'Error Resolving URL']]
+        results = [[None, 'Error Resolving URL']]
 
     return results
 
 
 def DoResolve(url, results):
     try:        
+        import wco_utils as utils
         theNet = net.Net()
 
         data = {'fuck_you' : '', 'confirm' : 'Click+Here+to+Watch+Free%21%21'}
         url  = url.replace(' ', '%20')
 
-        theNet.set_user_agent('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+        #theNet.set_user_agent('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+        theNet.set_user_agent(utils.getUserAgent())
 
         html  = theNet.http_POST(url, data).content.replace('\n', '').replace('\t', '')        
 

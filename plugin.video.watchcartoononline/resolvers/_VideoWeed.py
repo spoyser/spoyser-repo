@@ -19,7 +19,8 @@
 
 import re
 import net
-import common
+
+import wco_utils as utils
 
 def Resolve(html):
     
@@ -56,15 +57,15 @@ def DoResolve(url):
 
         try:
             url  = re.compile('iframe src=\"(.+)\" frameborder').search(html).group(1)
-            html = common.getHTML(url)
+            html = utils.getHTML(url)
             url  = re.compile('file: \"(.+)\",\\r  height').search(html).group(1)
             
         except:
             url  = re.compile('410px\\\' src=\\\'(.+)\\\' scrolling').search(html).group(1)
-            html = common.getHTML(url)
+            html = utils.getHTML(url)
 
             url  = re.compile('advURL=\"(.+)\";flashvars.cid3').search(html).group(1)
-            html = common.getHTML(url)
+            html = utils.getHTML(url)
 
             flashfile = re.compile('flashvars.file=\"(.+)\";').search(html).group(1).split('"')[0]           
             flashkey  = re.compile('flashvars.filekey=\"(.+)\";').search(html).group(1).split('"')[0]

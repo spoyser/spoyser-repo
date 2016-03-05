@@ -21,10 +21,12 @@
 
 import re
 
+import wco_utils as utils
+
 
 def Resolve(html):
     if not 'veoh' in html:
-        return []
+        return [[None, 'Error Resolving URL']]
 
     ret  = None
     text = ''
@@ -32,12 +34,12 @@ def Resolve(html):
     try:
         id   = re.compile('veoh.php\?v=(.+?)&').search(html).group(1)
         url  = 'http://www.veoh.com/rest/video/%s/details' % id
-        html = common.getHTML(url, useCache = False)
+        html = utils.getHTML(url, useCache=False)
         if ' items="0"' in html:
             text = 'Video has been removed from Veoh'
         else:
             ret  = re.compile('fullPreviewHashPath="(.+?)"').search(html).group(1)
-    except:
+    except Exception, e:
         text = 'Error Resolving Veoh URL'
 
     return [[ret, text]]
