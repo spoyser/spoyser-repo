@@ -29,6 +29,7 @@ import os
 import urllib
 
 import utils
+import parameters
 import favourite
 import sfile
 
@@ -39,21 +40,25 @@ FILENAME    = utils.FILENAME
 FOLDERCFG   = utils.FOLDERCFG
 ADDONID     = utils.ADDONID
 ICON        = utils.ICON
-DISPLAYNAME = ADDON.getSetting('DISPLAYNAME') 
+DISPLAYNAME = utils.DISPLAYNAME
 
-INHERIT   = ADDON.getSetting('INHERIT') == 'true'
+INHERIT          = utils.INHERIT
+ALPHA_SORT       = utils.ALPHA_SORT
+LABEL_NUMERIC    = utils.LABEL_NUMERIC
+LABEL_NUMERIC_QL = utils.LABEL_NUMERIC_QL
+SHOWXBMC         = utils.SHOWXBMC
+
 GETTEXT   = ADDON.getLocalizedString
 
 
 def getFolderThumb(path):
     cfg   = os.path.join(path, FOLDERCFG)
-    thumb = getParam('ICON', cfg)
+    thumb = parameters.getParam('ICON', cfg)
 
     if thumb:
         return thumb
 
     if not INHERIT:
-        #return 'DefaultFolder.png'
         return ICON
 
     faves = favourite.getFavourites(os.path.join(path, FILENAME), 1, chooser=True)   
@@ -67,20 +72,6 @@ def getFolderThumb(path):
         return thumb
 
     return ICON
-
-
-def getParam(param, file):
-    try:
-        config = []
-        param  = param.upper() + '='
-        config = sfile.readlines(file)
-    except:
-        return ''
-
-    for line in config:
-        if line.startswith(param):
-            return line.split(param, 1)[-1].strip()
-    return ''
 
 
 def GetFave(property, path='', changeTitle=False):
@@ -136,9 +127,9 @@ class Main:
 
         if self.PATH == 'special://profile/':
             self.MODE = 'xbmc'
-            self.FULLPATH = xbmc.translatePath(self.PATH)
+            self.FULLPATH = self.PATH
         else:                
-            self.FULLPATH = xbmc.translatePath(os.path.join(utils.PROFILE, self.PATH))
+            self.FULLPATH = os.path.join(utils.PROFILE, self.PATH)
 
         self.FULLPATH = urllib.unquote_plus(self.FULLPATH)
 
@@ -147,27 +138,41 @@ class Main:
         file  = os.path.join(self.FULLPATH, FILENAME).decode('utf-8')        
         faves = []        
 
+        index = 0
+
+        label_numeric = LABEL_NUMERIC 
+        if self.MODE == 'folder':    
+            folderCfg = os.path.join(self.FULLPATH, FOLDERCFG)
+            numeric = parameters.getParam('NUMERICAL', folderCfg)
+            if numeric:
+                label_numeric = numeric.lower() == 'true'
+
+        if label_numeric:
+            label_numeric = LABEL_NUMERIC_QL
+
         if self.MODE != 'xbmc':        
             try:    
-                current, dirs, files = os.walk(self.FULLPATH).next()
+                current, dirs, files = sfile.walk(self.FULLPATH)
 
                 dirs = sorted(dirs, key=str.lower)
 
                 for dir in dirs:
                     path = os.path.join(self.FULLPATH, dir)
-                   
-                
+                                   
                     folderCfg = os.path.join(path, FOLDERCFG)
-                    lock      = getParam('LOCK',   folderCfg)
+                    folderCfg = parameters.getParams(folderCfg)
+                    lock      = parameters.getParam('LOCK',   folderCfg)
                     if lock:
                         continue
-                    colour    = getParam('COLOUR', folderCfg)
+                    colour    = parameters.getParam('COLOUR', folderCfg)
                     thumb     = getFolderThumb(path)               
 
                     label = dir
                 
-                    if len(colour) > 0:
+                    if colour and colour.lower() <> 'none':
                         label = '[COLOR %s]%s[/COLOR]' % (colour, label)
+              
+                    label, index = utils.addPrefixToLabel(index, label, label_numeric)
                 
                     fave = [label, thumb, os.path.join(self.PATH, dir),  True]
                     faves.append(fave)
@@ -175,8 +180,34 @@ class Main:
             except Exception, e:
                 pass
             
-        faves.extend(favourite.getFavourites(file, chooser=True))
-        
+        items = favourite.getFavourites(file, chooser=True)
+
+        sortorder = 0
+
+        if self.MODE == 'folder':    
+            folderCfg = os.path.join(self.FULLPATH, FOLDERCFG)
+
+            try:    sortorder = int(parameters.getParam('SORT', folderCfg))
+            except: sortorder = 0
+
+        if sortorder == 0:
+            sortorder = 1 if ALPHA_SORT else 2
+     
+        if sortorder == 1: #ALPHA_SORT:
+            items = sorted(items, key=lambda x: utils.CleanForSort(x))
+
+        if not label_numeric:
+            faves.extend(items)
+        else:
+            for fave in items:
+                label  = fave[0]
+                thumb  = fave[1]
+                cmd    = fave[2]
+
+                label, index = utils.addPrefixToLabel(index, label, label_numeric)
+
+                faves.append([label, thumb, cmd])
+
         return faves
             
             
@@ -199,7 +230,8 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
         self.getControl(5).setVisible(False)
         self.getControl(1).setLabel(GETTEXT(30000))
-        self.getControl(1).setVisible(False)
+
+        self.getControl(5).setVisible(False) 
 
         #the remove item 
         #self.favList.addItem(xbmcgui.ListItem(GETTEXT(30100), iconImage='DefaultAddonNone.png'))
@@ -248,11 +280,14 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
 
     def addXBMCFavouritesItem(self):
+        if not SHOWXBMC:
+            return
+
         try:
             fullpath = 'special://profile/'
 
-            thumb = getParam('ICON', os.path.join(PROFILE, FOLDERCFG))
-            if len(thumb) < 1:
+            thumb = parameters.getParam('ICON', os.path.join(PROFILE, FOLDERCFG))
+            if not thumb:
                 thumb = os.path.join(HOME, 'resources', 'media', 'icon_favourites.png')
 
             label    = GETTEXT(30106) % DISPLAYNAME
@@ -301,13 +336,21 @@ class MainGui(xbmcgui.WindowXMLDialog):
         except Exception, e:
             pass
 
+
+    def closeDialog(self):
+        xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'false')               
+        self.close()
+
         
     def onAction(self, action):
-        if action.getId() in (9, 10, 92, 216, 247, 257, 275, 61467, 61448):
+        actionID = action.getId()
+
+        if actionID in [10]: #'x' button
+            return self.closeDialog()
+
+        if actionID in [9, 92, 216, 247, 257, 275, 61467, 61448]:
             if len(self.path) == 0: 
-                xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'false')               
-                self.close()
-                return
+                return self.closeDialog()
 
             if self.mode == 'xbmc':
                 self.changeFolder('')
@@ -320,6 +363,9 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
             
     def onClick(self, controlID):
+        if controlID in [7, 99]: #cancel buttons Krypton(7) / Pre-Krypton(99)
+            return self.closeDialog()
+            
         if controlID == 6 or controlID == 3:
             num = self.favList.getSelectedPosition()
 

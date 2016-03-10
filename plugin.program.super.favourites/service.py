@@ -34,14 +34,14 @@ if utils.ADDON.getSetting('AUTOSTART') == 'true':
     utils.LaunchSF()
 
 
-def checkDisabled():
-    try:
-        if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
-            utils.DeleteKeymap(utils.KEYMAP_HOT)
-            utils.DeleteKeymap(utils.KEYMAP_MENU)
-            return True
-    except:
-        return False
+#def checkDisabled():
+#    try:
+#        if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
+#            utils.DeleteKeymap(utils.KEYMAP_HOT)
+#            utils.DeleteKeymap(utils.KEYMAP_MENU)
+#            return True
+#    except:
+#        return False
 
 
 class MyMonitor(xbmc.Monitor):
@@ -72,7 +72,7 @@ class MyMonitor(xbmc.Monitor):
         utils.UpdateKeymaps()
 
     def updateStdContextMenuItem(self):
-        #<visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
+        #useage in addon.xml : <visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
         if self.std_context:            
             xbmcgui.Window(10000).setProperty('SF_STD_CONTEXTMENU_ENABLED', 'True')  
         else:
@@ -81,14 +81,13 @@ class MyMonitor(xbmc.Monitor):
 
 monitor = MyMonitor()
 
-import xbmcgui
 while (not xbmc.abortRequested):
     xbmc.sleep(1000)
-    if checkDisabled():
-        xbmc.sleep(1000)
-        xbmc.executebuiltin('Action(reloadkeymaps)') 
+    #if checkDisabled():
+    #xbmc.sleep(1000)
+    #xbmc.executebuiltin('Action(reloadkeymaps)') 
 
 
-checkDisabled()
+#checkDisabled()
 
 del monitor

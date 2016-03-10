@@ -21,7 +21,8 @@
 	
 <category label="30022">	
     <setting id="ALPHA_SORT"       label="30213" type="bool"      default="false" />	
-    <setting id="LABEL_NUMERIC"    label="30223" type="bool"      default="false" />			
+    <setting id="LABEL_NUMERIC"    label="30223" type="bool"      default="false" />	
+    <setting id="LABEL_NUMERIC_QL" label="35043" type="bool"      default="false" visible="eq(-1,true)"/>	
     <setting id="SHOWNEW"          label="30023" type="bool"      default="true"  />
     <setting id="SHOWXBMC"         label="30024" type="bool"      default="true"  />		
     <setting id="SHOWSEP"          label="30051" type="bool"      default="true"  />			

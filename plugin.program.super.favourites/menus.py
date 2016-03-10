@@ -36,13 +36,17 @@ ACTION_RIGHT = 2
 ACTION_UP    = 3
 ACTION_DOWN  = 4
 
-USE_HELIX = (not utils.FRODO) and (not utils.GOTHAM)
+USE_HELIX   = (not utils.FRODO) and (not utils.GOTHAM)
+USE_ESTUARY = utils.ESTUARY
 
 class ContextMenu(xbmcgui.WindowXMLDialog):
 
     def __new__(cls, addonID, menu):
-        if USE_HELIX:
-            return super(ContextMenu, cls).__new__(cls, 'contextmenu_helix.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
+        if USE_ESTUARY:
+            return super(ContextMenu, cls).__new__(cls, 'contextmenu_estuary.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
+        elif USE_HELIX:
+            return super(ContextMenu, cls).__new__(cls, 'contextmenu_helix.xml',   xbmcaddon.Addon(addonID).getAddonInfo('path'))
+
         else:
             return super(ContextMenu, cls).__new__(cls, 'contextmenu.xml', xbmcaddon.Addon(addonID).getAddonInfo('path'))
         

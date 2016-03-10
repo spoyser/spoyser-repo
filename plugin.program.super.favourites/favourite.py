@@ -484,7 +484,9 @@ def getSFOptions(cmd):
     try:    options = urllib.unquote_plus(re.compile('sf_options=(.+?)_options_sf').search(cmd).group(1))
     except: return {}
 
-    return get_params(options)
+    params = get_params(options)
+
+    return params
 
 
 def removeSFOptions(cmd):
@@ -497,7 +499,7 @@ def removeSFOptions(cmd):
     cmd = re.sub('&sf_options=(.+?)_options_sf",return\)', '",return)', cmd)
     cmd = re.sub('&sf_options=(.+?)_options_sf',    '',                 cmd)
 
-    cmd = cmd.replace('/")', '")')
+    #cmd = cmd.replace('/")', '")')
 
     return cmd
 
@@ -513,22 +515,19 @@ def getOption(cmd, option):
     except: return ''
 
 
-def get_params(p):
-    param=[]
-    paramstring=p
-    if len(paramstring)>=2:
-        params=p
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'):
-           params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
-        for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2:
-                param[splitparams[0]]=splitparams[1]
-    return param
+def get_params(path):
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            #params[split[0]] = urllib.unquote_plus(split[1])
+            params[split[0]] = split[1]
+
+    return params
+
 
 
 #used only during upgrade process

@@ -35,8 +35,6 @@ def GetXBMCVersion():
     return int(version[0]), int(version[1]) #major, minor eg, 13.9.902
 
 
-
-
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
@@ -45,15 +43,25 @@ ROOT    =  ADDON.getSetting('FOLDER')
 if not ROOT:
     ROOT = 'special://profile/addon_data/plugin.program.super.favourites/'
 
+
+SHOWXBMC         = ADDON.getSetting('SHOWXBMC')              == 'true'
+INHERIT          = ADDON.getSetting('INHERIT')          == 'true'
+ALPHA_SORT       = ADDON.getSetting('ALPHA_SORT')       == 'true'
+LABEL_NUMERIC    = ADDON.getSetting('LABEL_NUMERIC')    == 'true'
+LABEL_NUMERIC_QL = ADDON.getSetting('LABEL_NUMERIC_QL') == 'true'
+
+
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
 VERSION =  ADDON.getAddonInfo('version')
 ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
-DISPLAY =  ADDON.getSetting('DISPLAYNAME')
-GETTEXT = ADDON.getLocalizedString
+GETTEXT =  ADDON.getLocalizedString
 TITLE   =  GETTEXT(30000)
 
+DISPLAYNAME = 'Kodi'
+
+NUMBER_SEP = ' | '
 
 PLAYABLE = xbmc.getSupportedMedia('video') + '|' + xbmc.getSupportedMedia('music')
 PLAYABLE = PLAYABLE.replace('|.zip', '')
@@ -81,6 +89,8 @@ FRODO        = (MAJOR == 12) and (MINOR < 9)
 GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
 HELIX        = (MAJOR == 14) or (MAJOR == 13 and MINOR == 9)
 ISENGARD     = (MAJOR == 15) or (MAJOR == 14 and MINOR == 9)
+KRYPTON      = (MAJOR == 17) or (MAJOR == 16 and MINOR == 9)
+ESTUARY      = xbmc.getCondVisibility('System.HasAddon(%s)' % 'skin.estuary') == 1
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
@@ -279,6 +289,13 @@ def verifyPlugins():
 def VerifyKeymaps():
     reload = False
 
+    scriptPath = ADDON.getAddonInfo('profile')
+    scriptPath = os.path.join(scriptPath, 'captureLauncher.py')
+    if not sfile.exists(scriptPath):
+        DeleteKeymap(KEYMAP_MENU) #ensure gets updated to launcher version
+        src = os.path.join(HOME, 'captureLauncher.py')
+        sfile.copy(src, scriptPath)
+
     if VerifyKeymapHot():
         reload = True
 
@@ -466,6 +483,13 @@ def Clean(name):
             break
 
     return name.strip()
+
+
+def CleanForSort(text):
+    text = text[0]
+    text = text.lower()
+    text = Clean(text)
+    return text
 
 
 def fileSystemSafe(text):
@@ -662,6 +686,50 @@ def parseFolder(folder, subfolders=True):
             items.append([file, path, True])
 
     return items
+
+
+def getPrefix(index):
+    index += 1
+    prefix = str(index) + NUMBER_SEP
+    if index < 10:
+        prefix = '0' + prefix
+    return prefix, index
+
+
+def addPrefixToLabel(index, label, addPrefix=None):
+    if addPrefix == None:
+        addPrefix = LABEL_NUMERIC
+
+    if not addPrefix:
+        return label, index
+
+    prefix, index = getPrefix(index)
+
+    locn = -1
+
+    SEARCHING = 0
+    INELEMENT = 1  
+    BODY      = 2  
+    mode = SEARCHING
+
+    for c in label:
+        locn += 1
+        if mode == SEARCHING:
+            if c is '[':           
+                mode = INELEMENT
+            else:
+                mode = BODY
+
+        elif mode == INELEMENT:
+            if c is ']':
+                mode = SEARCHING
+
+        if mode == BODY:
+            break
+        
+    label = label[:locn] + prefix + label[locn:]
+    return label, index
+
 
 
 
