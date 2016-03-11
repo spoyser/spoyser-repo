@@ -34,13 +34,13 @@ def deleteFile(path):
 
 def cleanup():
     try:
-        import inspect
-        script = inspect.getfile(inspect.currentframe())
+        #import inspect
+        #script = inspect.getfile(inspect.currentframe())
+        #deleteFile(script)
 
         KEYMAP_HOT  = 'super_favourites_hot.xml'
         KEYMAP_MENU = 'super_favourites_menu.xml'
 
-        deleteFile(script)
         deleteFile(os.path.join('special://profile/keymaps', KEYMAP_HOT))
         deleteFile(os.path.join('special://profile/keymaps', KEYMAP_MENU))
 

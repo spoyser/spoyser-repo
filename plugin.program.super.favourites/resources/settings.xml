@@ -25,7 +25,7 @@
     <setting id="LABEL_NUMERIC_QL" label="35043" type="bool"      default="false" visible="eq(-1,true)"/>	
     <setting id="SHOWNEW"          label="30023" type="bool"      default="true"  />
     <setting id="SHOWXBMC"         label="30024" type="bool"      default="true"  />		
-    <setting id="SHOWSEP"          label="30051" type="bool"      default="true"  />			
+    <setting id="SHOWSEP"          label="30051" type="bool"      default="false"  />			
     <setting id="SHOWUNAVAIL"      label="30138" type="bool"      default="false" />
     <setting id="SHOWIMPORT"       label="30139" type="bool"      default="false"  />		
 		

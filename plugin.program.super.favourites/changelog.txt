@@ -2,6 +2,13 @@
 PLEASE READ IT!![/COLOR][/B]
 
 
+[COLOR chartreuse]1.0.49.1: 11th March 2016[/COLOR]
+    - fixed thumbnails in Estouchy skin
+    - fixed text on cancel button in quick launch dialog in Estouchy skin
+    - fixed importing of Super Favourites
+    - added The Movie Databse (TMDb) api key created specifically for Super Favourites
+
+
 [COLOR chartreuse]1.0.49: 10th March 2016[/COLOR]
     - quick launch items now sorted alphabetically when configured
     - numerical labels can be shown on quick launch menu (see Display settings)

@@ -231,6 +231,9 @@ class MainGui(xbmcgui.WindowXMLDialog):
         self.getControl(5).setVisible(False)
         self.getControl(1).setLabel(GETTEXT(30000))
 
+        try:    self.getControl(7).setLabel(xbmc.getLocalizedString(222))
+        except: pass
+
         self.getControl(5).setVisible(False) 
 
         #the remove item 

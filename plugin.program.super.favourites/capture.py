@@ -64,7 +64,7 @@ try:
     MENU_QUICKLAUNCH    = ADDON.getSetting('MENU_QUICKLAUNCH')    == 'true'
     MENU_DOWNLOADS      = ADDON.getSetting('MENU_DOWNLOADS')      == 'true'
 except Exception, e:
-    xbmc.log(str(e))
+    utils.log('Error initialising global menu : %s' % str(e))
     ADDON = None
 
 

@@ -159,15 +159,17 @@ INHERIT               = utils.INHERIT
 ALPHA_SORT            = utils.ALPHA_SORT
 LABEL_NUMERIC         = utils.LABEL_NUMERIC
 
-TMDB_API_KEY='f7f51775877e0bb6703520952b3c7840'
+TMDB_API_KEY='302783d0fefc7b8a97ab7cc7f42a2cde'
 
-VIEWTYPE              = int(ADDON.getSetting('VIEWTYPE'))
-CONTENTTYPE           = ADDON.getSetting('CONTENTTYPE')
+try:    VIEWTYPE = int(ADDON.getSetting('VIEWTYPE'))
+except: VIEWTYPE = 0
 
 ART_LANDSCAPE = int(ADDON.getSetting('ART_LANDSCAPE'))
 ART_BANNER    = int(ADDON.getSetting('ART_BANNER'))
 ART_POSTER    = int(ADDON.getSetting('ART_POSTER'))
 
+
+CONTENTTYPE = ADDON.getSetting('CONTENTTYPE')
 
 CONTENTTYPES = {}
 CONTENTTYPES[GETTEXT(35029)] = 'files'
@@ -2825,7 +2827,7 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         if label.endswith('[/COLOR]'):
             label = label.rsplit('[/COLOR]', 1)[0]
 
-    liz = xbmcgui.ListItem(label, iconImage='Default', thumbnailImage=thumbnail)
+    liz = xbmcgui.ListItem(label, iconImage=thumbnail, thumbnailImage=thumbnail)
 
     if isPlayable:
         liz.setProperty('IsPlayable', 'true')
