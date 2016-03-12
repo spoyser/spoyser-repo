@@ -25,6 +25,7 @@ import os
 ADDONID = 'plugin.video.watchcartoononline'
 ADDON   = xbmcaddon.Addon(ADDONID)
 HOME    = ADDON.getAddonInfo('path')
+PROFILE = ADDON.getAddonInfo('profile')
 TITLE   = ADDON.getAddonInfo('name')
 VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
@@ -67,6 +68,11 @@ def fixup(text):
 
     newText = newText.strip('/\\')
     return newText
+
+
+def fileSystemSafe(text):
+    import re
+    return re.sub('[:\\/*?\<>|"]+', '', text).strip()
 
 
 def getUserAgent():

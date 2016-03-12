@@ -265,7 +265,7 @@ Independent music for the free spirited soul</description>
   </extension>
 </addon>
 
-<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.21" provider-name="spoyser">
+<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.22" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>

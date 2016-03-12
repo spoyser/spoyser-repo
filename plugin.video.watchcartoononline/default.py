@@ -35,6 +35,7 @@ import wco_utils as utils
 ADDONID = utils.ADDONID
 ADDON   = utils.ADDON
 HOME    = utils.HOME
+PROFILE = utils.PROFILE
 TITLE   = utils.TITLE
 VERSION = utils.VERSION
 ARTWORK = utils.ARTWORK
@@ -42,13 +43,20 @@ ICON    = utils.ICON
 URL     = utils.URL
 
 
-SECTION  = 100
-SERIES   = 200
-EPISODE  = 300
-HOST     = 400
-DOWNLOAD = 500
+SECTION       = 100
+SERIES        = 200
+EPISODE       = 300
+HOST          = 400
+DOWNLOAD      = 500
+MARKWATCHED   = 600
+MARKUNWATCHED = 601
 
 AUTOPLAY = ADDON.getSetting('AUTOPLAY') == 'true'
+
+
+import metadata
+meta = metadata.metadata()
+meta.SetDir(os.path.join(PROFILE ,'watched'))
 
 
 def CheckVersion():
@@ -65,8 +73,21 @@ def CheckVersion():
         d.ok(TITLE + ' - ' + VERSION, 'Welcome to Watch Cartoon Online', 'Now with download feature.', '')
 
 
-def FileSystemSafe(text):
-    return re.sub('[:\\/*?\<>|"]+', '', text).strip()
+class XBMCPlayer(xbmc.Player):
+    def __init__( self, *args, **kwargs ):
+        self.is_active = True
+        
+    def SetMetaData(self, metaData):
+        self.metaData = metaData
+
+    #don't flag as watched if stopped
+    #def onPlayBackStopped(self):
+    #    self.onPlayBackEnded()
+                
+    def onPlayBackEnded(self):
+        self.is_active = False
+        meta.SetWatchedStatus(self.metaData, True)
+        xbmc.executebuiltin('XBMC.Container.Refresh')
 
 
 def Main():
@@ -193,7 +214,7 @@ def DownloadVideo(_url,  title):
 
     url  = resolved[index][1]
     file = urllib.unquote_plus(url.rsplit('/')[-1])
-    file = FileSystemSafe(file)
+    file = utils.fileSystemSafe(file)
 
     folder = ADDON.getSetting('DOWNLOAD_FOLDER')
     if len(folder) == 0:
@@ -245,19 +266,38 @@ def PlayVideo(_url, select):
 
     html  = utils.getHTML(_url)
     image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
-    title = re.compile('<title>(.+?)</title>').search(html).group(1).split(' |', 1)[0]
+
+    #following sometimes doesn't contain episode information :(
+    #title = re.compile('<title>(.+?)</title>').search(html).group(1).split(' |', 1)[0]
+
+    html = html.replace('title="RSD"', '')
+    html = html.replace('title="Watch cartoons online', '')
+
+    title = re.compile('title="(.+?)">').search(html).group(1)
+    if title.startswith('Watch '):
+        title = title.split('Watch ', 1)[-1]
+
     title = utils.clean(title)
 
     liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
 
-    liz.setInfo( type="Video", infoLabels={ "Title": title} )
-    liz.setProperty("IsPlayable","true")
+    metaData = {'title':title}
+    meta.GetMetaData(title, metaData)
+    liz.setInfo( type='Video', infoLabels=metaData)
+
+    liz.setProperty('IsPlayable','true')
 
     if int(sys.argv[1]) == -1:
         pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         pl.clear()
         pl.add(url, liz)
-        xbmc.Player().play(pl)
+        #xbmc.Player().play(pl)
+
+        player = XBMCPlayer(xbmc.PLAYER_CORE_DVDPLAYER)
+        player.SetMetaData(metaData)
+        player.play(pl)
+        while player.is_active:
+           xbmc.sleep(100)
     else:
         liz.setPath(url)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
@@ -302,20 +342,47 @@ def AddDir(name, mode, url='', image=None, isFolder=True, page=1, keyword=None, 
     if keyword:
         u += '&keyword=' + urllib.quote_plus(keyword) 
 
-    liz = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
-
-    if menu:
-        liz.addContextMenuItems(menu)
-
     if infoLabels:
         infoLabels['title'] = name
     else:
         infoLabels = { 'title' : name }
 
-    liz.setInfo(type="Video", infoLabels=infoLabels)
+    if mode == EPISODE:
+        SetInfoData(name, infoLabels)
+        if infoLabels['playcount'] == 1:
+            menu.append(('Mark as unwatched', 'XBMC.RunPlugin(%s?mode=%d&url=%s&title=%s)' % (sys.argv[0], MARKUNWATCHED, urllib.quote_plus(url), urllib.quote_plus(name))))
+        else:
+            menu.append(('Mark as watched', 'XBMC.RunPlugin(%s?mode=%d&url=%s&title=%s)' % (sys.argv[0], MARKWATCHED, urllib.quote_plus(url), urllib.quote_plus(name))))
+        
+    liz = xbmcgui.ListItem(infoLabels['title'], iconImage=image, thumbnailImage=image)
+
+    if menu:
+        liz.addContextMenuItems(menu)
+
+
+    liz.setInfo(type='Video', infoLabels=infoLabels)
 
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=isFolder)
-    
+
+
+def SetInfoData(name, infoLabels):
+    try:
+        # Try to gather meta info
+        meta.GetMetaData(name, infoLabels)
+
+        # If an episode number is known then we can construct a better name
+        if infoLabels['episode']:
+            infoLabels['title'] = infoLabels['season'] + 'x' + infoLabels['episode'] + ': ' + infoLabels['episodeName']
+
+        if meta.GetWatchedStatus(infoLabels) == True:
+            infoLabels['overlay'] = 7
+            infoLabels['playcount'] = 1
+        else:
+            infoLabels['overlay'] = 0
+            infoLabels['playcount'] = 0
+    except Exception, e:
+            print 'WCO EXCEPTION: ' + str(e)
+        
 
 def get_params(path):
     params = {}
@@ -350,6 +417,7 @@ except: pass
 if mode == SECTION:
     DoSection(url)
 
+
 elif mode == SERIES:    
     html = utils.getHTML(url)
 
@@ -370,6 +438,7 @@ elif mode == EPISODE:
         print str(e)
         raise
 
+
 elif mode == DOWNLOAD:
     try:
         DownloadVideo(url, title)
@@ -380,6 +449,14 @@ elif mode == DOWNLOAD:
 
 elif mode == HOST:
     selectHost(url)
+
+
+elif (mode == MARKWATCHED) or (mode == MARKUNWATCHED):
+    metaData = {}
+    info = meta.GetMetaData(title, metaData)
+    meta.SetWatchedStatus(metaData, mode == MARKWATCHED)
+    xbmc.executebuiltin('XBMC.Container.Refresh')
+
 
 else:
     Main()

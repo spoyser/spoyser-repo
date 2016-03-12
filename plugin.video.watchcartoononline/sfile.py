@@ -32,7 +32,7 @@ def exists(filename):
 
 def isfile(filename):
     if not exists(filename):
-        raise Exception('sfile.isfile error %s does not exists' % filename)
+        return False
 
     import stat
     return stat.S_ISREG(xbmcvfs.Stat(filename).st_mode())
@@ -40,7 +40,7 @@ def isfile(filename):
 
 def isdir(folder):
     if not exists(folder):
-        raise Exception('sfile.isdir error %s does not exists' % folder)
+        return False
 
     import stat
     return stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode())
@@ -66,6 +66,18 @@ def readlines(filename):
     lines = lines.replace('\r', '')
     lines = lines.split('\n')
     return lines
+
+
+def writelines(filename, lines):
+    f = file(filename, 'w')
+    first = True
+    for line in lines:
+        if not first:
+            f.write('\n')
+        else:
+            first = False
+        f.write(line)        
+    f.close()
 
 
 def walk(folder):

@@ -20,25 +20,19 @@
 
 
 import xbmcaddon
-import xbmc
 import xbmcgui
-import os
 import sfile
+import os
 
 
 ADDONID = 'plugin.video.watchcartoononline'
 ADDON   = xbmcaddon.Addon(ADDONID)
 PROFILE = ADDON.getAddonInfo('profile')
-CACHE   = xbmc.translatePath(os.path.join(PROFILE, 'c'))
+CACHE   = os.path.join(PROFILE, 'c')
 
 
-try:
-    sfile.rmtree(CACHE)
-
-    d = xbmcgui.Dialog()
-    d.ok('Watch Cartoon Online', '', 'Cache successfully cleared')
-
-except:
+try:    sfile.rmtree(CACHE)
+except: pass
     
-    d = xbmcgui.Dialog()
-    d.ok('Watch Cartoon Online', '', 'Cache already clear')
+d = xbmcgui.Dialog()
+d.ok('Watch Cartoon Online', '', 'Cache successfully cleared')
