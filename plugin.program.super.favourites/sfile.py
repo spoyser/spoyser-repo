@@ -70,6 +70,19 @@ def readlines(filename):
     return lines
 
 
+def writelines(filename, lines):
+    f = file(filename, 'w')
+    first = True
+    for line in lines:
+        if not first:
+            f.write('\n')
+        else:
+            first = False
+        f.write(line)        
+    f.close()
+
+
+
 def walk(folder):
     list = xbmcvfs.listdir(folder)
     return folder, list[0], list[1]

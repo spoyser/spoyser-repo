@@ -273,6 +273,35 @@ def getDownloadTitle(url):
     return title
 
 
+def doDownload(file):
+    utils.log('download url: %s' % file)
+    dst = ADDON.getSetting('DOWNLOAD_FOLDER')
+
+    import sfile
+    sfile.makedirs(dst)
+
+    if not sfile.isdir(dst):
+        utils.DialogOK(GETTEXT(30256), GETTEXT(30257))
+        utils.openSettings(ADDONID, 2.24)
+        xbmc.sleep(500)
+        while(xbmc.getCondVisibility('Window.IsActive(addonsettings)') == 1):
+            xbmc.sleep(100)
+
+    dst = ADDON.getSetting('DOWNLOAD_FOLDER')
+    if not sfile.isdir(dst):
+        utils.DialogOK(GETTEXT(30256))
+        return
+
+    dst = os.path.join(ADDON.getSetting('DOWNLOAD_FOLDER'), getDownloadTitle(file))  
+
+    if utils.DialogYesNo(GETTEXT(30243), GETTEXT(30244)):            
+        xbmc.Player().stop()
+       
+    import download            
+    download.download(file, dst, 'Super Favourites')
+
+
+
 def whitelisted():   
     #folder = xbmc.getInfoLabel('Container.FolderPath')
     #if not folder.startswith('addons'):
@@ -476,6 +505,7 @@ def doMenu(mode):
                 menu.append((xbmc.getLocalizedString(31040), _PLAYLIST)) #Now Playing
                 if MENU_DOWNLOADS and isStream:  
                     menu.append((GETTEXT(30241), _DOWNLOAD))
+
                     
     if len(menu) == 0 or (len(menu) == 1 and stdMenu):
         doStandard(useScript=False)
@@ -521,14 +551,8 @@ def doMenu(mode):
 
 
     if choice == _DOWNLOAD:
-        utils.log('download url: %s' % file)
-        dst = os.path.join(ADDON.getSetting('DOWNLOAD_FOLDER'), getDownloadTitle(file))  
-
-        if utils.DialogYesNo(GETTEXT(30243), GETTEXT(30244)):            
-            xbmc.Player().stop()
-       
-        import download            
-        download.download(file, dst, 'Super Favourites')
+        try:    doDownload(file)
+        except: pass
 
 
     if choice == _SF_SETTINGS:
