@@ -517,7 +517,7 @@ def getOption(cmd, option):
 
 def get_params(path):
     params = {}
-    path   = path.split('?', 1)[-1]
+    #path   = path.split('?', 1)[-1]
     pairs  = path.split('&')
 
     for pair in pairs:

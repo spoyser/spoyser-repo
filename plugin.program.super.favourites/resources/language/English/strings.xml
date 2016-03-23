@@ -200,7 +200,7 @@
 	<string id="30206">Search %s for [I]%s.[/I]</string>	
 	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites.</string>
 	<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails.</string>		
-	<string id="30209">Copy image(s) and description</string>		
+	<string id="30209">Copy item</string>		
 	<string id="30210">Paste thumbnail</string>		
 	<string id="30211">Paste fanart</string>		
 	<string id="30212">Paste description</string>		
@@ -249,6 +249,7 @@
 	<string id="30255">%s - Download Progress - %s%%</string>
 	<string id="30256">Download folder does not exists</string>
 	<string id="30257">Please configure a valid download folder now</string>
+	<string id="30258">Paste item</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -260,7 +261,7 @@
 	<string id="35007">Default iSearch (search using the first addon in the list)</string>
 	<string id="35008">iSearch</string>
 	<string id="35009">iRecommend</string>
-	<string id="35010">Copy item properties</string>
+	<string id="35010">Copy item (also copies fanart, thumbnail and description)</string>
 	<string id="35011">View item images</string>
 	<string id="35012">Super Favourite settings</string>
 	<string id="35013">Selected addon settings</string>

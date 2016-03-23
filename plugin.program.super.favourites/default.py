@@ -79,7 +79,7 @@ _SETTINGS              = 100
 _VIEWTYPE              = 150
 _ADDTOXBMC             = 200
 _XBMC                  = 300
-_FOLDER                = 400
+_FOLDER                = utils._FOLDER
 _NEWFOLDER             = 500
 _PLAYMEDIA             = 600
 _ACTIVATEWINDOW        = 650
@@ -295,8 +295,12 @@ def populatePasteMenu(menu):
     if len(type) == 0:
         return
 
-    folder = 'folder' in type.lower()
-    cut    = 'cut'    in type.lower()
+    if type == 'capture':
+        menu.append((GETTEXT(30258), 'XBMC.RunPlugin(%s?mode=%d&paste=%s)' % (sys.argv[0], _PASTE, urllib.quote_plus(currentFolder))))
+        return
+
+    folder = 'folder' in type
+    cut    = 'cut'    in type
 
     src = xbmcgui.Window(10000).getProperty('SF_FOLDER')
 
@@ -357,18 +361,6 @@ def addFavouriteMenuItem(menu, name, thumb, cmd, keyword):
     menu.append((label, 'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s)' % (sys.argv[0], _ADDTOXBMC, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd), urllib.quote_plus(keyword))))
 
 
-def getCurrentWindowId():
-    winID = xbmcgui.getCurrentWindowId()
-    tries = 10
-
-    while winID == 10000 and tries > 0:
-        xbmc.sleep(100)
-        tries -= 1
-        winID = xbmcgui.getCurrentWindowId()
-
-    return winID if winID != 10000 else 10025
-
-
 def removeNumeric(text):
     if not LABEL_NUMERIC:
         return text
@@ -426,7 +418,7 @@ def addToXBMC(name, thumb, cmd,  keyword):
         cmd = 'PlayMedia(%s)' % cmd
     elif isSF:
         cmd = cmd.replace('+', '%20')
-        cmd = 'ActivateWindow(%d,%s,return)' % (getCurrentWindowId(), cmd)
+        cmd = 'ActivateWindow(%d,%s,return)' % (utils.getCurrentWindowId(), cmd)
         if activateW:
             cmd = cmd.replace('mode=%d' % _ACTIVATEWINDOW, 'mode=%d' % _ACTIVATEWINDOW_XBMC) 
     else:
@@ -452,7 +444,7 @@ def addToXBMC(name, thumb, cmd,  keyword):
             cmd = cmd[:-1] + ',return)'
 
     if folder:
-        thumbnail, fanart = getFolderThumb(path)
+        thumbnail, fanart = utils.getFolderThumb(path)
         #cmd = favourite.addFanart(cmd, fanart)
 
     cmd = favourite.addFanart(cmd, fanart)
@@ -484,7 +476,7 @@ def refresh():
 
 def removeAutoplay(path):
     cfg  = os.path.join(path, FOLDERCFG)
-    clearParam('AUTOPLAY', cfg)
+    parameters.clearParam('AUTOPLAY', cfg)
 
     refresh()
 
@@ -496,100 +488,6 @@ def addAutoplay(path):
     refresh()
 
 
-def addLock(path, name):
-    title    = GETTEXT(30079) % name
-    password = getText(title, text='', hidden=True)
-
-    if not password:
-        return False
-
-    md5 = utils.generateMD5(password)
-
-    cfg  = os.path.join(path, FOLDERCFG)
-    parameters.setParam('LOCK', md5, cfg)
-
-    return True
-
-
-def removeLock(path,name):
-    title    = GETTEXT(30078) % name
-    password = getText(title, text='', hidden=True)
-
-    if not password:
-        return False
-
-    md5 = utils.generateMD5(password)
-
-    cfg  = os.path.join(path, FOLDERCFG)
-    lock = parameters.getParam('LOCK', cfg)
-
-    if lock != md5:
-        utils.DialogOK(GETTEXT(30080))
-        return False
-
-    clearParam('LOCK', cfg)
-    utils.DialogOK(GETTEXT(30081))
-
-    return True
-
-
-def unlocked(path, lock=None):
-    if not lock:
-        folderConfig = os.path.join(path, FOLDERCFG)
-        lock = parameters.getParam('LOCK', folderConfig)
-
-    if not lock:
-        return True
-
-    if cache.exists(path):
-        return True
-
-    return False
-
-
-def unlock(path):
-    folderConfig = os.path.join(path, FOLDERCFG)
-    lock = parameters.getParam('LOCK', folderConfig)
-
-    if unlocked(path, lock):
-        return True
-    
-    md5 = checkPassword(path, lock)
-
-    if len(md5) == 0:
-        return False
-
-    if md5 == 'ERROR':
-        utils.DialogOK(GETTEXT(30080))
-        return False
-
-    periods = [0, 1, 5, 15]
-    setting = int(ADDON.getSetting('CACHE'))
-    period  = periods[setting]
-
-    cache.add(path, period)
-
-    return True
-
-
-def checkPassword(path, lock=None):
-    if not lock:
-        folderConfig = os.path.join(path, FOLDERCFG)
-        lock = parameters.getParam('LOCK', folderConfig)
-
-    title  = GETTEXT(30069) % path.rsplit(os.sep, 1)[-1]
-    unlock = getText(title, hidden=True)
-
-    if not unlock:
-        return ''
-
-    md5   = utils.generateMD5(unlock)
-    match = md5 == lock
-
-    if not match:
-        return 'ERROR'
-
-    return md5
 
 
 def showXBMCFolder():
@@ -690,49 +588,6 @@ def checkForSuperFolderLink(cmd):
     return None
 
 
-
-def getFolderThumb(path, isXBMC=False):
-    cfg    = os.path.join(path, FOLDERCFG)
-    cfg    = parameters.getParams(cfg)
-    thumb  = parameters.getParam('ICON',   cfg)
-    fanart = parameters.getParam('FANART', cfg)
-
-    if thumb and fanart:
-        return thumb, fanart
-
-    if isXBMC:
-        thumb  = thumb  if (thumb  != None) else 'DefaultFolder.png'
-        fanart = fanart if (fanart != None) else FANART
-        return thumb, fanart    
-
-    if not INHERIT:
-        thumb  = thumb  if (thumb  != None) else ICON
-        fanart = fanart if (fanart != None) else FANART
-        return thumb, fanart
-
-    if not unlocked(path):
-        thumb  = thumb  if (thumb  != None) else ICON
-        fanart = fanart if (fanart != None) else FANART
-        return thumb, fanart
-
-    faves = favourite.getFavourites(os.path.join(path, FILENAME), 1)   
-
-    if len(faves) < 1:
-        thumb  = thumb  if (thumb  != None) else ICON
-        fanart = fanart if (fanart != None) else FANART
-        return thumb, fanart
-
-    tFave = faves[0][1]
-    fFave = favourite.getFanart(faves[0][2])
-
-    thumb  = thumb  if (thumb  != None) else tFave
-    fanart = fanart if (fanart != None) else fFave
-
-    fanart = fanart if (fanart and len(fanart) > 0) else FANART
-
-    return thumb, fanart
-
-
 def addMainItems():
     if mode != _MAIN:
         return
@@ -764,7 +619,7 @@ def addMainItems():
     if SHOWXBMC:
         separator = False
 
-        thumbnail, fanart = getFolderThumb(PROFILE, True)
+        thumbnail, fanart = utils.getFolderThumb(PROFILE, True)
 
         label = GETTEXT(30040) % DISPLAYNAME
         addDir(label, _XBMC, thumbnail=thumbnail, isFolder=True, fanart=fanart, infolabels={'plot':GETTEXT(30197)})
@@ -925,7 +780,7 @@ def parseFolder(folder):
         #else:
         #    menu.append((GETTEXT(30076), 'XBMC.RunPlugin(%s?mode=%d&path=%s&name=%s)' % (sys.argv[0], _SECURE,   urllib.quote_plus(path), urllib.quote_plus(dir))))
 
-        thumbnail, fanart = getFolderThumb(path)       
+        thumbnail, fanart = utils.getFolderThumb(path)       
 
         if not lock:
             menu.append((GETTEXT(30181), 'XBMC.RunPlugin(%s?mode=%d&path=%s)' % (sys.argv[0], _COPYFOLDER, urllib.quote_plus(path))))
@@ -1298,11 +1153,12 @@ def editFolder(path, name):
         return colourFolder(path)
 
     if option == LOCK:
+        import locking
         dir = sfile.getfilename(path)
         if lock:
-            removeLock(path, name)
+            locking.remove(path, name)
         else:
-            addLock(path, name)
+            locking.add(path, name)
         refresh()
 
     if option == AUTOPLAY:
@@ -2605,160 +2461,6 @@ def playCommand(originalCmd):
     player.playCommand(originalCmd, contentMode)
 
 
-def cutCopy(file, cmd, cut=True):
-    xbmcgui.Window(10000).setProperty('SF_FILE',   file)
-    xbmcgui.Window(10000).setProperty('SF_FOLDER', file.rsplit(os.sep, 1)[0])
-    xbmcgui.Window(10000).setProperty('SF_CMD',    cmd)
-    xbmcgui.Window(10000).setProperty('SF_TYPE',  'cut' if cut else 'copy')
-
-    return True
-
-
-def cutCopyFolder(folder, cut=True):
-    xbmcgui.Window(10000).setProperty(  'SF_FILE',   folder)
-    xbmcgui.Window(10000).setProperty(  'SF_FOLDER', folder.rsplit(os.sep, 1)[0])
-    xbmcgui.Window(10000).clearProperty('SF_CMD')
-    xbmcgui.Window(10000).setProperty(  'SF_TYPE',  'cutfolder' if cut else 'copyfolder')
-
-    return True
-
-
-def paste(folder):
-    if len(folder) < 1:
-        return False
-
-    file = xbmcgui.Window(10000).getProperty('SF_FILE')
-    cmd  = xbmcgui.Window(10000).getProperty('SF_CMD')
-    type = xbmcgui.Window(10000).getProperty('SF_TYPE').lower()
-
-    dst = os.path.join(folder, FILENAME)
-
-    if type == 'cut':
-        return pasteCut(file, cmd, folder)
-    else:
-        return pasteCopy(file, cmd, folder)
-
-    return True
-
-
-def pasteFolder(dst):
-    if len(dst) == 0:
-        return False
-
-    src = xbmcgui.Window(10000).getProperty('SF_FILE')
-    cut = xbmcgui.Window(10000).getProperty('SF_TYPE').lower() == 'cutfolder'
-
-    root       = src.rsplit(os.sep, 1)[0]
-    folderName = src.rsplit(os.sep, 1)[-1]
-
-    same = (root == dst)
-
-    link = True
-
-    if dst == 'special://profile': #i.e. Kodi favourites
-        if cut:
-            cut   = False
-            line1 = GETTEXT(30187) % DISPLAYNAME
-            line2 = GETTEXT(30188) % folderName
-            line3 = GETTEXT(30189)
-            link  = utils.DialogYesNo(line1, line2, line3, noLabel=GETTEXT(30190), yesLabel=GETTEXT(30186))
-            if not link:
-                return
-    else:
-        if cut:
-            link = False
-        else:  
-            line1 = GETTEXT(30183) % folderName
-            link  = True if same else utils.DialogYesNo(line1, GETTEXT(30184), noLabel=GETTEXT(30185), yesLabel=GETTEXT(30186))
-
-    if link:
-        success = pasteFolderLink(src, dst, folderName)
-    else:
-        success = pasteFolderCopy(src, dst, folderName)
-
-    if not success:
-        line1 = GETTEXT(30191) % folderName
-        utils.DialogOK(line1)
-        return False
-
-    if cut:
-        sfile.rmtree(src)
-
-    return success
-
-
-def pasteFolderLink(src, dst, folderName):
-    thumbnail, fanart = getFolderThumb(src)
-
-    folderConfig = os.path.join(src, FOLDERCFG)
-    colour       = parameters.getParam('COLOUR', folderConfig)
-
-    if colour:
-        folderName = '[COLOR %s]%s[/COLOR]' % (colour, folderName)
-
-    path = utils.convertToHome(src)
-    path = path.replace(PROFILE, '')
-    path = path.replace('\\', '/')
-    if path.startswith('/'):
-        path = path[1:]
-
-    #cmd = '%s?label=%s&mode=%d&path=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
-    cmd = '%s?label=%s&mode=%d&folder=%s' % (sys.argv[0], folderName, _FOLDER, urllib.quote_plus(path))
-    cmd = '"%s"' % cmd  
-    cmd = cmd.replace('+', '%20')
-    cmd = 'ActivateWindow(%d,%s)' % (getCurrentWindowId(), cmd) 
-    cmd = favourite.addFanart(cmd, fanart)
-
-    file = os.path.join(dst, FILENAME)
-
-    if favourite.findFave(file, cmd)[0]:
-        return True
-
-    faves = favourite.getFavourites(file, validate=False)
-    fave  = [folderName, thumbnail, cmd]
-
-    faves.append(fave)
-
-    favourite.writeFavourites(file, faves)
-
-    return True
-
-
-def pasteFolderCopy(src, _dst, folderName):
-    dst = os.path.join(_dst, folderName)
-
-    index = 0
-    while sfile.exists(dst):
-        index += 1
-        dst    = os.path.join(_dst, GETTEXT(30192) % (folderName, index))
-
-    try:
-        sfile.copytree(src, dst)
-    except Exception, e: 
-        utils.log('Error in pasteFolderCopy: %s' % str(e))
-        return False
-
-    return True
-
-
-def pasteCopy(file, cmd, folder):
-    copy, index, nFaves = favourite.findFave(file, cmd)
-    if not copy:
-        return False
-
-    file = os.path.join(folder, FILENAME)
-
-    return favourite.copyFave(file, copy)
-
-
-def pasteCut(file, cmd, folder):
-    if not pasteCopy(file, cmd, folder):
-        return False
-
-    return favourite.removeFave(file, cmd)
-
-    
-
 def activateWindowCommand(cmd):
     player.activateWindowCommand(cmd)
 
@@ -3075,7 +2777,8 @@ elif mode == _FOLDER:
     thepath   = path
     theFolder = label
 
-    if unlock(thepath):
+    import locking
+    if locking.unlock(thepath):
         if mode != _MAIN:
             addNewFolderItem(thepath)
         parseFolder(thepath)
@@ -3093,7 +2796,8 @@ elif mode == _RENAMEFOLDER:
     
 
 elif mode == _EDITFOLDER:
-    if unlock(path):
+    import locking
+    if locking.unlock(path):
         doRefresh = editFolder(path, name)
 
 
@@ -3114,31 +2818,37 @@ elif mode == _NEWFOLDER:
 
 
 elif mode == _CUT:
-    doRefresh = cutCopy(file, cmd, cut=True)
+    import clipboard
+    doRefresh = clipboard.cutCopy(file, cmd, cut=True)
 
 
 elif mode == _COPY:
-    doRefresh = cutCopy(file, cmd, cut=False)
+    import clipboard
+    doRefresh = clipboard.cutCopy(file, cmd, cut=False)
 
 
 elif mode == _PASTE:
+    import clipboard
     try:    folder = params['paste']
     except: folder
-    doRefresh = paste(folder)
+    doRefresh = clipboard.paste(folder)
 
 
 elif mode == _CUTFOLDER:
-    doRefresh = cutCopyFolder(path, cut=True)
+    import clipboard
+    doRefresh = clipboard.cutCopyFolder(path, cut=True)
 
 
 elif mode == _COPYFOLDER:
-    doRefresh = cutCopyFolder(path, cut=False)
+    import clipboard
+    doRefresh = clipboard.cutCopyFolder(path, cut=False)
 
 
 elif mode == _PASTEFOLDER:
+    import clipboard
     try:    folder = params['paste']
     except: folder
-    doRefresh = pasteFolder(folder)
+    doRefresh = clipboard.pasteFolder(folder, sys.argv[0])
 
 
 elif mode == _REMOVEFAVE:
@@ -3214,11 +2924,13 @@ elif mode == _EDITTERM:
 
 
 elif mode == _SECURE:
-    doRefresh = addLock(path, name)
+    import locking
+    doRefresh = locking.add(path, name)
 
 
 elif mode == _UNSECURE:
-    doRefresh = removeLock(path, name)
+    import locking
+    doRefresh = locking.remove(path, name)
 
 elif mode == _IMPORT:
     import importer

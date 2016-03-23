@@ -74,14 +74,13 @@ def getFolderThumb(path):
     return ICON
 
 
-def GetFave(property, path='', changeTitle=False):
+def GetFave(property, path='', changeTitle=False, includePlay=False):
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Path'))
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Label'))
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Icon'))
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'IsFolder'))
 
-
-    Main(property, path, changeTitle)
+    Main(property, path, changeTitle, includePlay)
 
     while xbmcgui.Window(10000).getProperty('Super_Favourites_Chooser') == 'true':
         xbmc.sleep(100)
@@ -92,15 +91,15 @@ def GetFave(property, path='', changeTitle=False):
 
 
 class Main:
-    def __init__(self, property=None, path='', changeTitle=False):
+    def __init__(self, property=None, path='', changeTitle=False, includePlay=False):
         xbmcgui.Window(10000).setProperty('Super_Favourites_Chooser', 'true')
         if property:
-            self.init(property, path, changeTitle)
+            self.init(property, path, changeTitle, includePlay)
         else:
             self._parse_argv()
 
         faves = self.getFaves()
-        MyDialog(faves, self.PROPERTY, self.CHANGETITLE, self.PATH, self.MODE)
+        MyDialog(faves, self.PROPERTY, self.CHANGETITLE, self.PATH, self.MODE, self.INCLUDEPLAY)
         
     
     def _parse_argv(self):
@@ -112,16 +111,18 @@ class Main:
         path        = params.get('path',     '')               
         property    = params.get('property', '')
         changeTitle = params.get('changetitle',   '').lower() == 'true'
+        includePlay = params.get('includePlay',   '').lower() == 'true'
 
         path = path.replace('SF_AMP_SF', '&')
 
-        self.init(property, path, changeTitle)
+        self.init(property, path, changeTitle, includePlay)
 
 
-    def init(self, property, path, changeTitle): 
+    def init(self, property, path, changeTitle, includePlay): 
         self.PATH        = path
         self.PROPERTY    = property
         self.CHANGETITLE = changeTitle
+        self.INCLUDEPLAY = includePlay
 
         self.MODE = 'folder' if len(self.PATH) > 0 else 'root'
 
@@ -219,6 +220,7 @@ class MainGui(xbmcgui.WindowXMLDialog):
         self.changeTitle = kwargs.get('changeTitle')
         self.path        = kwargs.get('path')
         self.mode        = kwargs.get('mode')
+        self.includePlay = kwargs.get('includePlay')
         
         
     def onInit(self):
@@ -329,12 +331,13 @@ class MainGui(xbmcgui.WindowXMLDialog):
             self.favList.addItem(listitem)
 
             #play folder
-            listitem = xbmcgui.ListItem(path + GETTEXT(30236))                     
-            listitem.setIconImage(thumb)
-            listitem.setProperty('Icon',     thumb)
-            listitem.setProperty('Path',     self.path)
-            listitem.setProperty('IsFolder', 'play')
-            self.favList.addItem(listitem)
+            if self.includePlay:
+                listitem = xbmcgui.ListItem(path + GETTEXT(30236))                     
+                listitem.setIconImage(thumb)
+                listitem.setProperty('Icon',     thumb)
+                listitem.setProperty('Path',     self.path)
+                listitem.setProperty('IsFolder', 'play')
+                self.favList.addItem(listitem)
 
         except Exception, e:
             pass
@@ -455,13 +458,13 @@ class MainGui(xbmcgui.WindowXMLDialog):
 
     def changeFolder(self, path):
         path = path.replace('&', 'SF_AMP_SF')
-        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s)' % (ADDONID, self.property, path, self.changeTitle)
+        cmd = 'RunScript(special://home/addons/%s/chooser.py,property=%s&path=%s&changetitle=%s&includePlay=%s)' % (ADDONID, self.property, path, self.changeTitle, self.includePlay)
         self.close()    
         xbmc.executebuiltin(cmd)
 
         
-def MyDialog(faves, property, changeTitle, path, mode):
-    w = MainGui('DialogSelect.xml', HOME, faves=faves, property=property, changeTitle=changeTitle, path=urllib.unquote_plus(path), mode=mode)
+def MyDialog(faves, property, changeTitle, path, mode, includePlay):
+    w = MainGui('DialogSelect.xml', HOME, faves=faves, property=property, changeTitle=changeTitle, path=urllib.unquote_plus(path), mode=mode, includePlay=includePlay)
     w.doModal()
     del w
 

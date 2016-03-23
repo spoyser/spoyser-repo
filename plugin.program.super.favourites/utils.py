@@ -39,12 +39,16 @@ ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
 
+
+_FOLDER = 400
+
+
 ROOT    =  ADDON.getSetting('FOLDER')
 if not ROOT:
     ROOT = 'special://profile/addon_data/plugin.program.super.favourites/'
 
 
-SHOWXBMC         = ADDON.getSetting('SHOWXBMC')              == 'true'
+SHOWXBMC         = ADDON.getSetting('SHOWXBMC')         == 'true'
 INHERIT          = ADDON.getSetting('INHERIT')          == 'true'
 ALPHA_SORT       = ADDON.getSetting('ALPHA_SORT')       == 'true'
 LABEL_NUMERIC    = ADDON.getSetting('LABEL_NUMERIC')    == 'true'
@@ -769,6 +773,64 @@ def convertToHome(text):
 
     return text
 
+
+def getCurrentWindowId():
+    winID = xbmcgui.getCurrentWindowId()
+    tries = 10
+
+    while winID == 10000 and tries > 0:
+        xbmc.sleep(100)
+        tries -= 1
+        winID = xbmcgui.getCurrentWindowId()
+
+    return winID if winID != 10000 else 10025
+
+
+
+def getFolderThumb(path, isXBMC=False):
+    import parameters
+
+    cfg    = os.path.join(path, FOLDERCFG)
+    cfg    = parameters.getParams(cfg)
+    thumb  = parameters.getParam('ICON',   cfg)
+    fanart = parameters.getParam('FANART', cfg)
+
+    if thumb and fanart:
+        return thumb, fanart
+
+    if isXBMC:
+        thumb  = thumb  if (thumb  != None) else 'DefaultFolder.png'
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart    
+
+    if not INHERIT:
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
+
+    import locking
+    if not locking.unlocked(path):
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
+
+    import favourite
+    faves = favourite.getFavourites(os.path.join(path, FILENAME), 1)   
+
+    if len(faves) < 1:
+        thumb  = thumb  if (thumb  != None) else ICON
+        fanart = fanart if (fanart != None) else FANART
+        return thumb, fanart
+
+    tFave = faves[0][1]
+    fFave = favourite.getFanart(faves[0][2])
+
+    thumb  = thumb  if (thumb  != None) else tFave
+    fanart = fanart if (fanart != None) else fFave
+
+    fanart = fanart if (fanart and len(fanart) > 0) else FANART
+
+    return thumb, fanart
 
 
 if __name__ == '__main__':

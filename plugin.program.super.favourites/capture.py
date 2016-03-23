@@ -36,7 +36,7 @@ _SEARCHDEF    = 500
 _RECOMMEND    = 600
 _DOWNLOAD     = 700
 _PLAYLIST     = 800
-_COPYIMAGES   = 900
+_COPYITEM     = 900
 _SHOWIMAGE    = 1000
 _QUICKLAUNCH  = 1100
 
@@ -223,7 +223,7 @@ def addPlugins(menu, plugins, params, base):
 def quickLaunch():
     import chooser
     
-    if not chooser.GetFave('SF_QL'):
+    if not chooser.GetFave('SF_QL', includePlay=True):
         return False
     
     path = xbmc.getInfoLabel('Skin.String(SF_QL.Path)')
@@ -280,7 +280,7 @@ def doDownload(file):
     import sfile
     sfile.makedirs(dst)
 
-    if not sfile.isdir(dst):
+    if not sfile.exists(dst):
         utils.DialogOK(GETTEXT(30256), GETTEXT(30257))
         utils.openSettings(ADDONID, 2.24)
         xbmc.sleep(500)
@@ -288,7 +288,7 @@ def doDownload(file):
             xbmc.sleep(100)
 
     dst = ADDON.getSetting('DOWNLOAD_FOLDER')
-    if not sfile.isdir(dst):
+    if not sfile.exists(dst):
         utils.DialogOK(GETTEXT(30256))
         return
 
@@ -340,6 +340,39 @@ def launchDefaultSearch(keyword):
         import re       
         cmd = re.compile('"(.+?)"').search(cmd).group(1)
         xbmc.executebuiltin('XBMC.Container.Update(%s)' % cmd)
+
+
+def getCmd(path, fanart, desc, window, filename, isFolder):
+    import favourite
+
+    if path.lower().startswith('addons://user/'):
+        path     = path.replace('addons://user/', 'plugin://')
+        isFolder = True
+        window   = 10025
+
+    if isFolder:
+        cmd =  'ActivateWindow(%d,"%s' % (window, path)
+    elif path.lower().startswith('script'):
+        #if path[-1] == '/':
+        #    path = path[:-1]
+        cmd = 'RunScript("%s' % path.replace('script://', '')
+    elif path.lower().startswith('videodb') and len(filename) > 0:
+        cmd = 'PlayMedia("%s' % filename.replace('\\', '\\\\')
+    #elif path.lower().startswith('musicdb') and len(filename) > 0:
+    #    cmd = 'PlayMedia("%s")' % filename
+    elif path.lower().startswith('androidapp'):
+        cmd = 'StartAndroidActivity("%s")' % path.replace('androidapp://sources/apps/', '', 1)
+    else:            
+        cmd = 'PlayMedia("%s")' % path
+        cmd = favourite.updateSFOption(cmd, 'winID', window)
+
+    cmd = favourite.addFanart(cmd, fanart)
+    cmd = favourite.updateSFOption(cmd, 'desc', desc)
+
+    if isFolder:
+        cmd = cmd.replace('")', '",return)')
+
+    return cmd
          
 def doMenu(mode):
     utils.log('**** Context Menu Information ****')
@@ -483,14 +516,11 @@ def doMenu(mode):
 
         if MENU_IRECOMMEND: menu.append((GETTEXT(30088), _RECOMMEND))
 
+        if MENU_COPY_PROPS: menu.append((GETTEXT(30209), _COPYITEM))   
 
-        if MENU_COPY_PROPS:
+        if MENU_VIEW_IMAGES: 
             if len(thumb) > 0 or len(fanart) > 0:
-                menu.append((GETTEXT(30209), _COPYIMAGES))   
-                if MENU_VIEW_IMAGES: menu.append((GETTEXT(30216), _SHOWIMAGE))
-            else:
-                if len(description) > 0: menu.append((GETTEXT(30209), _COPYIMAGES))   
-   
+                menu.append((GETTEXT(30216), _SHOWIMAGE))
 
     if MENU_SF_SETTINGS:
         menu.append((GETTEXT(30049), _SF_SETTINGS))
@@ -564,34 +594,7 @@ def doMenu(mode):
 
 
     if choice == _ADDTOFAVES:
-        import favourite
-
-        if path.lower().startswith('addons://user/'):
-            path     = path.replace('addons://user/', 'plugin://')
-            isFolder = True
-            window   = 10025
-
-        if isFolder:
-            cmd =  'ActivateWindow(%d,"%s' % (window, path)
-        elif path.lower().startswith('script'):
-            #if path[-1] == '/':
-            #    path = path[:-1]
-            cmd = 'RunScript("%s' % path.replace('script://', '')
-        elif path.lower().startswith('videodb') and len(filename) > 0:
-            cmd = 'PlayMedia("%s' % filename.replace('\\', '\\\\')
-        #elif path.lower().startswith('musicdb') and len(filename) > 0:
-        #    cmd = 'PlayMedia("%s")' % filename
-        elif path.lower().startswith('androidapp'):
-            cmd = 'StartAndroidActivity("%s")' % path.replace('androidapp://sources/apps/', '', 1)
-        else:            
-            cmd = 'PlayMedia("%s")' % path
-            cmd = favourite.updateSFOption(cmd, 'winID', window)
-        cmd = favourite.addFanart(cmd, fanart)
-        cmd = favourite.updateSFOption(cmd, 'desc', desc)
-
-        if isFolder:
-            cmd = cmd.replace('")', '",return)')
-
+        cmd = getCmd(path, fanart, desc, window, filename, isFolder)
         copyFave(label, thumb, cmd)
 
 
@@ -630,18 +633,18 @@ def doMenu(mode):
 
         activateCommand(cmd)
 
-    if choice == _COPYIMAGES:  
-        if not fanart:
-            fanart = thumb
-      
-        xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
-        xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
-        xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
+    if choice == _COPYITEM:  
+        #if not fanart:
+        #    fanart = thumb
 
+        cmd = getCmd(path, fanart, desc, window, filename, isFolder)
+
+        import clipboard
+        clipboard.setPasteProperties(thumb, fanart, desc, label, cmd)
 
     if choice == _SHOWIMAGE:
-        if not fanart:
-            fanart = thumb
+        #if not fanart:
+        #    fanart = thumb
 
         import viewer
         viewer.show(fanart, thumb, ADDONID)
