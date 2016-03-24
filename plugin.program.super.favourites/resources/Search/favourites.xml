@@ -45,4 +45,9 @@
 <favourite name="TheHollywoodReporter" thumb="special://home/addons/plugin.video.hollywoodreporter/icon.png">ActivateWindow(10025,"plugin://plugin.video.hollywoodreporter/search/[%SF%]/?page=0",return)</favourite>
 	
 <favourite name="TIME.com" thumb="special://home/addons/plugin.video.time_com/icon.png">ActivateWindow(10025,"plugin://plugin.video.time_com/?mode=listVideos&url=http%3a%2f%2fapi.brightcove.com%2fservices%2flibrary%3fcommand%3dfind_videos_by_text%26text%3dtest%26get_item_count%3dtrue%26page_number%3d0%26page_size%3d50%26video_fields%3did%2cname%2cthumbnailURL%2creferenceId%2cshortDescription%2clongDescription%2ctags%2clength%26custom_fields%3drelatedtopics%2cvideoredirect%26callback%3d%26token%3dSvy7-e9mdkTCJdeOamQnB3soRQtQLA6s1Ypb2wtmE2g.",return)</favourite>
+
+<favourite name="Meta Movies" thumb="special://home/addons\plugin.video.meta\resources\img\movies.png">ActivateWindow(10025,&quot;plugin://plugin.video.meta/movies/search_term/[%SF%]/1?sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.meta%5Cfanart.jpg%26_options_sf&quot;,return)</favourite>
+
+<favourite name="Meta TV Shows" thumb="special://home/addons\plugin.video.meta\resources\img\tv.png">ActivateWindow(10025,&quot;plugin://plugin.video.meta/tv/search_term/[%SF%]/1?sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.meta%5Cfanart.jpg%26_options_sf&quot;,return)</favourite>
+
 </favourites>
