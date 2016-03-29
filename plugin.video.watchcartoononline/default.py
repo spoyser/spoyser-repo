@@ -132,7 +132,7 @@ def DoSection(url):
                         newName = newName.split('The ', 1)[-1]
                     sorted.append([newName, name, url])
                 elif mode == EPISODE:
-                    AddEpisode(name, url)
+                    AddEpisode('', name, url)
 
     sorted.sort()
     for item in sorted:
