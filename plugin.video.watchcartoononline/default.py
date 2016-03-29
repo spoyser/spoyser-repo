@@ -155,7 +155,7 @@ def DoSeries(html):
             name  = re.compile('title="(.+?)"').search(item).group(1)    
             if name.startswith('Watch'):
                 name = name.split('Watch', 1)[-1].strip()
-            AddEpisode(name, url, image)
+            AddEpisode(title, name, url, image)
         except Exception, e:
             pass
 
@@ -303,12 +303,13 @@ def PlayVideo(_url, select):
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
         
 
-def AddEpisode(name, url, image=None):
+def AddEpisode(seriesName, name, url, image=None):
     menu = []
     menu.append(('Download', 'XBMC.RunPlugin(%s?mode=%d&url=%s&title=%s)' % (sys.argv[0], DOWNLOAD, urllib.quote_plus(url), urllib.quote_plus(name))))
     if AUTOPLAY:
         menu.append(('Select video host', 'XBMC.RunPlugin(%s?mode=%d&url=%s)' % (sys.argv[0], HOST, urllib.quote_plus(url))))
-    AddDir(name, EPISODE, url, image=image, isFolder=False, menu=menu)
+    infoLabels = {'seriesName': seriesName}
+    AddDir(name, EPISODE, url, image=image, isFolder=False, infoLabels = infoLabels, menu=menu)
 
 
 def AddSeries(name, url):
@@ -372,7 +373,16 @@ def SetInfoData(name, infoLabels):
 
         # If an episode number is known then we can construct a better name
         if infoLabels['episode']:
-            infoLabels['title'] = infoLabels['season'] + 'x' + infoLabels['episode'] + ': ' + infoLabels['episodeName']
+            seriesPrefix = ''
+            # Check if the series name from the episode differs from the top series name (and is not contained)
+            if 'seriesName' in infoLabels and infoLabels['seriesName'] != infoLabels['episodeSeriesName'] and infoLabels['episodeSeriesName'] not in infoLabels['seriesName']:
+                seriesPrefix = infoLabels['episodeSeriesName'];
+                # In case the series name is contained in the episode series name then remove that part
+                seriesPrefix = seriesPrefix.replace(infoLabels['seriesName'], '')
+                # Add a dash
+                seriesPrefix = seriesPrefix + ' - '
+                
+            infoLabels['title'] = seriesPrefix + infoLabels['season'] + 'x' + infoLabels['episode'] + ': ' + infoLabels['episodeName']
 
         if meta.GetWatchedStatus(infoLabels) == True:
             infoLabels['overlay'] = 7
