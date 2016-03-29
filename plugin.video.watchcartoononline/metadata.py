@@ -78,7 +78,7 @@ class metadata:
     # At least the meta info dict must define the field "seriesName"
     def SetWatchedStatus(self, metaInfo, status):
         # If the seriesName is not known then we do not know where to put the information
-        if not metaInfo['seriesName']:
+        if not metaInfo['episodeSeriesName']:
             return
 
         try:
