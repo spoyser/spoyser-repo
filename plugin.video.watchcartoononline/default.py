@@ -374,8 +374,12 @@ def SetInfoData(name, infoLabels):
         # If an episode number is known then we can construct a better name
         if infoLabels['episode']:
             seriesPrefix = ''
+        
+            episodeSeriesName = infoLabels['episodeSeriesName']
+            seriesName = infoLabels['seriesName'] if 'seriesName' in infoLabels else ''
+            
             # Check if the series name from the episode differs from the top series name (and is not contained)
-            if 'seriesName' in infoLabels and infoLabels['seriesName'] != infoLabels['episodeSeriesName'] and infoLabels['episodeSeriesName'] not in infoLabels['seriesName']:
+            if not utils.sloppyCompare(episodeSeriesName, seriesName) and episodeSeriesName not in seriesName:
                 seriesPrefix = infoLabels['episodeSeriesName'];
                 # In case the series name is contained in the episode series name then remove that part
                 seriesPrefix = seriesPrefix.replace(infoLabels['seriesName'], '')
