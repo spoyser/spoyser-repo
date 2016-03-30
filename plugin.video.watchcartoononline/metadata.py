@@ -53,6 +53,7 @@ class metadata:
     def SetSeriesImage(self, name, image):
         targetFile = self.GetSeriesImage(name)
         if not sfile.exists(targetFile):
+	    import urllib2
             req = urllib2.Request(image)
             req.add_header('User-Agent', utils.getUserAgent())
             response = urllib2.urlopen(req)
