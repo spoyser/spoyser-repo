@@ -42,7 +42,28 @@ class metadata:
         self.cache_dir = cache_dir
         if not sfile.exists(self.cache_dir):
             sfile.makedirs(self.cache_dir)
+
         
+    def SetImageDir(self, image_dir):
+        self.image_dir = image_dir
+        if not sfile.exists(self.image_dir):
+            sfile.makedirs(self.image_dir)
+
+
+    def SetSeriesImage(self, name, image):
+        targetFile = self.GetSeriesImage(name)
+        if not sfile.exists(targetFile):
+            req = urllib2.Request(image)
+            req.add_header('User-Agent', utils.getUserAgent())
+            response = urllib2.urlopen(req)
+            sfile.write(targetFile, response.read())
+            response.close()
+        return targetFile
+    
+    
+    def GetSeriesImage(self, name):
+        return os.path.join(self.image_dir, self.format_filename(name)+'.jpg')
+
         
     # Retrieve meta data from "name" and add it to the dict metaInfo
     # Names will be compatible to XBMC infoLabels

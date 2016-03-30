@@ -69,6 +69,16 @@ def fixup(text):
     newText = newText.strip('/\\')
     return newText
 
+    
+def sloppyCompare(str1, str2):
+    import re
+
+    sloppyStr1 = re.sub(r'[\W\s_]', '', str1).lower()
+    sloppyStr2 = re.sub(r'[\W\s_]', '', str2).lower()
+    
+    return sloppyStr1 == sloppyStr2
+
+    
 
 def fileSystemSafe(text):
     import re
