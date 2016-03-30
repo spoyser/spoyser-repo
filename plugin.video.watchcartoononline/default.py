@@ -75,19 +75,36 @@ def CheckVersion():
 
 class XBMCPlayer(xbmc.Player):
     def __init__( self, *args, **kwargs ):
-        self.is_active = True
+        self.isActive = True
+        self.isPlaying = False
+        self.playTime = 0
+        self.totalTime = 0
         
     def SetMetaData(self, metaData):
         self.metaData = metaData
 
-    #don't flag as watched if stopped
-    #def onPlayBackStopped(self):
-    #    self.onPlayBackEnded()
+    # Flag as watched if more than 90 percent were watched
+    def onPlayBackStopped(self):
+        self.isPlaying = False
+        if self.totalTime > 0 and self.playTime / self.totalTime > 0.9:
+            self.onPlayBackEnded()
+                
+    def onPlayBackStarted(self):
+        self.isPlaying = True
+        self.totalTime = self.getTotalTime()
                 
     def onPlayBackEnded(self):
-        self.is_active = False
+        self.isPlaying = False
+        self.isActive = False
         meta.SetWatchedStatus(self.metaData, True)
         xbmc.executebuiltin('XBMC.Container.Refresh')
+        
+    def update(self):
+        try:
+            if self.isPlaying:
+                self.playTime = self.getTime()
+        except:
+            pass
 
 
 def Main():
@@ -296,8 +313,9 @@ def PlayVideo(_url, select):
         player = XBMCPlayer(xbmc.PLAYER_CORE_DVDPLAYER)
         player.SetMetaData(metaData)
         player.play(pl)
-        while player.is_active:
-           xbmc.sleep(100)
+        while player.isActive:
+            player.update()
+            xbmc.sleep(500)
     else:
         liz.setPath(url)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
@@ -381,7 +399,7 @@ def SetInfoData(name, infoLabels):
             infoLabels['overlay'] = 0
             infoLabels['playcount'] = 0
     except Exception, e:
-            print 'WCO EXCEPTION: ' + str(e)
+            print 'WCO EXCEPTION xx: ' + e
         
 
 def get_params(path):
