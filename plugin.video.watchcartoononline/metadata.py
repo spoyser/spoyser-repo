@@ -67,8 +67,8 @@ class metadata:
         try:    metaInfo['season']      = seasonNum.strip()
         except: metaInfo['season']      = ''
 
-        try:    metaInfo['seriesName']  = seriesName.strip()
-        except: metaInfo['seriesName']  = ''
+        try:    metaInfo['episodeSeriesName']  = seriesName.strip()
+        except: metaInfo['episodeSeriesName']  = ''
 
         try:    metaInfo['episodeName'] = episodeName.strip()
         except: metaInfo['episodeName'] = ''
@@ -78,12 +78,12 @@ class metadata:
     # At least the meta info dict must define the field "seriesName"
     def SetWatchedStatus(self, metaInfo, status):
         # If the seriesName is not known then we do not know where to put the information
-        if not metaInfo['seriesName']:
+        if not metaInfo['episodeSeriesName']:
             return
 
         try:
             # Generate the file system friendly name
-            fileName = os.path.join(self.cache_dir, 'watched_' + self.format_filename(metaInfo['seriesName']) + '.txt')
+            fileName = os.path.join(self.cache_dir, 'watched_' + self.format_filename(metaInfo['episodeSeriesName']) + '.txt')
             fileName = fileName.strip()
 
             # Generate the field name from the meta info
@@ -122,7 +122,7 @@ class metadata:
             return False
             
         # Generate the file system friendly name
-        fileName = os.path.join(self.cache_dir, 'watched_' + self.format_filename(metaInfo['seriesName']) + '.txt')
+        fileName = os.path.join(self.cache_dir, 'watched_' + self.format_filename(metaInfo['episodeSeriesName']) + '.txt')
         fileName = fileName.strip()
 
         # If the file does not exist then we have not watched this entry yet
@@ -132,8 +132,8 @@ class metadata:
         try:
             # Check if we still know this file, otherwise try to open it
             # This way, the content will be read only once for consecutive requests on the same series
-            if not metaInfo['seriesName'] == self.lastName:
-                self.lastName    = metaInfo['seriesName']
+            if not metaInfo['episodeSeriesName'] == self.lastName:
+                self.lastName    = metaInfo['episodeSeriesName']
                 self.lastContent = sfile.readlines(fileName)
                 
             # Generate a string for the episode
