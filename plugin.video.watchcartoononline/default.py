@@ -57,6 +57,8 @@ AUTOPLAY = ADDON.getSetting('AUTOPLAY') == 'true'
 import metadata
 meta = metadata.metadata()
 meta.SetDir(os.path.join(PROFILE ,'watched'))
+meta.SetImageDir(os.path.join(PROFILE, 'images'))
+
 
 
 def CheckVersion():
@@ -162,6 +164,8 @@ def DoSeries(html):
 
     html  = html.split('<!--CAT List FINISH-->', 1)[0]
     match = re.compile('<li>(.+?)</li>').findall(html)
+
+    image = meta.SetSeriesImage(title, image)
 
     for item in match:
         name = None
@@ -331,7 +335,7 @@ def AddEpisode(seriesName, name, url, image=None):
 
 
 def AddSeries(name, url):
-    AddDir(name, SERIES, url)
+    AddDir(name, SERIES, url, meta.GetSeriesImage(name))
 
 
 def AddSection(name, image, url):
