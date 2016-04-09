@@ -94,7 +94,8 @@ GOTHAM       = (MAJOR == 13) or (MAJOR == 12 and MINOR == 9)
 HELIX        = (MAJOR == 14) or (MAJOR == 13 and MINOR == 9)
 ISENGARD     = (MAJOR == 15) or (MAJOR == 14 and MINOR == 9)
 KRYPTON      = (MAJOR == 17) or (MAJOR == 16 and MINOR == 9)
-ESTUARY      = xbmc.getCondVisibility('System.HasAddon(%s)' % 'skin.estuary') == 1
+
+ESTUARY_SKIN = xbmc.getSkinDir().lower() <> 'skin.confluence' #xbmc.getCondVisibility('System.HasAddon(%s)' % 'skin.estuary') == 1
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
@@ -167,7 +168,7 @@ def CheckVersion():
             return
 
         verifySuperSearch()
-        VerifySettinngs()
+        VerifySettings()
         VerifyZipFiles()
 
         src = os.path.join(ROOT, 'cache')
@@ -193,7 +194,7 @@ def VerifyZipFiles():
     sfile.remove(os.path.join('special://userdata', 'SF_Temp'))
 
 
-def VerifySettinngs():
+def VerifySettings():
     #patch any settings that have changed types or values
     if ADDON.getSetting('DISABLEMOVIEVIEW') == 'true':
         ADDON.setSetting('DISABLEMOVIEVIEW', 'false')
@@ -390,7 +391,7 @@ def verifyPlayMedia(cmd):
 
 def verifyPlugin(cmd):
     try:
-        plugin = re.compile('plugin://(.+?)/').search(cmd).group(1)
+        plugin = re.compile('plugin://(.+?)/').search(cmd.replace('?', '/')).group(1)
 
         return xbmc.getCondVisibility('System.HasAddon(%s)' % plugin) == 1
 
@@ -417,16 +418,39 @@ def isATV():
     return xbmc.getCondVisibility('System.Platform.ATV2') == 1
 
 
-def GetFolder(title):
-    default = ROOT
+def GetFolder(title, start=None):
+    if start:
+        default = start
+    else:
+        default = ROOT
 
     sfile.makedirs(PROFILE) 
 
     folder = xbmcgui.Dialog().browse(3, title, 'files', '', False, False, default)
+
     if folder == default:
-        return None
+        if (not start):
+            return None
 
     return folder
+
+
+def GetText(title, text='', hidden=False, allowEmpty=False):
+    if text == None:
+        text = ''
+
+    kb = xbmc.Keyboard(text.strip(), title)
+    kb.setHiddenInput(hidden)
+    kb.doModal()
+    if not kb.isConfirmed():
+        return None
+
+    text = kb.getText().strip()
+
+    if (len(text) < 1) and (not allowEmpty):
+        return None
+
+    return text
 
 
 html_escape_table = {

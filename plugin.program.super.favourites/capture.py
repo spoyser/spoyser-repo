@@ -126,9 +126,18 @@ def copyFave(name, thumb, cmd):
 
     text = GETTEXT(30019)
 
-    folder = utils.GetFolder(text)
+    startFolder = ''
+    if ADDON.getSetting('MENU_PREV_LOCN') == 'true':
+        startFolder = xbmcgui.Window(10000).getProperty('SF_CAPTURE_FOLDER')
+
+    if len(startFolder) == 0:
+        startFolder = None
+
+    folder = utils.GetFolder(text, startFolder)
     if not folder:
         return False
+
+    xbmcgui.Window(10000).setProperty('SF_CAPTURE_FOLDER', folder)
   
     file  = os.path.join(folder, utils.FILENAME)   
 
@@ -295,7 +304,7 @@ def doDownload(file):
     dst = os.path.join(ADDON.getSetting('DOWNLOAD_FOLDER'), getDownloadTitle(file))  
 
     if utils.DialogYesNo(GETTEXT(30243), GETTEXT(30244)):            
-        xbmc.Player().stop()
+        xbmc.executebuiltin('Action(Stop)')
        
     import download            
     download.download(file, dst, 'Super Favourites')
@@ -669,8 +678,13 @@ def main():
         return doStandard(useScript=False)
 
     mode = 0
-    if len(sys.argv) > 0 and sys.argv[0] == '':
-        mode = 1 #launched via std context menu
+   
+    if len(sys.argv) > 0:
+        if sys.argv[0] == '':
+            mode = 1 #launched via std context menu
+
+        if sys.argv[-1].lower() == 'launchsfmenu':
+            mode = 2 #launched via LaunchSFMenu script
     
     try:        
         menu(mode)

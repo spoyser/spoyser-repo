@@ -25,13 +25,14 @@ import os
 import utils
 import favourite
 import parameters
+import cache
 
 FOLDERCFG = utils.FOLDERCFG
 GETTEXT   = utils.GETTEXT
 
 def add(path, name):
-    title    = GETTEXT(30079) % name
-    password = getText(title, text='', hidden=True)
+    title    = GETTEXT(30079)
+    password = utils.GetText(title, text='', hidden=True)
 
     if not password:
         return False
@@ -45,8 +46,8 @@ def add(path, name):
 
 
 def remove(path,name):
-    title    = GETTEXT(30078) % name
-    password = getText(title, text='', hidden=True)
+    title    = GETTEXT(30078)
+    password = utils.GetText(title, text='', hidden=True)
 
     if not password:
         return False
@@ -97,7 +98,7 @@ def unlock(path):
         return False
 
     periods = [0, 1, 5, 15]
-    setting = int(ADDON.getSetting('CACHE'))
+    setting = int(utils.ADDON.getSetting('CACHE'))
     period  = periods[setting]
 
     cache.add(path, period)
@@ -110,8 +111,9 @@ def checkPassword(path, lock=None):
         folderConfig = os.path.join(path, FOLDERCFG)
         lock = parameters.getParam('LOCK', folderConfig)
 
-    title  = GETTEXT(30069) % path.rsplit(os.sep, 1)[-1]
-    unlock = getText(title, hidden=True)
+    title = GETTEXT(30069)
+    
+    unlock = utils.GetText(title, hidden=True)
 
     if not unlock:
         return ''

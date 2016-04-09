@@ -65,7 +65,7 @@
 	<string id="30066">[B]iSearch - %s[/B] [I](Click to edit search term)[/I]</string>
 	<string id="30067">Edit Super Folder</string>
 	<string id="30068">Edit Super Favourite</string>
-	<string id="30069">Enter password to temporarily unlock %s</string>
+	<string id="30069">Enter password to temporarily unlock folder</string>
 	<string id="30070">General</string>
 	<string id="30071">Cache locked folder passwords for</string>	
 	<string id="30072">Never</string>	
@@ -74,10 +74,10 @@
 	<string id="30075">15 minutes</string>	
 	<string id="30076">Lock Super Folder</string>	
 	<string id="30077">Remove lock</string>	
-	<string id="30078">Enter the password to the remove lock from %s</string>	
-	<string id="30079">Enter the password you wish to use to lock %s</string>	
-	<string id="30080">Sorry the password entered was incorrect.</string>	
-	<string id="30081">Super Folder lock has been permanently removed.</string>	
+	<string id="30078">Enter the password to the remove lock</string>	
+	<string id="30079">Enter the password you wish to use to lock folder</string>	
+	<string id="30080">Sorry the password entered was incorrect</string>	
+	<string id="30081">Super Folder lock has been permanently removed</string>	
 	<string id="30082">Advanced</string>	
 	<string id="30083">Automatically play playlists</string>	
 	<string id="30084">Play playlist</string>	
@@ -106,7 +106,7 @@
 	<string id="30107">Choose fanart</string>
 	<string id="30108">Remove fanart</string>
 	<string id="30109">Timeout in %d seconds...</string>
-	<string id="30110">Press a key to assign it to the Super Favourites now</string>
+	<string id="30110">Press a key to assign it to the Super Favourites hotkey</string>
 	<string id="30111">Programmable</string>
 	<string id="30112">[COLOR springgreen]Click to program hotkey[/COLOR]</string>
 	<string id="30113">Default fanart</string>
@@ -137,7 +137,7 @@
 	<string id="30138">Show unavailable addons</string>
 	<string id="30139">Show import remote file</string>	
 	<string id="30140">Importing %s from</string>
-	<string id="30141">Please wait, this may take a while.</string>	
+	<string id="30141">Please wait, this may take a while</string>	
 	<string id="30142">Play Media</string>
 	<string id="30143">Activate Window (try if Play Media fails)</string>
 	<string id="30144">Run Plugin (try if video repeats)</string>
@@ -178,7 +178,7 @@
 	<string id="30184">as a link or copy the complete folder?</string>
 	<string id="30185">Copy</string>
 	<string id="30186">Link</string>
-   	<string id="30187">Super Folders cannot be 'cut' to %s favourites.</string>
+   	<string id="30187">Super Folders cannot be 'cut' to %s favourites</string>
 	<string id="30188">Do you want to create a link to the %s</string>
 	<string id="30189">Super Folder instead?</string>
    	<string id="30190">Cancel</string>	
@@ -198,8 +198,8 @@
 	<string id="30204">Remember current view type</string>		
 	<string id="30205">Perform a keyword IMDB search using [I]%s.[/I]</string>		
 	<string id="30206">Search %s for [I]%s.[/I]</string>	
-	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites.</string>
-	<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails.</string>		
+	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites</string>
+	<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails</string>		
 	<string id="30209">Copy item</string>		
 	<string id="30210">Paste thumbnail</string>		
 	<string id="30211">Paste fanart</string>		
@@ -291,11 +291,12 @@
 	<string id="35035">Episodes</string>
 	<string id="35036">Music videos</string>
 	<string id="35037">Default</string>
-	<string id="35038">Show Super Favourites item on standard context menu</string>
+	<string id="35038">Show Super Favourites menu item on standard context menu</string>
 	
 	<string id="35040">Addons on the whitelist will not display the global Super Favourites menu</string>
 	<string id="35041">Add to whitelist</string>
 	<string id="35042">Remove from whitelist</string>
 	
 	<string id="35043">          Label numerically on quick launch menu</string>
+        <string id="35044">          Remember previous folder</string>
 </strings>

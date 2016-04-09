@@ -34,36 +34,83 @@ TIMEOUT = 10
 class KeyListener(xbmcgui.WindowXMLDialog):
 
     def __new__(cls):
-        return super(KeyListener, cls).__new__(cls, 'DialogKaiToast.xml', '')
+        try: 
+            ret = super(KeyListener, cls).__new__(cls, 'DialogProgress.xml', '')
+        except:
+            ret   = super(KeyListener, cls).__new__(cls, 'DialogConfirm.xml', '')
+        return ret 
 
 
     def __init__(self):
-        self.key = 0
+        self.key     = 0
+        self.timeout = TIMEOUT
+        self.setTimer()
+
+
+    def close(self):
+        self.timer.cancel()
+        xbmcgui.WindowXML.close(self)
 
 
     def onInit(self):
-        timeout = GETTEXT(30109) % TIMEOUT
-        label   = GETTEXT(30110)
+        try:
+            self.getControl(20).setVisible(False)
+            self.getControl(10).setLabel(xbmc.getLocalizedString(222))
+            self.setFocus(self.getControl(10))
+            self.getControl(11).setVisible(False)
+            self.getControl(12).setVisible(False)
+        except:
+            pass
 
-        self.getControl(401).addLabel(label)
-        self.getControl(402).addLabel(timeout)
-        self.getControl(400).setImage(ICON)
-        
+
+        self.onUpdate()
+
+
+
+    def onUpdate(self):
+        text  = GETTEXT(30110) + '[CR]'
+        text += GETTEXT(30109) % self.timeout
+        self.getControl(9).setText(text)
+
+        #percent = 100 * (1 - float(self.timeout) / float(TIMEOUT))
+        #self.getControl(20).setPercent(int(percent))
+
 
     def onAction(self, action):
+        actionId = action.getId()     
+
+        if actionId in [1, 2, 3, 4, 7, 100, 103, 107]:
+            return
+
+        if actionId in [9, 10, 92, 100]:
+            return self.close()
+       
         self.key = action.getButtonCode()
         self.close()
 
 
+    def onClick(self, controlId):
+        self.close()
+
+
+    def onTimer(self):
+        self.timeout -= 1
+        if self.timeout < 0:
+            return self.close()
+
+        self.onUpdate()
+        self.setTimer()
+
+
+    def setTimer(self):
+        self.timer = Timer(1, self.onTimer)
+        self.timer.start()
+
+
 def recordKey():
     dialog  = KeyListener()
-    timeout = Timer(TIMEOUT, dialog.close)
-
-    timeout.start()
 
     dialog.doModal()
-
-    timeout.cancel()
 
     key = dialog.key
 

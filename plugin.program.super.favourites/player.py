@@ -38,7 +38,20 @@ ACTION_MODE         = utils.ACTION_MODE
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 
 
-def playCommand(originalCmd, contentMode=False):
+def getCommandParent(cmd):
+    import re
+    try:
+        plugin = re.compile('plugin://(.+?)/').search(cmd.replace('?', '/')).group(1)
+        if xbmc.getCondVisibility('System.HasAddon(%s)' % plugin) == 1:
+            return 'plugin://%s' % plugin
+
+    except:
+        pass
+
+    return None
+
+
+def playCommand(originalCmd, contentMode=False, handle=None):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
 
@@ -111,8 +124,12 @@ def activateWindowCommand(cmd):
     if id not in activate:
         xbmc.executebuiltin(activate)
 
-    if plugin: 
-        xbmc.executebuiltin('Container.Update(%s)' % plugin)
+    if plugin:
+        #xbmc.sleep(500)
+        #parent = getCommandParent(plugin)
+        #if parent:
+        #    xbmc.executebuiltin('Container.Update(%s)' % parent)
+        xbmc.executebuiltin('Container.Update(%s)' % plugin)        
 
 
 def playMedia(original):

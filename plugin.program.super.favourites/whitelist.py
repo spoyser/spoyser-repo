@@ -71,6 +71,9 @@ def doAdd():
 def doRemove():
     list = tidy(WHITELIST).split(SEPARATOR)
 
+    if len(list) == 1 and len(list[0]) == 0:
+        return
+
     option = xbmcgui.Dialog().select(GETTEXT(35042), list)
     if option < 0:
         return

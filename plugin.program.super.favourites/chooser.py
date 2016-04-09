@@ -74,7 +74,7 @@ def getFolderThumb(path):
     return ICON
 
 
-def GetFave(property, path='', changeTitle=False, includePlay=False):
+def GetFave(property, path='', changeTitle=False, includePlay=True):
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Path'))
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Label'))
     xbmc.executebuiltin('Skin.Reset(%s)' % '%s.%s' % (property, 'Icon'))

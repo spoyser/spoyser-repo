@@ -637,11 +637,14 @@ def addMainItems():
 
 
 def playSuperFolder(path, id):
-    if path:
-        file = os.path.join(path, FILENAME)
-    else:
-        file = os.path.join(PROFILE, FILENAME)
+    if not path:
+        path = PROFILE
 
+    import locking
+    if not locking.unlock(path):
+        return
+
+    file  = os.path.join(path, FILENAME)
     faves = favourite.getFavourites(file)
 
     if ALPHA_SORT:
@@ -839,23 +842,6 @@ def getColour():
     return option
 
 
-def getText(title, text='', hidden=False, allowEmpty=False):
-    if text == None:
-        text = ''
-
-    kb = xbmc.Keyboard(text.strip(), title)
-    kb.setHiddenInput(hidden)
-    kb.doModal()
-    if not kb.isConfirmed():
-        return None
-
-    text = kb.getText().strip()
-
-    if (len(text) < 1) and (not allowEmpty):
-        return None
-
-    return text
-
 
 def getImage():
     root  = HOME.split(os.sep, 1)[0] + os.sep    
@@ -980,7 +966,7 @@ def getFolder(title):
 
 
 def createNewFolder(current):
-    text = utils.fileSystemSafe(getText(GETTEXT(30013)))
+    text = utils.fileSystemSafe(utils.GetText(GETTEXT(30013)))
     if not text:
         return False
 
@@ -1356,7 +1342,7 @@ def editFolderDescription(path, name, desc=None):
 
     if desc == None:
         desc = parameters.getParam('DESC', cfg)
-        desc = getText(name, text=desc, hidden=False, allowEmpty=True)
+        desc = utils.GetText(name, text=desc, hidden=False, allowEmpty=True)
 
     if desc == None:
         return False
@@ -1373,7 +1359,7 @@ def editDescription(file, cmd, name, desc=None):
 
     if desc == None:
         desc = favourite.getOption(cmd, 'desc')
-        desc = getText(name, text=desc, hidden=False, allowEmpty=True)
+        desc = utils.GetText(name, text=desc, hidden=False, allowEmpty=True)
 
     if desc == None:
         return False
@@ -1387,7 +1373,7 @@ def editDescription(file, cmd, name, desc=None):
 def manualEdit(file, _cmd, name='', thumb='', editName=True):
     cmd = _cmd
     if editName:
-        name = getText(GETTEXT(30021), name, allowEmpty=True)
+        name = utils.GetText(GETTEXT(30021), name, allowEmpty=True)
 
         if name == None:
             return False
@@ -1414,7 +1400,7 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     prefix    = ''
  
     if manualUnset:
-        newCmd = getText(title, '', allowEmpty=True)
+        newCmd = utils.GetText(title, '', allowEmpty=True)
     else:
         if type == ACTION_MODE:
             cmd = cmd.split('ExecuteBuiltin("', 1)[-1]
@@ -1453,7 +1439,7 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
             prefix = '&sf_options'
             cmd, sfOptions = cmd.split(prefix)
 
-        newCmd = getText(title, cmd, allowEmpty=True)
+        newCmd = utils.GetText(title, cmd, allowEmpty=True)
 
     if newCmd == None:
         return False
@@ -1508,7 +1494,7 @@ def getWindowID(cmd, name):
         else:
             title = GETTEXT(30176)
 
-        windowID = getText(title, originalID )
+        windowID = utils.GetText(title, originalID )
 
         if windowID:
             return windowID, originalID
@@ -1549,7 +1535,7 @@ def manualType(name, cmd):
 
 
 def manualAdd(folder):
-    name = getText(GETTEXT(30021), '', allowEmpty=True)
+    name = utils.GetText(GETTEXT(30021), '', allowEmpty=True)
 
     if name == None:
         return False
@@ -1660,7 +1646,7 @@ def renameFolder(path):
     label = path.rsplit(os.sep, 1)[-1]
     title = label
 
-    try:    text  = utils.fileSystemSafe(getText(GETTEXT(30015) % title, label))
+    try:    text  = utils.fileSystemSafe(utils.GetText(GETTEXT(30015) % title, label))
     except: title = utils.fix(title)
 
     if not text:
@@ -1727,7 +1713,7 @@ def renameFave(file, cmd):
     if not fave:
         return False
 
-    newName = getText(GETTEXT(30021), text=fave[0], allowEmpty=True)
+    newName = utils.GetText(GETTEXT(30021), text=fave[0], allowEmpty=True)
 
     if newName == None:
         return False
@@ -1962,7 +1948,7 @@ def recommendKey(keyword, autoRecommend):
     
 
 def editSearchTerm(_keyword):
-    keyword = getText(GETTEXT(30057), _keyword)
+    keyword = utils.GetText(GETTEXT(30057), _keyword)
 
     if (not keyword) or len(keyword) < 1:
         keyword = _keyword
@@ -1980,7 +1966,7 @@ def externalSearch():
     kb = xbmc.Keyboard(keyword, GETTEXT(30054))
     kb.doModal()
     if kb.isConfirmed():
-        keyword = kb.getText()
+        keyword = kb.utils.GetText()
 
         cmd = '%s?mode=%d&keyword=%s' % (sys.argv[0], _SUPERSEARCH, keyword)
         xbmc.executebuiltin('XBMC.Container.Refresh(%s)' % cmd)
@@ -2180,7 +2166,7 @@ def iPlaylistURLBrowse():
     text  = 'http://'
 
     while not valid:
-        text = getText(GETTEXT(30153), text)
+        text = utils.GetText(GETTEXT(30153), text)
 
         if not text:
             return False
@@ -2197,7 +2183,7 @@ def iPlaylistURLBrowse():
         if not valid:
             utils.DialogOK(GETTEXT(30155), text)
         
-    name = getText(GETTEXT(30156))
+    name = utils.GetText(GETTEXT(30156))
 
     if not name:
         return False
@@ -2317,7 +2303,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
         kb = xbmc.Keyboard(keyword, GETTEXT(30054))
         kb.doModal()
         if kb.isConfirmed():
-            keyword = kb.getText()
+            keyword = kb.utils.GetText()
 
             if len(keyword) < 1:
                 keyword = ISEARCH_EMPTY
@@ -2458,7 +2444,7 @@ def superSearch(keyword='', image=SEARCH, fanart=FANART, imdb=''):
 
 
 def playCommand(originalCmd):
-    player.playCommand(originalCmd, contentMode)
+    player.playCommand(originalCmd, contentMode, sys.argv[1])
 
 
 def activateWindowCommand(cmd):
