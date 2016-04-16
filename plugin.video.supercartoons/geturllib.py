@@ -42,6 +42,8 @@ def GetURL(url, maxSecs = 0, agent = ''):
         return None, True
 
     CheckCacheDir()
+
+
     if maxSecs > 0:
         #is URL cached?
 	cachedURLTimestamp = CacheGetURLTimestamp(url)
