@@ -74,7 +74,7 @@ def CheckVersion():
         d = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, 'Welcome to Super Cartoons', 'Watch Your Favourite Cartoons in XBMC', '')
 
-    if curr == '1.0.17':
+    if curr == '1.0.18':
         import clearcache
         clearcache.deleteCache(silent=True)
 
@@ -175,10 +175,9 @@ def All(page):
     next  = URL + 'cartoons/' + str(page+1)
 
     html = GetHTML(url)
-    html = '<div class="cartoon">' + html.split('<div class="cartoon">', 1)[-1]
-    
+    html = '<div class="cartoon box">' + html.split('<div class="cartoon box">', 1)[-1]
 
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
+    match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
 
     print match
 
@@ -193,7 +192,7 @@ def MostRecent():
     html  = GetHTML(URL)
 
     match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
+    match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)
@@ -205,6 +204,8 @@ def MostPopular():
     match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
     match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
 
+    if len(match) == 0:
+        match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
 
     for link, desc, img, title in match:
         AddCartoon(title, img, link, desc)  
@@ -252,7 +253,7 @@ def GetRandom():
 
     html  = GetHTML(url)
 
-    match = re.compile('<div class="cartoon"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=".+?title=".+?">(.+?)</a>.+?</span></div>').findall(html)
+    match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=".+?title=".+?">(.+?)</a>.+?</span></div>').findall(html)
 
     for link, dec, img, title in match:
         link = link.replace('/cartoon/', '/video/')
