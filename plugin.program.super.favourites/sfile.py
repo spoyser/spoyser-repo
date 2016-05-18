@@ -136,8 +136,8 @@ def rmtree(folder):
 def copytree(src, dst):
     import os
 
-    if exists(dst):
-        rmtree(dst)
+    #if exists(dst):
+    #    rmtree(dst)
 
     makedirs(dst)
 

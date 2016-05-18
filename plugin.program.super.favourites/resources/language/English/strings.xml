@@ -200,7 +200,7 @@
 	<string id="30206">Search %s for [I]%s.[/I]</string>	
 	<string id="30207">Would you like to disable caching on this favourite?[CR]Particularly useful for 'Search' type favourites</string>
 	<string id="30208">Disable 'movie content' view - prevents rectangular thumbnails</string>		
-	<string id="30209">Copy item</string>		
+	<string id="30209">Copy item and metadata</string>		
 	<string id="30210">Paste thumbnail</string>		
 	<string id="30211">Paste fanart</string>		
 	<string id="30212">Paste description</string>		
@@ -233,7 +233,7 @@
 	<string id="30239">Alphabetical</string>	
 	<string id="30240">Manual</string>
 	<string id="30241">Download</string>	
-	<string id="30242">Download folder</string>	
+	<string id="30242">          Download folder</string>	
 	<string id="30243">Do you wish to stop the current playback?</string>
 	<string id="30244">(This maybe necessary to allow download)</string>
 	<string id="30245">[COLOR forestgreen]Download succeeded[/COLOR]</string>
@@ -250,6 +250,16 @@
 	<string id="30256">Download folder does not exists</string>
 	<string id="30257">Please configure a valid download folder now</string>
 	<string id="30258">Paste item</string>
+	<string id="30259">Download using Super Favourites</string>
+	<string id="30260">No valid item to add to Super Favourites</string>
+	<string id="30261">No valid item to download via Super Favourites</string>
+	<string id="30262">Paste metadata</string>
+        <string id="30263">Remove metadata</string>
+        <string id="30264">Description</string>
+        <string id="30265">Metadata</string>
+        <string id="30266">Thumbnail</string>
+        <string id="30267">Fanart</string>
+        <string id="30268">iSearch - </string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
@@ -261,7 +271,7 @@
 	<string id="35007">Default iSearch (search using the first addon in the list)</string>
 	<string id="35008">iSearch</string>
 	<string id="35009">iRecommend</string>
-	<string id="35010">Copy item (also copies fanart, thumbnail and description)</string>
+	<string id="35010">Copy item and metadata</string>
 	<string id="35011">View item images</string>
 	<string id="35012">Super Favourite settings</string>
 	<string id="35013">Selected addon settings</string>
@@ -299,4 +309,8 @@
 	
 	<string id="35043">          Label numerically on quick launch menu</string>
         <string id="35044">          Remember previous folder</string>
+
+	<string id="35045">          Show menu item on standard context menu</string>
+
+	<string id="35046">          Show on Super Favourites context menu</string>	
 </strings>

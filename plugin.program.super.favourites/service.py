@@ -28,6 +28,7 @@ utils.VerifyZipFiles()
 utils.VerifyKeymaps()
 utils.verifyPlugins()
 utils.verifyLocation()
+utils.verifyRunning()
 
 
 if utils.ADDON.getSetting('AUTOSTART') == 'true':
@@ -47,18 +48,16 @@ if utils.ADDON.getSetting('AUTOSTART') == 'true':
 class MyMonitor(xbmc.Monitor):
     def __init__(self):
         xbmc.Monitor.__init__(self)
-        self.hotkey      = utils.ADDON.getSetting('HOTKEY')
-        self.context     = utils.ADDON.getSetting('CONTEXT')     == 'true'
-        self.std_context = utils.ADDON.getSetting('CONTEXT_STD') == 'true'
-
+        self.hotkey  = utils.ADDON.getSetting('HOTKEY')
+        self.context = utils.ADDON.getSetting('CONTEXT') == 'true'
+       
         self.updateStdContextMenuItem()
 
 
     def onSettingsChanged(self):
-        hotkey           = utils.ADDON.getSetting('HOTKEY')
-        context          = utils.ADDON.getSetting('CONTEXT')     == 'true'
-        self.std_context = utils.ADDON.getSetting('CONTEXT_STD') == 'true'
-
+        hotkey  = utils.ADDON.getSetting('HOTKEY')
+        context = utils.ADDON.getSetting('CONTEXT') == 'true'
+        
         self.updateStdContextMenuItem()
 
         utils.VerifyKeymaps()
@@ -72,22 +71,37 @@ class MyMonitor(xbmc.Monitor):
         utils.UpdateKeymaps()
 
     def updateStdContextMenuItem(self):
+        self.std_context    = utils.ADDON.getSetting('CONTEXT_STD')       == 'true'
+        self.std_addtofaves = utils.ADDON.getSetting('ADDTOFAVES_ON_STD') == 'true'
+        self.std_download   = utils.ADDON.getSetting('DOWNLOAD_ON_STD')   == 'true'
+
         #useage in addon.xml : <visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
-        if self.std_context:            
+
+        #---------- SF on standard context menu ------------------------------------------------
+        if self.std_context:
             xbmcgui.Window(10000).setProperty('SF_STD_CONTEXTMENU_ENABLED', 'True')  
         else:
-            xbmcgui.Window(10000).clearProperty('SF_STD_CONTEXTMENU_ENABLED')            
+            xbmcgui.Window(10000).clearProperty('SF_STD_CONTEXTMENU_ENABLED')
+
+
+        #---------- Add to Faves on standard context menu --------------------------------------
+        if self.std_addtofaves:
+            xbmcgui.Window(10000).setProperty('SF_STD_ADDTOFAVES_ENABLED', 'True')  
+        else:
+            xbmcgui.Window(10000).clearProperty('SF_STD_ADDTOFAVES_ENABLED')
+
+
+        #---------- Download on standard context menu ------------------------------------------
+        if self.std_download:         
+            xbmcgui.Window(10000).setProperty('SF_STD_DOWNLOAD_ENABLED', 'True')  
+        else:
+            xbmcgui.Window(10000).clearProperty('SF_STD_DOWNLOAD_ENABLED')
 
 
 monitor = MyMonitor()
 
 while (not xbmc.abortRequested):
     xbmc.sleep(1000)
-    #if checkDisabled():
-    #xbmc.sleep(1000)
-    #xbmc.executebuiltin('Action(reloadkeymaps)') 
-
-
-#checkDisabled()
+ 
 
 del monitor

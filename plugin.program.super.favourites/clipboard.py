@@ -21,6 +21,7 @@
 import xbmcgui
 
 import os
+import urllib
 
 import utils
 import favourite
@@ -42,6 +43,7 @@ def reset():
     xbmcgui.Window(10000).clearProperty('SF_THUMB')
     xbmcgui.Window(10000).clearProperty('SF_FANART')
     xbmcgui.Window(10000).clearProperty('SF_DESCRIPTION')
+    xbmcgui.Window(10000).clearProperty('SF_META')
 
 
 def cutCopy(file, cmd, cut=True):
@@ -59,8 +61,10 @@ def cutCopy(file, cmd, cut=True):
     thumb  = fave[1]
     fanart = favourite.getFanart(fave[2])
     desc   = favourite.getOption(fave[2], 'desc')
+    meta   = favourite.getOption(fave[2], 'meta')
+    meta   = utils.convertURLToDict(meta)
 
-    _setPasteProperties(thumb, fanart, desc)
+    _setPasteProperties(thumb, fanart, desc, meta=meta)
 
     return True
 
@@ -84,22 +88,40 @@ def cutCopyFolder(folder, cut=True):
     return True
 
 
-def setPasteProperties(thumb='', fanart='', desc='', label=None, cmd=None):
+def setPasteProperties(thumb='', fanart='', desc='', label=None, cmd=None, meta=None):
     reset()
-    _setPasteProperties(thumb, fanart, desc, label, cmd)
+    _setPasteProperties(thumb, fanart, desc, label, cmd, meta)
 
 
-def _setPasteProperties(thumb='', fanart='', desc='', label=None, cmd=None):
+def getThumb():
+    return xbmcgui.Window(10000).getProperty('SF_THUMB')
+
+
+def getFanart():
+    return xbmcgui.Window(10000).getProperty('SF_FANART')
+
+
+def getDesc():
+    return  urllib.unquote(xbmcgui.Window(10000).getProperty('SF_DESCRIPTION'))
+
+
+def getMeta():
+    return xbmcgui.Window(10000).getProperty('SF_META')
+
+
+def _setPasteProperties(thumb='', fanart='', desc='', label=None, cmd=None, meta=None):
     if not thumb:  thumb  = ''
     if not fanart: fanart = ''
     if not desc:   desc   = ''
     if not cmd:    cmd    = ''
     if not label:  label  = ''
+    if not meta:   meta   = ''
 
     xbmcgui.Window(10000).setProperty('SF_THUMB',       thumb)
     xbmcgui.Window(10000).setProperty('SF_FANART',      fanart)
-    xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', desc)
+    xbmcgui.Window(10000).setProperty('SF_DESCRIPTION', urllib.quote(desc))
     xbmcgui.Window(10000).setProperty('SF_LABEL',       label)
+    xbmcgui.Window(10000).setProperty('SF_META',        utils.convertDictToURL(meta))
 
     if len(xbmcgui.Window(10000).getProperty('SF_TYPE')) > 0:
         return

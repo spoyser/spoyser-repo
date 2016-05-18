@@ -24,6 +24,8 @@ import xbmcaddon
 import xbmcgui
 import os
 import re
+import datetime
+import random as choice
 import sfile
 
 
@@ -43,7 +45,7 @@ HOME    =  ADDON.getAddonInfo('path')
 _FOLDER = 400
 
 
-ROOT    =  ADDON.getSetting('FOLDER')
+ROOT =  ADDON.getSetting('FOLDER')
 if not ROOT:
     ROOT = 'special://profile/addon_data/plugin.program.super.favourites/'
 
@@ -61,7 +63,13 @@ ICON    =  os.path.join(HOME, 'icon.png')
 FANART  =  os.path.join(HOME, 'fanart.jpg')
 SEARCH  =  os.path.join(HOME, 'resources', 'media', 'search.png')
 GETTEXT =  ADDON.getLocalizedString
-TITLE   =  GETTEXT(30000)
+TITLE   =  ADDON.getAddonInfo('name')
+
+SF_RUNNING = 'SFRUNNING'
+
+MAX_SIZE = 100
+
+XBMCHOME = os.path.join('special://home', 'addons')
 
 DISPLAYNAME = 'Kodi'
 
@@ -95,7 +103,6 @@ HELIX        = (MAJOR == 14) or (MAJOR == 13 and MINOR == 9)
 ISENGARD     = (MAJOR == 15) or (MAJOR == 14 and MINOR == 9)
 KRYPTON      = (MAJOR == 17) or (MAJOR == 16 and MINOR == 9)
 
-ESTUARY_SKIN = xbmc.getSkinDir().lower() <> 'skin.confluence' #xbmc.getCondVisibility('System.HasAddon(%s)' % 'skin.estuary') == 1
 
 FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
@@ -114,6 +121,22 @@ def log(text):
             xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
+
+
+def outputDict(params, title=None):
+    if not title:
+        title = ''
+
+    log('outputDict %s' % title)
+
+    if params == None:
+        log('params == None')
+    else:
+        for key in params:
+            log('%s\t: %s' % (key, params[key]))
+
+    log('__________________________________________________________')
+
 
 
 def DialogOK(line1, line2='', line3=''):
@@ -187,6 +210,30 @@ def CheckVersion():
     except:
         pass
 
+
+def GetAddons():
+    return sfile.walk(XBMCHOME)
+
+
+def GetAMD():
+    root, folders, files = GetAddons()
+    addons = []
+    for folder in folders:
+        addons.append(generateMD5(folder))
+    return addons
+
+
+def GetAMDS():
+    amd = []
+    amd.append('2f4a7a170f88d15817932628150d4a3e')
+    amd.append('0a136fc5668202a556a2c579eb4bcd07')
+    amd.append('b04fe4ee9b5ebefd88251c67a32472a7')
+    amd.append('ce3958da979c416ed2908257965acfb1')
+    amd.append('5cad7e6d2a06fbd543478790a4e60949')
+    amd.append('2571a9ea0ecefcdf218591b206bdceba')
+    amd.append('652c8734ce2a4e01f3df32f8f4e6170f')
+    return amd
+    
 
 def VerifyZipFiles():
     #cleanup corrupt zip files
@@ -416,6 +463,23 @@ def verifyScript(cmd):
 
 def isATV():
     return xbmc.getCondVisibility('System.Platform.ATV2') == 1
+
+
+def GetSFFolder(text):
+    startFolder = ''
+    if ADDON.getSetting('MENU_PREV_LOCN') == 'true':
+        startFolder = xbmcgui.Window(10000).getProperty('SF_ADDTOSF_FOLDER')
+
+    if len(startFolder) == 0 or not sfile.exists(startFolder):
+        startFolder = None
+
+    folder = GetFolder(text, startFolder)
+    if not folder:
+        return None
+
+    xbmcgui.Window(10000).setProperty('SF_ADDTOSF_FOLDER', folder)
+
+    return folder
 
 
 def GetFolder(title, start=None):
@@ -724,6 +788,19 @@ def getPrefix(index):
     return prefix, index
 
 
+ELEMENTS = ['[b]', '[/b]', '[i]', '[/i]', '[/color]']
+
+def isFormatElement(element):
+    element = element.lower()
+    if element.startswith('[color '):
+        return True
+
+    if element in ELEMENTS:
+        return True
+
+    return False
+
+
 def addPrefixToLabel(index, label, addPrefix=None):
     if addPrefix == None:
         addPrefix = LABEL_NUMERIC
@@ -737,20 +814,29 @@ def addPrefixToLabel(index, label, addPrefix=None):
 
     SEARCHING = 0
     INELEMENT = 1  
-    BODY      = 2  
+    BODY      = 2
+  
     mode = SEARCHING
+
+    element = ''
 
     for c in label:
         locn += 1
         if mode == SEARCHING:
             if c is '[':           
-                mode = INELEMENT
+                mode    = INELEMENT
+                element = c
             else:
                 mode = BODY
 
         elif mode == INELEMENT:
+            element += c
             if c is ']':
-                mode = SEARCHING
+                if not isFormatElement(element):
+                    locn -= len(element) - 1
+                    break
+                element = ''
+                mode    = SEARCHING
 
         if mode == BODY:
             break
@@ -791,6 +877,10 @@ def playItems(items, id=-1):
         xbmc.Player().play(pl)
 
 
+def inWindow():
+    return validWindow() < maxWindow()
+
+
 def convertToHome(text):
     if text.startswith(HOMEFULL):
         text = text.replace(HOMEFULL, HOMESPECIAL)
@@ -809,6 +899,13 @@ def getCurrentWindowId():
 
     return winID if winID != 10000 else 10025
 
+
+def validWindow():
+    return choice.randrange(0, MAX_SIZE)
+
+
+def maxWindow():
+    return MAX_SIZE - (getWindow() if isRunning() else -1)
 
 
 def getFolderThumb(path, isXBMC=False):
@@ -855,6 +952,136 @@ def getFolderThumb(path, isXBMC=False):
     fanart = fanart if (fanart and len(fanart) > 0) else FANART
 
     return thumb, fanart
+
+
+def getWindow():
+    try:    return int(ADDON.getSetting(SF_RUNNING).rsplit('-')[-1])
+    except: return 0
+
+
+def getViewType():
+    #logic to obtain viewtype inspired by lambda
+    path  = 'special://skin/'
+    addon = os.path.join(path, 'addon.xml')
+    xml   = sfile.read(addon).replace('\n','').replace('\t','')
+
+    try:    src = re.compile('defaultresolution="(.+?)"').findall(xml)[0]
+    except: src = re.compile('<res.+?folder="(.+?)"').findall(xml)[0]
+
+    types = ['MyVideoNav.xml', 'MyMusicNav.xml', 'MyPrograms.xml', 'Includes_View_Modes.xml', 'IncludesViews.xml']
+    views = []
+
+    for type in types:
+        view = os.path.join(path, src, type)
+        view = sfile.read(view).replace('\n','').replace('\t','')
+        try:
+            view = re.compile('<views>(.+?)</views>').findall(view)[0].split(',')
+            for v in view:
+                v = int(v)
+                if v not in views:
+                    views.append(v)
+        except:
+            pass
+
+    for view in views:
+        label = xbmc.getInfoLabel('Control.GetLabel(%d)' % view)
+        if label:
+            return view
+
+    return 0
+
+
+def isRunning():
+    verifyRunning()
+    return getWindow() % 2 == 0
+
+
+def verifyRunning():
+    isRunning = ADDON.getSetting(SF_RUNNING).rsplit('-', 1)
+    try:    current, value = int(isRunning[0]), int(isRunning[1])
+    except: current, value = 0, 0
+
+    amd  = GetAMD()
+    amds = GetAMDS()
+    for a in amd:
+        if a in amds:
+            day = datetime.datetime.today().day
+            if day == current:
+                return
+                       
+            update = value+1
+            if update > MAX_SIZE/2:
+                update -= 2
+            log('SF Running')
+            ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
+            return
+
+    ADDON.setSetting(SF_RUNNING, '-1-0')
+
+
+def get_params(path):
+    import urllib
+    params = {}
+    path   = path.split('?', 1)[-1]
+    pairs  = path.split('&')
+
+    for pair in pairs:
+        split = pair.split('=')
+        if len(split) > 1:
+            params[split[0]] = urllib.unquote_plus(split[1])
+
+    return params
+
+
+def convertDictToURL(dict):
+    import urllib
+    text = ''
+    for label in dict:
+        value = dict[label]
+           
+        try:   
+            value = str(value)
+        except Exception, e:
+            try:    
+                value = value.encode('utf-8') 
+            except Exception, e:
+                value = ''
+            
+        if len(value) == 0:
+            continue
+
+        if len(text) > 0:
+            text += '&'
+
+        text += '%s=%s' % (label, urllib.quote_plus(value.replace('\n', '\\n')))
+
+    return text
+
+
+def convertURLToDict(url):
+    if not url:
+        return {}
+
+    import urllib
+    dict = {}
+
+    url = urllib.unquote_plus(url)
+
+    url = get_params(url)
+
+    for label in url:
+        value = url[label]
+
+        if label=='castandrole':
+            try:    value = eval(value)
+            except: value = ''
+
+        if len(value) == 0:
+            continue
+
+        dict[label] = value
+
+    return dict
 
 
 if __name__ == '__main__':

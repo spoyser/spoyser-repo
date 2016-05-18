@@ -36,8 +36,10 @@ class KeyListener(xbmcgui.WindowXMLDialog):
     def __new__(cls):
         try: 
             ret = super(KeyListener, cls).__new__(cls, 'DialogProgress.xml', '')
+            ret.toast = True
         except:
             ret   = super(KeyListener, cls).__new__(cls, 'DialogConfirm.xml', '')
+            ret.toast = False
         return ret 
 
 

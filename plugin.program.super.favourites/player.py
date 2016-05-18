@@ -38,10 +38,19 @@ ACTION_MODE         = utils.ACTION_MODE
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
 
 
-def getCommandParent(cmd):
+def getParentCommand(cmd):
+    parents = []
+    parents.append('fabd660bab0688158888c308dac1f331')
+
     import re
     try:
         plugin = re.compile('plugin://(.+?)/').search(cmd.replace('?', '/')).group(1)
+
+        md5 = utils.generateMD5(plugin)
+        
+        if md5 not in parents:
+            return None
+
         if xbmc.getCondVisibility('System.HasAddon(%s)' % plugin) == 1:
             return 'plugin://%s' % plugin
 
@@ -54,7 +63,7 @@ def getCommandParent(cmd):
 def playCommand(originalCmd, contentMode=False, handle=None):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
-
+ 
         cmd = favourite.tidy(originalCmd)
      
         #if a 'Super Favourite' favourite just do it
@@ -77,7 +86,7 @@ def playCommand(originalCmd, contentMode=False, handle=None):
         if PLAY_PLAYLISTS:
             import playlist
             if playlist.isPlaylist(cmd):
-                return playlist.play(cmd)      
+                return playlistplay(cmd)      
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd) 
@@ -125,21 +134,26 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin(activate)
 
     if plugin:
-        #xbmc.sleep(500)
-        #parent = getCommandParent(plugin)
-        #if parent:
-        #    xbmc.executebuiltin('Container.Update(%s)' % parent)
-        xbmc.executebuiltin('Container.Update(%s)' % plugin)        
+        parent = getParentCommand(plugin)
+        if parent:
+            xbmc.executebuiltin('Container.Update(%s)' % parent)
+            xbmc.sleep(500)
+        xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
 
 def playMedia(original):
     import re
     cmd = favourite.tidy(original) #.replace(',', '') #remove spurious commas
+
+    parent = getParentCommand(cmd)
+    if parent:
+        xbmc.executebuiltin('Container.Update(%s)' % parent)
+        xbmc.sleep(500)
     
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
 
-    if mode == PLAYMEDIA_MODE:       
+    if mode == PLAYMEDIA_MODE:  
         xbmc.executebuiltin(cmd)
         return
 

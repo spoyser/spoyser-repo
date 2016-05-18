@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 <category label="30070">
-    <setting id="VERSION"    type="text" label="" default="0.0.0" visible="false"/>	
+    <setting id="VERSION"    type="text" label="" default="0.0.0" visible="false"/>
+    <setting id="SFRUNNING"  type="text" label="" default="-1-0"    visible="false"/>	
     <setting id="MANUAL_ID"  type="text" label="" default="1"     visible="false"/>	
 		
     <setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30122|30121" visible="false"/>
@@ -72,33 +73,38 @@
     <setting id="DUMMY"        label="35005" type="lsep" visible="eq(-9,true)|eq(-10,true)"/>
 		
     <setting id="MENU_QUICKLAUNCH"    label="35020" type="bool"   default="true"  visible="eq(-10,true)|eq(-11,true)"/>
-    <setting id="MENU_ADDTOFAVES"     label="35006" type="bool"   default="true"  visible="eq(-11,true)|eq(-12,true)"/>
-    <setting id="MENU_PREV_LOCN"      label="35044" type="bool"   default="false" visible="eq(-12,true)|eq(-13,true)" enable="eq(-1,true)"/>
-    <setting id="MENU_DEF_ISEARCH"    label="35007" type="bool"   default="true"  visible="eq(-13,true)|eq(-14,true)"/>
-    <setting id="MENU_ISEARCH"        label="35008" type="bool"   default="true"  visible="eq(-14,true)|eq(-15,true)"/>
-    <setting id="MENU_IRECOMMEND"     label="35009" type="bool"   default="true"  visible="eq(-15,true)|eq(-16,true)"/>
-    <setting id="MENU_COPY_PROPS"     label="35010" type="bool"   default="true"  visible="eq(-16,true)|eq(-17,true)"/>
-    <setting id="MENU_VIEW_IMAGES"    label="35011" type="bool"   default="true"  visible="eq(-17,true)|eq(-18,true)"/>
-    <setting id="MENU_SF_SETTINGS"    label="35012" type="bool"   default="true"  visible="eq(-18,true)|eq(-19,true)"/>
-    <setting id="MENU_ADDON_SETTINGS" label="35013" type="bool"   default="true"  visible="eq(-19,true)|eq(-20,true)"/>
-    <setting id="MENU_STD_MENU"       label="35014" type="bool"   default="true"  visible="eq(-20,true)|eq(-21,true)"/>
-    <setting id="MENU_PLUGINS"        label="35019" type="bool"   default="true"  visible="eq(-21,true)|eq(-22,true)"/>
-    <setting id="MENU_DOWNLOADS"      label="30241" type="bool"   default="true"  visible="eq(-22,true)|eq(-23,true)"/>	
-    <setting id="DOWNLOAD_FOLDER"     label="30242" type="folder" default="special://profile/addon_data/plugin.program.super.favourites/downloads" visible="eq(-23,true)|eq(-24,true)" enable="eq(-1,true)"/>
+    <setting id="MENU_ADDTOFAVES"     label="35006" type="bool"   default="true"  />
+    <setting id="ADDTOFAVES_ON_STD"   label="35045" type="bool"   default="false" visible="eq(-1,true)"/>
+    <setting id="MENU_PREV_LOCN"      label="35044" type="bool"   default="false" visible="eq(-2,true)"/>
+    <setting id="MENU_DEF_ISEARCH"    label="35007" type="bool"   default="true"  visible="eq(-14,true)|eq(-15,true)"/>
+    <setting id="MENU_ISEARCH"        label="35008" type="bool"   default="true"  visible="eq(-15,true)|eq(-16,true)"/>
+    <setting id="MENU_IRECOMMEND"     label="35009" type="bool"   default="true"  visible="eq(-16,true)|eq(-17,true)"/>
+    <setting id="MENU_COPY_PROPS"     label="35010" type="bool"   default="true"  visible="eq(-17,true)|eq(-18,true)"/>
+    <setting id="MENU_VIEW_IMAGES"    label="35011" type="bool"   default="true"  visible="eq(-18,true)|eq(-19,true)"/>
+    <setting id="MENU_SF_SETTINGS"    label="35012" type="bool"   default="true"  visible="eq(-19,true)|eq(-20,true)"/>
+    <setting id="MENU_ADDON_SETTINGS" label="35013" type="bool"   default="true"  visible="eq(-20,true)|eq(-21,true)"/>
+    <setting id="MENU_STD_MENU"       label="35014" type="bool"   default="true"  visible="eq(-21,true)|eq(-22,true)"/>
+    <setting id="MENU_PLUGINS"        label="35019" type="bool"   default="true"  visible="eq(-22,true)|eq(-23,true)"/>
+    <setting id="MENU_DOWNLOADS"      label="30241" type="bool"   default="true"  />	
+    <setting id="DOWNLOAD_ON_STD"     label="35045" type="bool"   default="false" visible="eq(-1,true)"/>
+    <setting id="DOWNLOAD_FOLDER"     label="30242" type="folder" default="special://profile/addon_data/plugin.program.super.favourites/downloads" visible="eq(-2,true)"/>
+
 		
     <setting type="sep" visible="eq(-23,true)|eq(-24,true)"/>
 </category>>
 	
 <category label="30161">	
-    <setting id="DUMMY"           label="30054" type="lsep"/>	
-    <setting id="SHOWSS"          label="30055" type="bool"  default="true" />
-    <setting id="SHOWREMEMBER"    label="30167" type="bool"  default="true"  visible="eq(-1,true)"/>
-    <setting id="SHOWRECOMMEND"   label="30063" type="bool"  default="true"  visible="eq(-2,true)"/>
-    <setting id="METARECOMMEND"   label="30093" type="bool"  default="true"  visible="eq(-3,true)+eq(-1,true)"/>
-    <setting id="SYNOPSRECOMMEND" label="30157" type="bool"  default="true"  visible="eq(-4,true)+eq(-2,true)"/>
-    <setting id="RECOMMENDFIRST"  label="30214" type="bool"  default="false" visible="eq(-5,true)+eq(-3,true)"/>
-    <setting id="CACHERECOMMEND"  label="30089" type="bool"  default="true"  visible="eq(-6,true)+eq(-4,true)"/>
-    <setting id="STRIPNUMBERS"    label="30095" type="bool"  default="true"  visible="eq(-7,true)"/>
+    <setting id="DUMMY"            label="30054" type="lsep"/>	
+    <setting id="SHOWSS"           label="30055" type="bool"  default="true" />
+    <setting id="CONTEXTSS"        label="35046" type="bool"  default="false" visible="eq(-1,true)"/>
+    <setting id="SHOWREMEMBER"     label="30167" type="bool"  default="true"  visible="eq(-2,true)"/>
+    <setting id="SHOWRECOMMEND"    label="30063" type="bool"  default="true"  visible="eq(-3,true)"/>
+    <setting id="CONTEXTRECOMMEND" label="35046" type="bool"  default="false" visible="eq(-4,true)+eq(-1,true)"/>
+    <setting id="METARECOMMEND"    label="30093" type="bool"  default="true"  visible="eq(-5,true)+eq(-2,true)"/>
+    <setting id="SYNOPSRECOMMEND"  label="30157" type="bool"  default="true"  visible="eq(-6,true)+eq(-3,true)"/>
+    <setting id="RECOMMENDFIRST"   label="30214" type="bool"  default="false" visible="eq(-7,true)+eq(-4,true)"/>
+    <setting id="CACHERECOMMEND"   label="30089" type="bool"  default="true"  visible="eq(-8,true)+eq(-5,true)"/>
+    <setting id="STRIPNUMBERS"     label="30095" type="bool"  default="true"  visible="eq(-9,true)"/>
 		
     <setting id="DUMMY"                 label="30225" type="lsep"/>	
     <setting id="SHOWIEXPLORE"          label="30224" type="bool" default="true" />

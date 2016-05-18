@@ -30,7 +30,6 @@ ADDON     = utils.ADDON
 ADDONID   = utils.ADDONID
 GETTEXT   = utils.GETTEXT
 
-XBMCHOME  = os.path.join('special://home', 'addons')
 
 SEPARATOR = '%SF%'
 
@@ -47,7 +46,7 @@ def main(toAdd):
 
 
 def doAdd():
-    root, folders, files = sfile.walk(XBMCHOME)
+    root, folders, files = utils.GetAddons()
 
     list = []
 
