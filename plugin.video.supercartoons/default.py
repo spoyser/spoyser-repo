@@ -74,35 +74,12 @@ def CheckVersion():
         d = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, 'Welcome to Super Cartoons', 'Watch Your Favourite Cartoons in XBMC', '')
 
-    if curr == '1.0.18':
-        import clearcache
-        clearcache.deleteCache(silent=True)
-
-
-def GetUrlAndNext(url, page):
-    page  = int(page)
-    items = url.split('/')
-
-    url  = ''
-    url += items[0] + '/'
-    url += items[1] + '/'
-    url += items[2] + '/'
-    url += items[3] + '/'
-    url += items[4].split('-')[0] + '-' + str(page) + '/'
-    url += items[5]
-
-    next  = ''
-    next += items[0] + '/'
-    next += items[1] + '/'
-    next += items[2] + '/'
-    next += items[3] + '/'
-    next += items[4].split('-')[0] + '-' + str(page+1) + '/'
-    #next += items[5] #ignore character name as it is sometimes wrong on website
-
-    return url, next
+    import clearcache
+    clearcache.deleteCache(silent=True)
 
 
 def Clean(text):
+    #text = text.decode('utf-8')
     text = text.replace('&rsquo;', '\'')
     text = text.replace('&ldquo;', '"')
     text = text.replace('&rdquo;', '"')
@@ -111,6 +88,7 @@ def Clean(text):
     text = text.replace('&#8220;', '"')
     text = text.replace('&#8221;', '"')
     text = text.replace('&#39;',   '\'')
+    text = text.replace('&#039;',  '\'')
     text = text.replace('<b>',     '')
     text = text.replace('</b>',    '')
     text = text.replace('&amp;',   '&')
@@ -162,8 +140,8 @@ def Main():
     AddSection(kidstime,        'kidstime',   KIDSTIME, False)
     AddSection('Random',        'random',     RANDOM,   False)
     AddSection('All',           'all',        ALL)
-    AddSection('Most Recent',   'recent',     RECENT)
-    AddSection('Most Popular',  'popular',    POPULAR)
+    #AddSection('Most Recent',   'recent',     RECENT)
+    #AddSection('Most Popular',  'popular',    POPULAR)
     AddSection('Characters',    'characters', CHARACTERS)
     AddSection('Studios',       'studios',    STUDIOS)
     AddSection('Search',        'search',     SEARCH)
@@ -171,26 +149,23 @@ def Main():
 
 def All(page):
     page  = int(page)
+    next  = page + 1
     url   = URL + 'cartoons/' + str(page)
-    next  = URL + 'cartoons/' + str(page+1)
+    next  = '<a href="%d">%d</a>' % (next, next)
 
-    html = GetHTML(url)
-    html = '<div class="cartoon box">' + html.split('<div class="cartoon box">', 1)[-1]
+    html  = GetHTML(url)
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
 
-    match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
-
-    print match
-
-    for link, desc, img, title in match:
-        AddCartoon(title, img, link, desc) 
+    for link, img, title in match:
+        AddCartoon(Clean(title), URL+img, link) 
 
     if next in html:
         AddMore(ALL, URL, page+1)
 
 
-def MostRecent():
+def _MostRecent():
     html  = GetHTML(URL)
-
+   
     match = re.compile('<h3>Newest Cartoons</h3>(.+?)<h3>Best Cartoons</h3>').search(html).group(1)
     match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(match)
 
@@ -198,7 +173,7 @@ def MostRecent():
         AddCartoon(title, img, link, desc)
 
 
-def MostPopular():
+def _MostPopular():
     html  = GetHTML(URL)
 
     match = re.compile('<h3>Best Cartoons</h3>(.+?)<h3>').search(html).group(1)
@@ -219,8 +194,11 @@ def KidsTime():
 
     for i in range(0, NMR_KIDSTIME):
         try:
-            title, image, url = GetRandom()  
+            title, image, url = GetRandom()
 
+            url = URL + url
+
+            url   += getUserAgent()
             image += getUserAgent()
 
             liz = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
@@ -244,21 +222,33 @@ def Random():
     PlayCartoon(title, image, url)
 
 
+def GetNumberOfPages():
+    nmrPages = 51
+
+    url   = URL + 'cartoons/1'
+    html  = GetHTML(url)
+    match = re.compile('<li><a href="(.+?)">.+?</a></li>').findall(html)
+
+    try:    nmrPages = int(match[-1])
+    except: nmrPages = 51
+
+    return nmrPages
+
+
 def GetRandom():
-    page = random.randrange(1, 50+1)
+    page = random.randrange(1, GetNumberOfPages()+1)
 
     url = URL + 'cartoons/' + str(page)
 
     cartoons = []
 
     html  = GetHTML(url)
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
 
-    match = re.compile('<div class="cartoon box"><a class="img" href="(.+?)" title="(.+?)">.+?<img src="(.+?)" alt=".+?title=".+?">(.+?)</a>.+?</span></div>').findall(html)
-
-    for link, dec, img, title in match:
+    for link, img, title in match:
         link = link.replace('/cartoon/', '/video/')
         link = link.replace('.html', '.mp4')
-        cartoons.append([title, img, link])
+        cartoons.append([Clean(title), URL+img, link])
 
     index = random.randrange(0, len(cartoons))
 
@@ -372,6 +362,8 @@ def getUserAgent():
 
 
 def PlayCartoon(title, image, url):
+    url = URL + url
+
     url   += getUserAgent()
     image += getUserAgent()
 
@@ -384,36 +376,75 @@ def PlayCartoon(title, image, url):
 
 
 
-def Studios(page):
-    #only one at the moment
-    DoStudios(1)
+def Studios():
+    studios = []
+
+    studios += GetStudios(1)
+
+    studios.sort()#key=lambda tup: tup[0])
+
+    for studio in studios:
+        title = studio[0]
+        img   = studio[1]
+        link  = studio[2]
+        AddStudio(title, img, link)
 
 
-def DoStudios(page):
+def GetStudios(page):
     url  = URL + 'studios/' + str(page)
     html = GetHTML(url)   
 
-    match = re.compile('<div class="studio">.+?title="(.+?)"><img src="(.+?)".+?<a href="(.+?)" title=".+?">(.+?)</a>.+?</span></div>').findall(html)
+    studios = []
+    match   = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
            
-    for desc, img, link, title in match:
-        AddStudio(title, img, link, desc)      
+    for link, img, title in match:
+        studios.append([Clean(title), URL+img, link])
+
+    return studios
 
 
-def Studio(_url, page):
+def GetUrlAndNext(url, page):
+    page  = int(page)
+    items = url.split('/')
+
+    url  = ''
+    url += items[0] + '/'
+    url += items[1] + '/'
+    url += items[2] + '/'
+    url += items[3] + '/'
+    url += items[4].split('-')[0] + '-' + str(page) + '/'
+    url += items[5]
+
+    next  = ''
+    next += items[0] + '/'
+    next += items[1] + '/'
+    next += items[2] + '/'
+    next += items[3] + '/'
+    next += items[4].split('-')[0] + '-' + str(page+1) + '/'
+    #next += items[5] #ignore character name as it is sometimes wrong on website
+
+    return url, next
+
+
+def Studio(url, page):
     page = int(page)
 
-    url, next = GetUrlAndNext(_url.split('"', 1)[0], page)
-
     html = GetHTML(url)
-    html = html.replace('><img', '> <img')
-                       
-    match = re.compile('<div class="cartoon"><a class="img" href=".+?" title="(.+?)">.+?<img src="(.+?)" alt=".+?<a class="title" href="(.+?)" title=".+?">(.+?)</a></div>').findall(html)
+    match   = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)    
 
-    for desc, img, link, title in match:
-        AddCartoon(title, img, link, desc)
+    for link, img, title in match:
+        AddCartoon(Clean(title), URL+img, link)
 
+    current = re.compile('/studio/(.+?)/').search(url).group(1).split('-')
+    src     = current[0] + '-' + current[1]
+    dst     = current[0] + '-' + str(int(current[1]) + 1)
+
+    next = '/studio/' + current[0] + '-' + str(int(current[1]) + 1)
+    
     if next in html:
-        AddMore(STUDIO, _url, page+1)
+        url = url.replace(src, dst).replace(URL, '')
+        AddMore(STUDIO, url, page+1)
+
 
 
 def Characters(page):
@@ -429,8 +460,7 @@ def Characters(page):
         title = character[0]
         img   = character[1]
         link  = character[2]
-        desc  = character[3]
-        AddCharacter(title, img, link, desc)
+        AddCharacter(title, img, link)
 
 
 def GetCharacters(page):
@@ -439,46 +469,45 @@ def GetCharacters(page):
 
     characters = []
 
-    html = html.split('<div class="character">')
-    for item in html:
-        try:   
-            match = re.compile('<a class="img" href="(.+?)" title="(.+?)"><img src="(.+?)" alt=.+?<span class="title">.+?<a href=".+?" title=".+?">(.+?)</a>.+?</span></div>').findall(item)
-           
-            link  = match[0][0]
-            desc  = match[0][1]
-            img   = match[0][2]
-            title = match[0][3]
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
 
-            characters.append([title, img, link, desc])
-        except:
-            pass
+    for link, img, title in match:
+        characters.append([Clean(title), URL+img, link]) 
 
     return characters
 
 
-def Character(_url, page):
+def Character(url, page):
     page = int(page)
 
-    url, next = GetUrlAndNext(_url, page)
-
     html  = GetHTML(url)
-    match = re.compile('title="(.+?)">.+?<img src="(.+?)".+?<a class="title" href="(.+?)".+?">(.+?)</a>').findall(html)
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
 
-    for desc, img, link, title in match:
-        AddCartoon(title, img, link, desc)
+    for link, img, title in match:
+        AddCartoon(Clean(title), URL+img, link)
 
+    current = re.compile('/character/(.+?)/').search(url).group(1).split('-')
+    src     = current[0] + '-' + current[1]
+    dst     = current[0] + '-' + str(int(current[1]) + 1)
+
+    next = '/character/' + current[0] + '-' + str(int(current[1]) + 1)
+    
     if next in html:
-        AddMore(CHARACTER, _url, page+1)
+        url = url.replace(src, dst).replace(URL, '')
+        AddMore(CHARACTER, url, page+1)
         
 
-def AddCartoon(title, img, link, desc):
+def AddCartoon(title, img, link, desc=None):
     if title.startswith(' - '):
         title = title[3:]
 
     link = link.replace('/cartoon/', '/video/')
     link = link.replace('.html', '.mp4')
 
-    infoLabels = {'title':title, 'plot':Clean(desc)}
+    infoLabels = {}
+    infoLabels['title'] = title
+    if desc:
+        infoLabels['desc'] = Clean(desc)
 
     menu = []
     menu.append(('Info', 'Action(Info)'))
@@ -487,16 +516,19 @@ def AddCartoon(title, img, link, desc):
     AddDir(title, CARTOON, url=link, image=img, isFolder=False, infoLabels=infoLabels, contextMenu=menu)
 
 
-def AddCharacter(title, img, link, desc):
+def AddCharacter(title, img, link, desc=None):
+    infoLabels = {}
+    infoLabels['title'] = title
 
-    if desc.upper().startswith('WATCH FREE'):
-        desc = desc.split('. ', 1)[1]
-    infoLabels = {'title':title, 'plot':Clean(desc)}
+    if desc:
+        if desc.upper().startswith('WATCH FREE'):
+            desc = desc.split('. ', 1)[1]
+        infoLabels['desc'] = Clean(desc)
 
     AddDir(title, CHARACTER, url=link, image=img, isFolder=True, infoLabels=infoLabels)
 
 
-def AddStudio(title, img, link, desc):
+def AddStudio(title, img, link):
     AddDir(title, STUDIO, url=link, image=img, isFolder=True)  
     
 
@@ -642,44 +674,53 @@ cacheToDisc = False
 if mode == RECENT:
     MostRecent()
 
+
 elif mode == POPULAR:
     MostPopular()
+
 
 elif mode == ALL:
     page = urllib.unquote_plus(params['page'])
     All(page)
 
+
 elif mode == RANDOM:
     cacheToDisc = False
     Random()
+
 
 elif mode == KIDSTIME:
     cacheToDisc = False
     KidsTime()
 
+
 elif mode == CHARACTERS:
     page = urllib.unquote_plus(params['page'])
     Characters(page)
 
+
 elif mode == CHARACTER:
     page = urllib.unquote_plus(params['page'])
     url  = urllib.unquote_plus(params['url'])
-    Character(url, page)
+    Character(URL+url, page)
+
 
 elif mode == STUDIOS:
-    page = urllib.unquote_plus(params['page'])
-    Studios(page)
+    Studios()
+
 
 elif mode == STUDIO:
     page = urllib.unquote_plus(params['page'])
     url  = urllib.unquote_plus(params['url'])
-    Studio(url, page)
+    Studio(URL+url, page)
+
 
 elif mode == CARTOON:
     url   = urllib.unquote_plus(params['url'])
     title = urllib.unquote_plus(params['title'])
     image = urllib.unquote_plus(params['image'])
     PlayCartoon(title, image, url)
+
 
 elif mode == SEARCH:
     page        = 1
@@ -699,9 +740,8 @@ elif mode == DOWNLOAD:
     title = urllib.unquote_plus(params['title'])
     Download(title, url)
 
+
 else:
     Main()
 
-        
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=cacheToDisc)
