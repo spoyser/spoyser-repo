@@ -1,5 +1,9 @@
 
 
+[COLOR chartreuse]1.0.20: 14th June 2016[/COLOR]
+  - fixed due to changes at website
+
+
 [COLOR chartreuse]1.0.19: 2nd June 2016[/COLOR]
   - fixed due to changes at website
   - removed Most Popular and Most  Recent sections (no longer available on website)

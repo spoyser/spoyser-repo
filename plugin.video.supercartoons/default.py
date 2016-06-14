@@ -42,7 +42,6 @@ URL     = 'http://www.supercartoons.net/'
 
 
 
-
 KIDSTIME   = 100
 RECENT     = 200
 POPULAR    = 300
@@ -74,8 +73,9 @@ def CheckVersion():
         d = xbmcgui.Dialog()
         d.ok(TITLE + ' - ' + VERSION, 'Welcome to Super Cartoons', 'Watch Your Favourite Cartoons in XBMC', '')
 
-    import clearcache
-    clearcache.deleteCache(silent=True)
+    if curr == '1.0.20':
+        import clearcache
+        clearcache.deleteCache(silent=True)
 
 
 def Clean(text):
@@ -154,7 +154,8 @@ def All(page):
     next  = '<a href="%d">%d</a>' % (next, next)
 
     html  = GetHTML(url)
-    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
+
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
 
     for link, img, title in match:
         AddCartoon(Clean(title), URL+img, link) 
@@ -243,7 +244,8 @@ def GetRandom():
     cartoons = []
 
     html  = GetHTML(url)
-    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
+
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
 
     for link, img, title in match:
         link = link.replace('/cartoon/', '/video/')
@@ -263,6 +265,7 @@ def GetSearchTitle(title):
     title = Clean(title)
     title = RemoveCharacter(title)
     title = title.replace(' - Super Cartoons', '')
+    title = title.replace(' | SuperCartoons', '')
 
     if title.startswith('- '):
         title = title[2:]
@@ -337,9 +340,12 @@ def Search(page, keyword):
             link  = 'http://www.supercartoons.net/cartoon/' + item[0][0] + '.html'
             title = GetSearchTitle(item[0][1])
             image = GetSearchImage(link)
-            desc  = Clean(item[0][2])
+            #desc  = Clean(item[0][2])
 
-            AddCartoon(title, image, link, desc)
+            link = link.replace('/cartoon/', '/video/')
+            link = link.replace('.html', '.mp4')
+
+            AddCartoon(title, image, link) #, desc)
 
     if next:
         AddMore(SEARCH, '', page+1, keyword)
@@ -357,12 +363,17 @@ def getUserAgent():
 
     agent = random.choice(agents) % (random.randint(10, 40), random.randint(10, 40), random.randint(10, 40))
 
-    return '?|User-Agent=%s' % agent
+    #return '?|User-Agent=%s' % agent
+    return ''
 
 
 
 def PlayCartoon(title, image, url):
-    url = URL + url
+    if not url.startswith(URL):
+        url = URL + url
+
+    #html = GetHTML(url)
+    #url = re.compile('file: \'(.+?)\'').search(html).group(1)
 
     url   += getUserAgent()
     image += getUserAgent()
@@ -395,7 +406,8 @@ def GetStudios(page):
     html = GetHTML(url)   
 
     studios = []
-    match   = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
+
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
            
     for link, img, title in match:
         studios.append([Clean(title), URL+img, link])
@@ -430,7 +442,9 @@ def Studio(url, page):
     page = int(page)
 
     html = GetHTML(url)
-    match   = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)    
+
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
+
 
     for link, img, title in match:
         AddCartoon(Clean(title), URL+img, link)
@@ -469,7 +483,8 @@ def GetCharacters(page):
 
     characters = []
 
-    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
+
 
     for link, img, title in match:
         characters.append([Clean(title), URL+img, link]) 
@@ -481,7 +496,9 @@ def Character(url, page):
     page = int(page)
 
     html  = GetHTML(url)
-    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" src="(.+?)" alt="(.+?)" data-qazy=".+?</article>').findall(html)
+
+    match = re.compile('<article class="cartoon col-md-3">.+?<a href="(.+?)">.+?<img width="100%" data-qazy="true" src="(.+?)" alt="(.+?)".+?</article>').findall(html)
+
 
     for link, img, title in match:
         AddCartoon(Clean(title), URL+img, link)
