@@ -363,8 +363,7 @@ def getUserAgent():
 
     agent = random.choice(agents) % (random.randint(10, 40), random.randint(10, 40), random.randint(10, 40))
 
-    #return '?|User-Agent=%s' % agent
-    return ''
+    return '?|User-Agent=%s' % agent
 
 
 
