@@ -46,6 +46,10 @@ def download(url, dest, title=None, referrer=None, handle=None):
 def getResponse(url, size, referrer):
     try:
         req = urllib2.Request(url)
+
+        import agent
+        req.add_header('User-Agent', agent.getUserAgent())
+        
         if len(referrer) > 0:
             req.add_header('Referer', referrer)
     
@@ -74,8 +78,6 @@ def doDownload(url, dest, title, referrer):
     try:    resumable = 'bytes' in resp.headers['Accept-Ranges'].lower()
     except: resumable = False
     
-    print "Download Header"
-    print resp.headers
     if resumable:
         print "Download is resumable"
     
