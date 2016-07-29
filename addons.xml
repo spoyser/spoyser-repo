@@ -95,9 +95,10 @@ Independent music for the free spirited soul</description>
   </extension>
 </addon>
 
-<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.52" provider-name="spoyser">
+<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.53" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
+    <import addon="repository.Dixie-Deans-XBMC-Repo" version="1.1.2"/>
 	<import addon="script.module.metahandler" optional="true" />
   </requires>
 
@@ -127,18 +128,18 @@ Independent music for the free spirited soul</description>
     <menu id="kodi.core.main">
 
       <item library="capture.py">
-        <label>30002</label>
-        <visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED)) + !StringCompare(Container.PluginName,plugin.program.super.favourites)</visible>
+        <label>$ADDON[plugin.program.super.favourites 30002]</label>
+        <visible>!IsEmpty(Window(Home).Property(SF_STD_CONTEXTMENU_ENABLED)) + !StringCompare(Container.PluginName,plugin.program.super.favourites)</visible>
       </item>
 
       <item library="menu_addtofaves.py">
-        <label>30047</label>
-        <visible>!IsEmpty(Window(10000).Property(SF_STD_ADDTOFAVES_ENABLED)) + !StringCompare(Container.PluginName,plugin.program.super.favourites)</visible>
+        <label>$ADDON[plugin.program.super.favourites 30047]</label>
+        <visible>!IsEmpty(Window(Home).Property(SF_STD_ADDTOFAVES_ENABLED)) + !StringCompare(Container.PluginName,plugin.program.super.favourites)</visible>
       </item>
 
       <item library="menu_download.py">
-        <label>30259</label>
-        <visible>!IsEmpty(Window(10000).Property(SF_STD_DOWNLOAD_ENABLED)) + Player.IsInternetStream</visible>
+        <label>$ADDON[plugin.program.super.favourites 30259]</label>
+        <visible>!IsEmpty(Window(Home).Property(SF_STD_DOWNLOAD_ENABLED)) + Player.IsInternetStream</visible>
       </item>
 
     </menu>
@@ -296,6 +297,23 @@ Independent music for the free spirited soul</description>
     <description lang="en">Watch even more of your favourite cartoons from www.watchcartoononline.com</description>
      <platform>all</platform>
   </extension>
+</addon>
+
+<addon id="repository.Dixie-Deans-XBMC-Repo"
+	name="Dixie-Deans-XBMC-Repo"
+	version="1.1.2"
+	provider-name="DixieDean">
+	<extension point="xbmc.addon.repository"
+		name="Dixie-Deans-XBMC-Repo-1.1.0">
+		<info compressed="false">https://raw.github.com/DixieDean/Dixie-Deans-XBMC-Repo/master/addons.xml</info>
+		<checksum>https://raw.github.com/DixieDean/Dixie-Deans-XBMC-Repo/master/addons.xml.md5</checksum>
+		<datadir zip="true">https://raw.github.com/DixieDean/Dixie-Deans-XBMC-Repo/master/zips</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Install My Addons</summary>
+		<description>Download and install addons from DixieDean... For updates and information visit www.on-tapp.tv</description>
+		<platform>all</platform>
+	</extension>
 </addon>
 
 <addon id="repository.ramfm"
