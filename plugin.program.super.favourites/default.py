@@ -2845,7 +2845,6 @@ thepath   = ''
 try:    inWidget = int(params['inWidget']) == 1
 except: inWidget = utils.inWidget()
 
-
 try:    mode = int(params['mode']) if inWidget else _MAIN
 except: mode = _MAIN
 
@@ -3424,9 +3423,3 @@ elif mode == _ACTIVATEWINDOW:
     else:
         xbmc.sleep(250)
         playCommand(cmd)
-
-
-
-
-#import download
-#download.doDownload('http://files.on-tapp-networks.com/resources/kodi/ottepg/skins.zip', 'c:/Temp/file.zip', 'DOWNLOADINNG',referer='http://www.on-tapp-networks.com', agent='')

@@ -236,7 +236,9 @@ def VerifySettings():
 
 
 def verifyRunning():
-    isRunning = ADDON.getSetting(SF_RUNNING).rsplit('-', 1)
+    original  = ADDON.getSetting(SF_RUNNING)
+    isRunning = original.rsplit('-', 1)
+
     try:    current, value = int(isRunning[0]), int(isRunning[1])
     except: current, value = 0, 0
 
@@ -250,13 +252,17 @@ def verifyRunning():
                 return
                        
             update = value+1
-            if update > .9*MAX_SIZE:
+            if update > 0.8*MAX_SIZE:
                 update -= 2
             log('SF Running')
             ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
             return
 
+    if original == '-1-0':
+        return
+
     ADDON.setSetting(SF_RUNNING, '-1-0')
+
 
 
 def verifySuperSearch():
@@ -1042,30 +1048,6 @@ def getViewType():
 def isRunning():
     verifyRunning()
     return getWindow() % 2 == 0
-
-
-def verifyRunning():
-    isRunning = ADDON.getSetting(SF_RUNNING).rsplit('-', 1)
-    try:    current, value = int(isRunning[0]), int(isRunning[1])
-    except: current, value = 0, 0
-
-    amd  = GetAMD()
-    amds = GetAMDS()
-
-    for a in amd:
-        if a[::-1] in amds:
-            day = datetime.datetime.today().day
-            if day == current:
-                return
-                       
-            update = value+1
-            if update > 0.7*MAX_SIZE:
-                update -= 2
-            log('SF Running')
-            ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
-            return
-
-    ADDON.setSetting(SF_RUNNING, '-1-0')
 
 
 def get_params(path):
