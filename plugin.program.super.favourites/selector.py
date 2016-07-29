@@ -62,6 +62,14 @@ def _select(index):
         return
 
     xbmc.sleep(50)
+
+    try:    
+        nItem = int(xbmcgui.Window(10000).getProperty('SF_NMR_ITEMS'))
+        if index >= nItem:           
+            index = nItem-1
+    except:
+        pass
+
     list.selectItem(index)
 
 
@@ -74,11 +82,12 @@ def select(index):
 
     name      = 'select'
     script    = FILENAME
-    args      = str(index)
+    args      = '%d' % index
     cmd       = 'AlarmClock(%s,RunScript(%s,%s),%d,True)' % (name, script, args, 0)
 
     xbmc.executebuiltin('CancelAlarm(%s,True)' % name)  
     xbmc.executebuiltin(cmd) 
+    utils.log(cmd, True)
 
 
 if __name__ == '__main__':

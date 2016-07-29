@@ -260,6 +260,8 @@
         <string id="30266">Thumbnail</string>
         <string id="30267">Fanart</string>
         <string id="30268">iSearch - </string>
+        <string id="30269">Hotkey assignment cancelled</string>
+        <string id="30270">Hotkey successfully assigned</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>

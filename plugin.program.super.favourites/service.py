@@ -30,6 +30,8 @@ utils.verifyPlugins()
 utils.verifyLocation()
 utils.verifyRunning()
 
+HOME = 10000
+
 
 if utils.ADDON.getSetting('AUTOSTART') == 'true':
     utils.LaunchSF()
@@ -75,27 +77,27 @@ class MyMonitor(xbmc.Monitor):
         self.std_addtofaves = utils.ADDON.getSetting('ADDTOFAVES_ON_STD') == 'true'
         self.std_download   = utils.ADDON.getSetting('DOWNLOAD_ON_STD')   == 'true'
 
-        #useage in addon.xml : <visible>!IsEmpty(Window(10000).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
+        #useage in addon.xml : <visible>!IsEmpty(Window(Home).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
 
         #---------- SF on standard context menu ------------------------------------------------
         if self.std_context:
-            xbmcgui.Window(10000).setProperty('SF_STD_CONTEXTMENU_ENABLED', 'True')  
+            xbmcgui.Window(HOME).setProperty('SF_STD_CONTEXTMENU_ENABLED', 'True')  
         else:
-            xbmcgui.Window(10000).clearProperty('SF_STD_CONTEXTMENU_ENABLED')
+            xbmcgui.Window(HOME).clearProperty('SF_STD_CONTEXTMENU_ENABLED')
 
 
         #---------- Add to Faves on standard context menu --------------------------------------
         if self.std_addtofaves:
-            xbmcgui.Window(10000).setProperty('SF_STD_ADDTOFAVES_ENABLED', 'True')  
+            xbmcgui.Window(HOME).setProperty('SF_STD_ADDTOFAVES_ENABLED', 'True')  
         else:
-            xbmcgui.Window(10000).clearProperty('SF_STD_ADDTOFAVES_ENABLED')
+            xbmcgui.Window(HOME).clearProperty('SF_STD_ADDTOFAVES_ENABLED')
 
 
         #---------- Download on standard context menu ------------------------------------------
         if self.std_download:         
-            xbmcgui.Window(10000).setProperty('SF_STD_DOWNLOAD_ENABLED', 'True')  
+            xbmcgui.Window(HOME).setProperty('SF_STD_DOWNLOAD_ENABLED', 'True')  
         else:
-            xbmcgui.Window(10000).clearProperty('SF_STD_DOWNLOAD_ENABLED')
+            xbmcgui.Window(HOME).clearProperty('SF_STD_DOWNLOAD_ENABLED')
 
 
 monitor = MyMonitor()

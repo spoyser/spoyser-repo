@@ -60,6 +60,17 @@ def getParentCommand(cmd):
     return None
 
 
+def processParentCommand(cmd):
+    parent = getParentCommand(cmd) 
+    if not parent:
+        return
+
+    xbmc.executebuiltin('Container.Update(%s)' % parent)
+    while not xbmc.getInfoLabel('Container.FolderPath').startswith(parent):
+        xbmc.sleep(50)
+    
+
+
 def playCommand(originalCmd, contentMode=False, handle=None):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
@@ -86,7 +97,7 @@ def playCommand(originalCmd, contentMode=False, handle=None):
         if PLAY_PLAYLISTS:
             import playlist
             if playlist.isPlaylist(cmd):
-                return playlistplay(cmd)      
+                return playlist.play(cmd)      
 
         if 'ActivateWindow' in cmd:
             return activateWindowCommand(cmd) 
@@ -134,10 +145,7 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin(activate)
 
     if plugin:
-        parent = getParentCommand(plugin)
-        if parent:
-            xbmc.executebuiltin('Container.Update(%s)' % parent)
-            xbmc.sleep(500)
+        processParentCommand(plugin)
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
 
@@ -145,11 +153,8 @@ def playMedia(original):
     import re
     cmd = favourite.tidy(original) #.replace(',', '') #remove spurious commas
 
-    parent = getParentCommand(cmd)
-    if parent:
-        xbmc.executebuiltin('Container.Update(%s)' % parent)
-        xbmc.sleep(500)
-    
+    processParentCommand(cmd)
+        
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
 

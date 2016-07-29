@@ -165,23 +165,8 @@ def addPlugins(menu, plugins, params, base):
 
 
 def quickLaunch():
-    import chooser
-    
-    if not chooser.GetFave('SF_QL', includePlay=True):
-        return False
-    
-    path = xbmc.getInfoLabel('Skin.String(SF_QL.Path)')
-
-    if len(path) == 0 or path == 'noop':
-        return
-
-    if path.lower().startswith('activatewindow') and ',' in path: #i.e. NOT like ActivateWindow(filemanager)
-        xbmc.executebuiltin(path)
-        return
-
-    import player
-    player.playCommand(path)
-
+    import quicklaunch
+    quicklaunch.run()
 
 
 def whitelisted():   
@@ -265,7 +250,8 @@ def doMenu(mode):
         return
 
     params = menuUtils.getCurrentParams()
-    meta   = menuUtils.getCurrentMeta()
+    try:    meta = menuUtils.getCurrentMeta()
+    except: meta = {}
 
     if params == None:
         doStandard(useScript=False)
@@ -494,10 +480,11 @@ def main():
         if sys.argv[-1].lower() == 'launchsfmenu':
             mode = 2 #launched via LaunchSFMenu script
     
-    try:        
+    try:      
         menu(mode)
     except Exception, e:
         utils.log('Exception in capture.py %s' % str(e))
+        doStandard(useScript=False)
 
 
 progress = xbmc.getCondVisibility('Window.IsActive(progressdialog)') == 1

@@ -29,6 +29,20 @@ import utils
 GETTEXT = utils.GETTEXT
 ICON    = utils.ICON
 
+
+ACTION_MOVE_LEFT          = 1
+ACTION_MOVE_RIGHT         = 2
+ACTION_MOVE_UP            = 3
+ACTION_MOVE_DOWN          = 4
+ACTION_SELECT_ITEM        = 7
+ACTION_MOUSE_LEFT_CLICK   = 100
+ACTION_MOUSE_DOUBLE_CLICK = 103
+ACTION_MOUSE_MOVE         = 107
+
+ACTION_PARENT_DIR         = 9
+ACTION_PREVIOUS_MENU      = 10
+ACTION_NAV_BACK           = 92
+
 TIMEOUT = 10
 
 class KeyListener(xbmcgui.WindowXMLDialog):
@@ -36,10 +50,8 @@ class KeyListener(xbmcgui.WindowXMLDialog):
     def __new__(cls):
         try: 
             ret = super(KeyListener, cls).__new__(cls, 'DialogProgress.xml', '')
-            ret.toast = True
         except:
             ret   = super(KeyListener, cls).__new__(cls, 'DialogConfirm.xml', '')
-            ret.toast = False
         return ret 
 
 
@@ -68,23 +80,19 @@ class KeyListener(xbmcgui.WindowXMLDialog):
         self.onUpdate()
 
 
-
     def onUpdate(self):
         text  = GETTEXT(30110) + '[CR]'
         text += GETTEXT(30109) % self.timeout
         self.getControl(9).setText(text)
 
-        #percent = 100 * (1 - float(self.timeout) / float(TIMEOUT))
-        #self.getControl(20).setPercent(int(percent))
-
 
     def onAction(self, action):
         actionId = action.getId()     
 
-        if actionId in [1, 2, 3, 4, 7, 100, 103, 107]:
+        if actionId in [ACTION_MOVE_LEFT, ACTION_MOVE_RIGHT, ACTION_MOVE_UP, ACTION_MOVE_DOWN, ACTION_SELECT_ITEM, ACTION_MOUSE_LEFT_CLICK, ACTION_MOUSE_DOUBLE_CLICK , ACTION_MOUSE_MOVE         ]:
             return
 
-        if actionId in [9, 10, 92, 100]:
+        if actionId in [ACTION_PARENT_DIR, ACTION_PREVIOUS_MENU, ACTION_NAV_BACK]:
             return self.close()
        
         self.key = action.getButtonCode()
@@ -127,13 +135,14 @@ def main():
 
     key = recordKey()
     if key < 1:
+        utils.DialogOK(GETTEXT(30269))
         return
 
     start = 'key id="%d"' % key
     end   = 'key'
 
     if utils.WriteKeymap(start, end):
-        xbmc.sleep(1000)
+        utils.DialogOK(GETTEXT(30270))
         xbmc.executebuiltin('Action(reloadkeymaps)')  
 
     

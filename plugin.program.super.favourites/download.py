@@ -44,12 +44,12 @@ def getResponse(url, size, referer, agent, cookie):
 
         if size > 0:
             size = int(size)
-            req.add_header('Range',   'bytes=%d-' % size)
+            req.add_header('Range', 'bytes=%d-' % size)
 
         resp = urllib2.urlopen(req, timeout=10)
-        return resp
+        return resp, ''
     except Exception, e:
-        return None
+        return None, str(e)
 
 
 def getRandomUserAgent():
@@ -120,10 +120,10 @@ def doDownload(url, dest, title, referer='', agent='', cookie='', quiet=False):
 
     file = dest.rsplit(os.sep, 1)[-1]
 
-    resp = getResponse(url, 0, referer, agent, cookie)
+    resp, error = getResponse(url, 0, referer, agent, cookie)
 
     if not resp:
-        xbmcgui.Dialog().ok(title, dest, 'Download failed', 'No response from server')
+        xbmcgui.Dialog().ok(title, dest, 'Download failed', error)
         return
 
     try:    content = int(resp.headers['Content-Length'])
@@ -244,7 +244,7 @@ def doDownload(url, dest, title, referer='', agent='', cookie='', quiet=False):
                 chunks  = []
                 #create new response
                 utils.log('Download resumed (%d) %s' % (resume, dest))
-                resp = getResponse(url, total, referer, agent, cookie)
+                resp, error = getResponse(url, total, referer, agent, cookie)
             else:
                 #use existing response
                 pass

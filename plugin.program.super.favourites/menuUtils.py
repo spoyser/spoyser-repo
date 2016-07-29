@@ -178,8 +178,11 @@ def getCast():
 
 def getMovieCast():
     import json
-
     dbid  = xbmc.getInfoLabel('ListItem.DBID')
+
+    if dbid < 0:
+        return []
+
     query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "VideoLibrary.GetMovieDetails", "params": {"movieid": %s, "properties": ["cast"]}, "id": 1 }' % dbid)
     query = unicode(query, 'utf-8', errors='ignore')
 
@@ -193,6 +196,10 @@ def getTVShowCast(dbid=None):
 
     if not dbid:
         dbid  = xbmc.getInfoLabel('ListItem.DBID')
+
+    if dbid < 0:
+        return []
+
     query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "VideoLibrary.GetTVShowDetails", "params": {"tvshowid": %s, "properties": ["cast"]}, "id": 1 }' % dbid)
     query = unicode(query, 'utf-8', errors='ignore')
 
@@ -206,6 +213,10 @@ def getSeasonCast():
     import json
 
     dbid  = xbmc.getInfoLabel('ListItem.DBID')
+
+    if dbid < 0:
+        return []
+
     query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "VideoLibrary.GetSeasonDetails", "params": {"seasonid": %s, "properties": ["tvshowid"]}, "id": 1 }' % dbid)
     query = unicode(query, 'utf-8', errors='ignore')
 
@@ -231,13 +242,16 @@ def getEpisodeCast():
     import json
 
     dbid  = xbmc.getInfoLabel('ListItem.DBID')
+
+    if dbid < 0:
+        return []
+
     query = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodeDetails", "params": {"episodeid": %s, "properties": ["cast"]}, "id": 1 }' % dbid)
     query = unicode(query, 'utf-8', errors='ignore')
 
     j = json.loads(query)
 
     return j['result']['episodedetails']['cast']
-
 
 
 def getCurrentMeta():
@@ -274,11 +288,15 @@ def getCurrentMeta():
                 except: continue
             params[label] = value
 
-   
-    params['castandrole'] = getCast()
+    try:
+        cast = getCast()
+        if cast:
+            params['castandrole'] = cast
+    except:
+        pass
+
     return params
     
-
 
 def getCurrentParams():    
     window   = xbmcgui.getCurrentWindowId()

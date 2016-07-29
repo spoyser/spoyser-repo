@@ -18,7 +18,6 @@
 		<keyboard>
 			<c>XBMC.RunScript(special://home/userdata/addon_data/plugin.program.super.favourites/captureLauncher.py)</c>
 			<menu>XBMC.RunScript(special://home/userdata/addon_data/plugin.program.super.favourites/captureLauncher.py)</menu>
-                        <key id="61584">XBMC.RunScript(special://home/userdata/addon_data/plugin.program.super.favourites/captureLauncher.py)</key>
 		</keyboard>
 		
 		<mouse>

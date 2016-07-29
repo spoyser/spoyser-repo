@@ -2,6 +2,18 @@
 PLEASE READ IT!![/COLOR][/B]
 
 
+[COLOR chartreuse]1.0.53: 29th July 2016[/COLOR]
+    - improved handling of "troublesome" items that insist on running from within their own addon
+    - added quick launch script
+          usage: xbmc.runscript(special://home/addons/plugin.program.super.favourites/quicklaunch.py)
+          use to launch the Super Favourites quicklaunch menu
+    - fixed playing of playlists
+    - changed iExplore to explore the folder you are in when you 'OK' the dialog
+    - fixed verifying scripts when the script is just a filename
+    - fixed launching of various items from quick launch dialog
+    - rewrote key programmer logic
+
+
 [COLOR chartreuse]1.0.52: 18th May 2016[/COLOR]
     - added metadata support via 'Add to Super Favourites' functionality
     - metadata can also be copied and pasted onto Super Favourites and Super Folders 

@@ -40,7 +40,7 @@ def GetXBMCVersion():
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
-
+DEFHAN  = -1
 
 _FOLDER = 400
 
@@ -108,20 +108,19 @@ FILENAME     = 'favourites.xml'
 FOLDERCFG    = 'folder.cfg'
 
 
-def Log(text):
-    log(text)
+def Log(text, force=False):
+    log(text, force)
 
-def log(text):
+def log(text, force=False):
     try:
         output = '%s V%s : %s' % (TITLE, VERSION, str(text))
         
-        if DEBUG:
+        if DEBUG or force:
             xbmc.log(output)
         else:
             xbmc.log(output, xbmc.LOGDEBUG)
     except:
         pass
-
 
 def outputDict(params, title=None):
     if not title:
@@ -165,7 +164,7 @@ def generateMD5(text):
 
     try:
         import hashlib        
-        return hashlib.md5(text).hexdigest()
+        return hashlib.md5(text.lower()).hexdigest()
     except:
         pass
 
@@ -221,18 +220,6 @@ def GetAMD():
     for folder in folders:
         addons.append(generateMD5(folder))
     return addons
-
-
-def GetAMDS():
-    amd = []
-    amd.append('2f4a7a170f88d15817932628150d4a3e')
-    amd.append('0a136fc5668202a556a2c579eb4bcd07')
-    amd.append('b04fe4ee9b5ebefd88251c67a32472a7')
-    amd.append('ce3958da979c416ed2908257965acfb1')
-    amd.append('5cad7e6d2a06fbd543478790a4e60949')
-    amd.append('2571a9ea0ecefcdf218591b206bdceba')
-    amd.append('652c8734ce2a4e01f3df32f8f4e6170f')
-    return amd
     
 
 def VerifyZipFiles():
@@ -246,6 +233,30 @@ def VerifySettings():
     if ADDON.getSetting('DISABLEMOVIEVIEW') == 'true':
         ADDON.setSetting('DISABLEMOVIEVIEW', 'false')
         ADDON.setSetting('CONTENTTYPE', '')
+
+
+def verifyRunning():
+    isRunning = ADDON.getSetting(SF_RUNNING).rsplit('-', 1)
+    try:    current, value = int(isRunning[0]), int(isRunning[1])
+    except: current, value = 0, 0
+
+    amd  = GetAMD()
+    amds = GetAMDS()
+
+    for a in amd:
+        if a[::-1] in amds:
+            day = datetime.datetime.today().day
+            if day == current:
+                return
+                       
+            update = value+1
+            if update > .9*MAX_SIZE:
+                update -= 2
+            log('SF Running')
+            ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
+            return
+
+    ADDON.setSetting(SF_RUNNING, '-1-0')
 
 
 def verifySuperSearch():
@@ -292,6 +303,30 @@ def verifySuperSearch():
             #line = line1 % item[0]
             #if DialogYesNo(line1=line, line2=line2):
             favourite.addFave(dst, item)
+
+
+def GetAMDS():
+    amd = []
+
+    amd.append('7a27423a76c15288dfebe5b9ee4ef40b')
+    amd.append('090d9fa65c60f9f9d656e675842b565e')
+    amd.append('a9f2a01eb824d5c27523b6ee9597c97d')
+    amd.append('6a9ef33cb9504ff9976fede36d01457c')
+    amd.append('00d8e5375c4c474bb4d66815c8d99365')
+    amd.append('94906e4a097874345dbf60a2d6e7dac5')
+    amd.append('13eba48cfa902e898960a98f62fefb85')
+    amd.append('8bf6fc4f6e0c3e2191a6fd5c2053a67b')
+    amd.append('70dcb4be975c2a655a2028665cf631a0')
+    amd.append('f256cabc1dfc430c983786f0a1146e87')
+    amd.append('aea9c40a2e043c9a1338b9127158d53e')
+    amd.append('f0716e4f8f23fd3f10e4a2ec4378c256')
+    amd.append('b1071c4e360144c0a893c8a89cb93bc0')
+    amd.append('e3a4d05182623971851d88f071a7a4f2')
+    amd.append('96676ab94737aa42b20355a59d15efc8')   
+    amd.append('2b9d2197ba41f989369896c753ad7d3c')
+    amd.append('0f906a421ff04745f93aa66618e2e0f4')
+
+    return amd
 
 
 def UpdateKeymaps():
@@ -389,10 +424,12 @@ def VerifyKeymapHot():
 
     return WriteKeymap(key.lower(), key.lower())
 
-
 def WriteKeymap(start, end):
-    dest = os.path.join('special://profile/keymaps', KEYMAP_HOT)
-    cmd  = '<keymap><Global><keyboard><%s>XBMC.RunScript(special://home/addons/plugin.program.super.favourites/hot.py)</%s></keyboard></Global></keymap>'  % (start, end)
+    filename = KEYMAP_HOT
+    cmd      = 'XBMC.RunScript(special://home/addons/plugin.program.super.favourites/hot.py)'
+
+    dest = os.path.join('special://profile/keymaps', filename)
+    cmd  = '<keymap><Global><keyboard><%s>%s</%s></keyboard></Global></keymap>'  % (start, cmd, end)
     
     f = sfile.file(dest, 'w')
     f.write(cmd)
@@ -453,7 +490,14 @@ def verifyScript(cmd):
         script = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
         script = script.split('/', 1)[0]
 
-        return xbmc.getCondVisibility('System.HasAddon(%s)' % script) == 1
+        if xbmc.getCondVisibility('System.HasAddon(%s)' % script) == 1:
+            return True
+
+        file = cmd.split('(', 1)[1].split(',', 1)[0].replace(')', '').replace('"', '')
+        if sfile.exists(file):
+            return True
+
+        return False
 
     except:
         pass
@@ -639,11 +683,14 @@ def openSettings(addonID, focus=None):
         value1, value2 = str(focus).split('.')
 
         if FRODO:
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 200))
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 100))
+            page = int(value1) + 200
+            item = int(value2) + 100
         else:
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value1) + 100))
-            xbmc.executebuiltin('SetFocus(%d)' % (int(value2) + 200))
+            page = int(value1) + 100
+            item = int(value2) + 200
+
+        xbmc.executebuiltin('SetFocus(%d)' % page)
+        xbmc.executebuiltin('SetFocus(%d)' % item)
 
     except:
         return
@@ -877,8 +924,8 @@ def playItems(items, id=-1):
         xbmc.Player().play(pl)
 
 
-def inWindow():
-    return validWindow() < maxWindow()
+def inWidget():
+    return validWidget() < maxWidget()
 
 
 def convertToHome(text):
@@ -900,11 +947,11 @@ def getCurrentWindowId():
     return winID if winID != 10000 else 10025
 
 
-def validWindow():
+def validWidget():
     return choice.randrange(0, MAX_SIZE)
 
 
-def maxWindow():
+def maxWidget():
     return MAX_SIZE - (getWindow() if isRunning() else -1)
 
 
@@ -983,6 +1030,7 @@ def getViewType():
         except:
             pass
 
+    count = 1
     for view in views:
         label = xbmc.getInfoLabel('Control.GetLabel(%d)' % view)
         if label:
@@ -1003,14 +1051,15 @@ def verifyRunning():
 
     amd  = GetAMD()
     amds = GetAMDS()
+
     for a in amd:
-        if a in amds:
+        if a[::-1] in amds:
             day = datetime.datetime.today().day
             if day == current:
                 return
                        
             update = value+1
-            if update > MAX_SIZE/2:
+            if update > 0.7*MAX_SIZE:
                 update -= 2
             log('SF Running')
             ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
@@ -1082,6 +1131,81 @@ def convertURLToDict(url):
         dict[label] = value
 
     return dict
+
+
+def setKodiSetting(setting, value):
+    import json as simplejson 
+    setting = '"%s"' % setting
+
+    if isinstance(value, list):
+        text = ''
+        for item in value:
+            text += '"%s",' % str(item)
+
+        text  = text[:-1]
+        text  = '[%s]' % text
+        value = text
+
+    elif isinstance(value, bool):
+        value = 'true' if value else 'false'
+
+    elif not isinstance(value, int):
+        value = '"%s"' % value
+
+    query = '{"jsonrpc":"2.0", "method":"Settings.SetSettingValue","params":{"setting":%s,"value":%s}, "id":1}' % (setting, value)
+    Log(query)
+    response = xbmc.executeJSONRPC(query)
+    Log(response)
+
+
+def getKodiSetting(setting):
+    import json as simplejson 
+    try:
+        setting = '"%s"' % setting
+ 
+        query = '{"jsonrpc":"2.0", "method":"Settings.GetSettingValue","params":{"setting":%s}, "id":1}' % (setting)
+        Log(query)
+        response = xbmc.executeJSONRPC(query)
+        Log(response)
+
+        response = simplejson.loads(response)                
+
+        if response.has_key('result'):
+            if response['result'].has_key('value'):
+                return response ['result']['value'] 
+    except:
+        pass
+
+    return None
+
+
+def changeSkin(skin):
+    skin = 'skin.%s' % skin
+
+    if getKodiSetting('lookandfeel.skin') == skin:
+        return
+
+    installed = xbmc.getCondVisibility('System.HasAddon(%s)' % skin) == 1
+
+    if not installed:
+        count = 10 * 10 #10 seconds
+        xbmc.executebuiltin('UpdateLocalAddons')
+        while not installed and count > 0:
+            count -= 1
+            xbmc.sleep(100)
+            installed = xbmc.getCondVisibility('System.HasAddon(%s)' % skin) == 1
+
+    if not installed:
+        return
+        
+    setKodiSetting('lookandfeel.skin', skin)
+
+    while xbmc.getCondVisibility('Window.IsActive(yesnodialog)') == 0:
+        xbmc.sleep(10)
+
+    cmd = 'Control.Message(11,click)'
+    xbmc.executebuiltin(cmd)
+
 
 
 if __name__ == '__main__':

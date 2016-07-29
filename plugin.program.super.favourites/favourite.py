@@ -119,10 +119,10 @@ def patch(cmd):
     cmd = cmd.replace('&quot;,return', 'SF_PATCHING1')
     cmd = cmd.replace('",return',      'SF_PATCHING2')
 
-    cmd = cmd.replace(',return'      ,  '')
+    cmd = cmd.replace(',return',  '')
 
-    cmd = cmd.replace('SF_PATCHING1'  , '&quot;,return')
-    cmd = cmd.replace('SF_PATCHING2'  , '",return')
+    cmd = cmd.replace('SF_PATCHING1' , '&quot;,return')
+    cmd = cmd.replace('SF_PATCHING2' , '",return')
 
     return cmd
 
@@ -229,8 +229,7 @@ def isValid(cmd):
 def updateFave(file, update):
     cmd = update[2]
 
-    fave, index, nFaves = findFave(file, cmd)
-    
+    fave, index, nFaves = findFave(file, cmd) 
    
     removeFave(file, cmd)
     return insertFave(file, update, index)
@@ -238,7 +237,7 @@ def updateFave(file, update):
 
 def replaceFave(file, update, oldCmd):
     fave, index, nFaves = findFave(file, oldCmd)
-
+    
     if index < 0:
         return addFave(file, update)
    

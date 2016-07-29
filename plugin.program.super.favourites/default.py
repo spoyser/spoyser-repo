@@ -24,6 +24,7 @@ import xbmcplugin
 import xbmcgui
 import os
 
+
 import urllib
 import re
 
@@ -44,6 +45,7 @@ ROOT     = utils.ROOT
 PROFILE  = utils.PROFILE
 VERSION  = utils.VERSION
 ICON     = utils.ICON
+DEFHAN   = utils.DEFHAN
 
 
 FANART   = utils.FANART
@@ -573,6 +575,7 @@ def parseFile(file, sortorder=0, label_numeric=None, index=0):
          faves = sorted(faves, key=lambda x: utils.CleanForSort(x))
 
     for fave in faves:
+        utils.log(fave)
         label  = fave[0]
         thumb  = fave[1]
         cmd    = fave[2]
@@ -759,7 +762,10 @@ def iExplore(path=None):
     folder = 'DefaultFolder.png'
 
     if not path: 
-        path = xbmcgui.Dialog().browse(3, GETTEXT(30226), 'files', '', False, False) 
+        path = xbmcgui.Dialog().browse(3, GETTEXT(30226), 'files', '', False, False)
+
+    try:    path = path.rsplit(os.sep, 1)[0] + os.sep
+    except: return
 
     try:    items = utils.parseFolder(path)
     except: items = []
@@ -1581,6 +1587,7 @@ def editFolderDescription(path, name, desc=None):
 
 def editDescription(file, cmd, name, desc=None):
     fave, index, nFaves = favourite.findFave(file, cmd)
+
     if not fave:
         return False
 
@@ -1685,12 +1692,12 @@ def manualEdit(file, _cmd, name='', thumb='', editName=True):
     return favourite.replaceFave(file, fave, _cmd)
 
 
-def buildManualFave(type, cmd, windowID='-1'):   
+def buildManualFave(type, cmd, windowID='-1'):
     if type == ACTIVATEWINDOW_MODE:
         if cmd:
-            return 'ActivateWindow(%s,"%s",return)' % (windowID, cmd) 
+            return 'ActivateWindow("%s","%s",return)' % (windowID, cmd) 
         else:
-            return 'ActivateWindow(%s,return)' % (windowID) 
+            return 'ActivateWindow("%s",return)' % (windowID) 
 
     if len(cmd) == 0:
         return getDefaultManualCmd()
@@ -2828,7 +2835,6 @@ params = utils.get_params(sys.argv[2])
 
 doRefresh   = False
 doEnd       = True
-inWindow    = utils.inWindow()
 cacheToDisc = False
 handle      = int(sys.argv[1])
 
@@ -2836,8 +2842,11 @@ handle      = int(sys.argv[1])
 theFolder = ''
 thepath   = ''
 
+try:    inWidget = int(params['inWidget']) == 1
+except: inWidget = utils.inWidget()
 
-try:    mode = int(params['mode']) if inWindow else -10
+
+try:    mode = int(params['mode']) if inWidget else _MAIN
 except: mode = _MAIN
 
 try:    cmd = params['cmd']
@@ -2936,8 +2945,8 @@ if len(folder) > 0:
     path = os.path.join(PROFILE, folder)
 
 
-if not inWindow:
-    handle = -1
+if not inWidget and mode <> _MAIN:
+    handle = DEFHAN
  
 
 isHome = False
@@ -2960,8 +2969,9 @@ utils.log('launchMode  = %s' % launchMode)
 utils.log('contentType = %s' % contentType)
 utils.log('viewType    = %s' % VIEWTYPE)
 utils.log('isHome      = %s' % str(isHome))
-utils.log('inWindow    = %s' % str(inWindow))
+utils.log('inWidget    = %s' % str(inWidget))
 utils.log('itemIndex   = %s' % str(itemIndex))
+utils.log('ident       = %s' % str(handle))
 utils.log('-------------------------------------------------------')
 
 
@@ -3007,7 +3017,6 @@ elif mode == _PLAYLIST:
 
 if mode == _ACTIVATESEARCH:
     doEnd = False
-    #if FRODO or GOTHAM:
     playCommand(cmd)
 
 
@@ -3373,10 +3382,11 @@ if nItem < 1:
     else:
         addDir('', _SEPARATOR, thumbnail=BLANK, isFolder=False)
 
+parentItem = xbmc.getCondVisibility('system.getbool(filelists.showparentdiritems)') == 1
 
 if doRefresh:
     refresh()
-    if xbmc.getCondVisibility('system.getbool(filelists.showparentdiritems)') == 1:
+    if parentItem and itemIndex > -1:
         itemIndex += 1
 
     import selector
@@ -3387,11 +3397,11 @@ if doEnd:
         xbmcplugin.setContent(handle, contentType)
 
     if handle > -1:
+        xbmcgui.Window(10000).setProperty('SF_NMR_ITEMS', str(nItem if not parentItem else nItem+1))
         xbmcplugin.endOfDirectory(handle, cacheToDisc=cacheToDisc)
 
     if VIEWTYPE > 0:        
         xbmc.executebuiltin('Container.SetViewMode(%d)' % VIEWTYPE)
-
 
 if mode == _PLAYMEDIA:
     xbmc.sleep(250)
@@ -3414,3 +3424,9 @@ elif mode == _ACTIVATEWINDOW:
     else:
         xbmc.sleep(250)
         playCommand(cmd)
+
+
+
+
+#import download
+#download.doDownload('http://files.on-tapp-networks.com/resources/kodi/ottepg/skins.zip', 'c:/Temp/file.zip', 'DOWNLOADINNG',referer='http://www.on-tapp-networks.com', agent='')
