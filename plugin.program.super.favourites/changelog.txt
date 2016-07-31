@@ -2,6 +2,10 @@
 PLEASE READ IT!![/COLOR][/B]
 
 
+[COLOR chartreuse]1.0.54: 31st July 2016[/COLOR]
+    - version bump as minor increase seemed to not work on some systems
+
+
 [COLOR chartreuse]1.0.53.1: 29th July 2016[/COLOR]
     - improved handling of "troublesome" items that insist on running from within their own addon
     - added quick launch script
