@@ -18,17 +18,19 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
+
 import utils
 import xbmc
 import xbmcgui
 import os
 
 
-utils.VerifyZipFiles()
-utils.VerifyKeymaps()
-utils.verifyPlugins()
-utils.verifyLocation()
-utils.verifyRunning()
+utils.safeCall(utils.VerifyZipFiles)
+utils.safeCall(utils.VerifyKeymaps)
+utils.safeCall(utils.verifyPlugins)
+utils.safeCall(utils.verifyLocation)
+utils.safeCall(utils.verifyRunning)
+
 
 HOME = 10000
 

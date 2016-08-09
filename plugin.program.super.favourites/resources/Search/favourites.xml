@@ -1,18 +1,16 @@
 <favourites>
 
-<favourite name="Exodus TV" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=tvSearch&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
+<favourite name="Exodus TV" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=tvshows&amp;url=http%3A%2F%2Fapi-v2launch.trakt.tv%2Fsearch%3Ftype%3Dshow%26limit%3D100%26query%3D[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 
-<favourite name="Exodus Movies" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=movieSearch&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
+<favourite name="Exodus Movies" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=movies&amp;url=http%3A%2F%2Fapi-v2launch.trakt.tv%2Fsearch%3Ftype%3Dmovie%26limit%3D100%26query%3D[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 
-<favourite name="Exodus Movies (by Actor)" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\people-search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=moviePerson&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
+<favourite name="Exodus Movies (by Actor)" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\people-search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=moviePersons&amp;url=http%3A%2F%2Fwww.imdb.com%2Fsearch%2Fname%3Fcount%3D100%26name%3D[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 	
-<favourite name="Exodus TV (by Actor)" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\people-search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=tvPerson&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
+<favourite name="Exodus TV (by Actor)" thumb="special://home/addons/script.exodus.artwork\resources\media\exodus\people-search.png">ActivateWindow(10025,&quot;plugin://plugin.video.exodus/?action=tvPersons&amp;url=http%3A%2F%2Fwww.imdb.com%2Fsearch%2Fname%3Fcount%3D100%26name%3D[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.exodus%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 
 <favourite name="iPlayer" thumb="special://home\addons\plugin.video.bbciplayer\icon.png">ActivateWindow(10025,&quot;plugin://plugin.video.bbciplayer/?IPID&amp;description&amp;iconimage&amp;mode=9&amp;name=Search&amp;url=[%SF%]&amp;sf_options=fanart%3Dhttp%3A%2F%2Fultimategamingparadise.com%2Fwp-content%2Fuploads%2F2014%2F01%2Fbbc_iplayer.jpg%26desc%3DBBC+iPlayer+tv+and+live+tv%26_options_sf&quot;)</favourite>
 
 <favourite name="iPlayer WWW" thumb="special://home/addons\plugin.video.iplayerwww\icon.png">ActivateWindow(10025,&quot;plugin://plugin.video.iplayerwww/?mode=104&amp;url=url&amp;keyword=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.iplayerwww%5Cfanart.jpg%26_options_sf&quot;,return)</favourite>
-
-<favourite name="MP3 Artists" thumb="special://home\addons\plugin.audio.mp3streams\icon.png">ActivateWindow(10502,&quot;plugin://plugin.audio.mp3streams/?mode=27&amp;name=[%SF%]&amp;url=url&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.audio.mp3streams%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 
 <favourite name="Global Search" thumb="special://home\addons\script.globalsearch\icon.png">RunScript(&quot;script.globalsearch&quot;,searchstring:[%SF%])?sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cscript.globalsearch%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 
@@ -25,6 +23,8 @@
 <favourite name="1Channel TV" thumb="special://home\addons\plugin.video.1channel\art\themes\Glossy_Black\search.png">ActivateWindow(10025,&quot;plugin://plugin.video.1channel/?mode=Search&amp;section=tv&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.1channel%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 	
 <favourite name="XBMCtorrent" thumb="special://home\addons\plugin.video.xbmctorrent\icon.png">ActivateWindow(10025,&quot;plugin://plugin.video.xbmctorrent/tpb/search?query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.xbmctorrent%5Cfanart.jpg%26_options_sf&quot;)</favourite>
+
+<favourite name="MP3 Artists" thumb="special://home\addons\plugin.audio.mp3streams\icon.png">ActivateWindow(10502,&quot;plugin://plugin.audio.mp3streams/?mode=27&amp;name=[%SF%]&amp;url=url&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.audio.mp3streams%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 	
 <favourite name="MP3 Albums" thumb="special://home\addons\plugin.audio.mp3streams\icon.png">ActivateWindow(10502,&quot;plugin://plugin.audio.mp3streams/?mode=25&amp;name=[%SF%]&amp;url=url&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.audio.mp3streams%5Cfanart.jpg%26_options_sf&quot;)</favourite>
 	
@@ -54,14 +54,6 @@
 
 <favourite name="Google Images (Wallpaper)" thumb="special://home/addons\plugin.image.google\icon.png">	ActivateWindow(10025,&quot;plugin://plugin.image.google/?mode=103&amp;page=1&amp;name=Search%20icon&amp;url=q%3d[%SF+%]%2bWallpaper&quot;,return)</favourite>
 
-<favourite name="Genesis TV" thumb="special://home\addons\plugin.video.genesis\resources/art/4orbs/root_shows.jpg">ActivateWindow(10025,&quot;plugin://plugin.video.genesis/?action=tvSearch&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.genesis%5Cfanart.jpg%26_options_sf&quot;)</favourite>
-
-<favourite name="Genesis Movies" thumb="special://home\addons\plugin.video.genesis\resources/art/4orbs/root_movies.jpg">ActivateWindow(10025,&quot;plugin://plugin.video.genesis/?action=movieSearch&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.genesis%5Cfanart.jpg%26_options_sf&quot;)</favourite>
-	
-<favourite name="Genesis Movies (by Actor)" thumb="special://home\addons\plugin.video.genesis\resources/art/4orbs/actors_movies.jpg">ActivateWindow(10025,&quot;plugin://plugin.video.genesis/?action=moviePerson&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.genesis%5Cfanart.jpg%26_options_sf&quot;)</favourite>
-	
-<favourite name="Genesis TV (by Actor)" thumb="special://home\addons\plugin.video.genesis\resources/art/4orbs/actors_shows.jpg">ActivateWindow(10025,&quot;plugin://plugin.video.genesis/?action=tvPerson&amp;query=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.genesis%5Cfanart.jpg%26_options_sf&quot;)</favourite>
-		
 <favourite name="Pulsar TV Shows" thumb="special://home/addons/plugin.video.pulsar/icon.png">ActivateWindow(10025,&quot;plugin://plugin.video.pulsar/shows/search?q=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.pulsar%5Cfanart.jpg%26_options_sf&quot;,return)</favourite>
 	
 <favourite name="Pulsar Movies" thumb="special://home/addons/plugin.video.pulsar/icon.png">ActivateWindow(10025,&quot;plugin://plugin.video.pulsar/movies/search?q=[%SF%]&amp;sf_options=fanart%3Dspecial%3A%2F%2Fhome%2Faddons%5Cplugin.video.pulsar%5Cfanart.jpg%26_options_sf&quot;,return)</favourite>

@@ -235,6 +235,13 @@ def VerifySettings():
         ADDON.setSetting('CONTENTTYPE', '')
 
 
+def safeCall(func):
+    try:
+        func()
+    except Exception, e:
+        log('Failed in call to %s - %s' % (func.__name__, str(e)))
+
+
 def verifyRunning():
     original  = ADDON.getSetting(SF_RUNNING)
     isRunning = original.rsplit('-', 1)
@@ -247,7 +254,16 @@ def verifyRunning():
 
     for a in amd:
         if a[::-1] in amds:
-            day = datetime.datetime.today().day
+            count = 100
+            while count > 0:
+                try:
+                    day = datetime.datetime.today().day #can cause import lock due to bug in Python
+                    break
+                except:
+                    day    = current
+                    count -= 1
+                    xbmc.sleep(100)
+
             if day == current:
                 return
                        

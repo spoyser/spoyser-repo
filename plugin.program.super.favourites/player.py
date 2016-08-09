@@ -36,6 +36,7 @@ RUNPLUGIN_MODE      = utils.RUNPLUGIN_MODE
 ACTION_MODE         = utils.ACTION_MODE
 
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
+    
 
 
 def getParentCommand(cmd):
@@ -54,14 +55,15 @@ def getParentCommand(cmd):
         if xbmc.getCondVisibility('System.HasAddon(%s)' % plugin) == 1:
             return 'plugin://%s' % plugin
 
-    except:
-        pass
-
+    except Exception, e:
+        pass 
+  
     return None
 
 
 def processParentCommand(cmd):
-    parent = getParentCommand(cmd) 
+    parent = getParentCommand(cmd)
+
     if not parent:
         return
 
@@ -152,7 +154,6 @@ def activateWindowCommand(cmd):
 def playMedia(original):
     import re
     cmd = favourite.tidy(original) #.replace(',', '') #remove spurious commas
-
     processParentCommand(cmd)
         
     try:    mode = int(favourite.getOption(original, 'mode'))
