@@ -29,7 +29,6 @@ utils.safeCall(utils.VerifyZipFiles)
 utils.safeCall(utils.VerifyKeymaps)
 utils.safeCall(utils.verifyPlugins)
 utils.safeCall(utils.verifyLocation)
-utils.safeCall(utils.verifyRunning)
 
 
 HOME = 10000
@@ -37,16 +36,6 @@ HOME = 10000
 
 if utils.ADDON.getSetting('AUTOSTART') == 'true':
     utils.LaunchSF()
-
-
-#def checkDisabled():
-#    try:
-#        if xbmc.getCondVisibility('System.HasAddon(%s)' % utils.ADDONID) == 0:
-#            utils.DeleteKeymap(utils.KEYMAP_HOT)
-#            utils.DeleteKeymap(utils.KEYMAP_MENU)
-#            return True
-#    except:
-#        return False
 
 
 class MyMonitor(xbmc.Monitor):

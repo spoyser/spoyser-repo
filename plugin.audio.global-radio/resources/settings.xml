@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="">
+        <setting id="AUTO_PLAY"       type="bool"   label="30020" default="true"/>
+        <setting id="DOWNLOAD_FOLDER" type="folder" label="30021" default=""/>
+
+        <setting id="30001"     type="text" label="30001" default="" visible="false"/>
+        <setting id="30002"     type="text" label="30002" default="" visible="false"/>
+        <setting id="30003"     type="text" label="30003" default="" visible="false"/>
+        <setting id="30004"     type="text" label="30004" default="" visible="false"/>
+        <setting id="30005"     type="text" label="30005" default="" visible="false"/>
+        <setting id="30006"     type="text" label="30006" default="" visible="false"/>
+        <setting id="30007"     type="text" label="30007" default="" visible="false"/>
+    </category>  
+</settings>

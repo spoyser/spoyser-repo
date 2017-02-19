@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+	<string id="30000">Global Radio</string>
+
+	<string id="30001">Capital FM</string>
+	<string id="30002">Heart</string>
+	<string id="30003">Capital Xtra</string>
+	<string id="30004">LBC</string>
+	<string id="30005">Radio X</string>
+	<string id="30006">Smooth</string>
+	<string id="30007">Gold</string>
+
+	<string id="30010">On Air - %s</string>
+	<string id="30011">Listen Again</string>
+	<string id="30012">Downloads</string>
+
+	<string id="30020">Play station automatically</string>
+        <string id="30021">Download folder</string>
+
+	<string id="30040">Find your station</string>
+	<string id="30041">Clear your station choice</string>
+        <string id="30042">Download</string>
+        <string id="30043">Delete</string>
+        <string id="30044">Delete %s</string>
+        <string id="30045">Are you sure?</string>
+        <string id="30046">Failed to delete %s[CR]Please try again later</string>
+        <string id="30047">Please wait for current download to complete</string>
+
+	<string id="30050">UK</string>
+	<string id="30051">London</string>
+	<string id="30052">Manchester</string>
+
+        <string id="30060">You have not set the download folder.[CR]Please update the add-on settings and try again.</string>
+        <string id="30061">[COLOR forestgreen]Download succeeded[/COLOR]</string>
+        <string id="30062">[COLOR red]Download failed[/COLOR]</string>
+        <string id="30063">Download failed</string>
+        <string id="30064">Unknown filesize</string>
+        <string id="30065">Unable to download</string>
+        <string id="30066">Download Progress</string>
+
+</strings>

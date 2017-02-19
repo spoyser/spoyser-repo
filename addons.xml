@@ -39,13 +39,40 @@
 
 </addon>
 
-<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.4" provider-name="spoyser">
+<addon id="plugin.audio.global-radio" name="Global Radio" version="1.0.0" provider-name="spoyser">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+     <import addon="xbmc.python" version="2.14.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>audio</provides>
   </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">Global Radio</summary>
+    <description lang="en">Global Radio</description>
+    <platform>all</platform>
+    <language>en</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <forum></forum>
+    <website>http://www.thisisglobal.com/</website>
+    <source></source>
+    <email>seanpoyser at gmail dot com</email>
+    <news>
+1.0.0: 19th February 2017
+    - initial release
+    </news>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.5" provider-name="spoyser">
+
+  <requires>
+    <import addon="xbmc.python" version="2.14.0"/>
+  </requires>
+
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>audio</provides>
+  </extension>
+
   <extension point="xbmc.addon.metadata">
     <summary lang="en">RAM FM Eighties Hits</summary>
     <description lang="en">RAM FM broadcast music within a wide perspective from the years between and around 1975-1995 and some of today's music that would have fit in just fine at the time. RAM FM play all genres of eighties music, from punk to disco, from synth-pop to folk, from rock to easy listening and from new wave to dance. RAM FM play these different genres of eighties music in no special order and without any priority or personal musical preferences involved whatsoever. RAM FM aim to create a realistic musical time image of the eighties. RAM FM never play the same song within 36 hours and never the same artist within 4 hours. Listeners online can request 3 tracks every 30 minutes complying with these musical format and playlist rotation rules.</description>
@@ -95,10 +122,9 @@ Independent music for the free spirited soul</description>
   </extension>
 </addon>
 
-<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.55" provider-name="spoyser">
+<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.56" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
-    <import addon="repository.Dixie-Deans-XBMC-Repo" version="1.1.2"/>
     <import addon="script.module.metahandler" optional="true" />
   </requires>
 
@@ -121,6 +147,19 @@ Independent music for the free spirited soul</description>
     <website></website>
     <source>https://github.com/spoyser/spoyser-repo/tree/master/plugin.program.super.favourites</source>
     <email>seanpoyser at gmail.com</email>
+
+    <news>
+1.0.56: 19th February 2017
+    - added optional initial path, and include play folder parameters to quicklaunch script
+        usage: xbmc.runscript(special://home/addons/plugin.program.super.favourites/quicklaunch.py,folder1/folder2,True)
+    - fixed playlist parsing
+    - fixed quicklaunch in Krypton
+    - fixed launching ExecuteBuiltin types from the quick launch dialog
+    - fixed launching playable items added from FileManager
+    - fixed launching playable items from widgets
+    - various other fixes due to changes in Krypton
+    </news>
+
   </extension>
 
 
@@ -285,7 +324,7 @@ Independent music for the free spirited soul</description>
   </extension>
 </addon>
 
-<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.22" provider-name="spoyser">
+<addon id="plugin.video.watchcartoononline" name="Watch Cartoon Online" version="1.0.23" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>

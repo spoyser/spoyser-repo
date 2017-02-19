@@ -19,7 +19,7 @@
 #
 
 
-def run():
+def run(path, includePlay):
     import xbmcgui
     if xbmcgui.Window(10000).getProperty('Super_Favourites_Chooser') == 'true':
         return
@@ -27,7 +27,7 @@ def run():
     import xbmc
     import chooser
     
-    if not chooser.GetFave('SF_QL', includePlay=True):
+    if not chooser.GetFave('SF_QL', path=path, includePlay=includePlay):
         return False
     
     path = xbmc.getInfoLabel('Skin.String(SF_QL.Path)')
@@ -43,17 +43,28 @@ def run():
             return
 
     #remove any spurious SF stuff, e.g.
-    #ActivateWindow("weather?sf_options=desc%3DShow%2520Weather%26_options_sf",return) needs to be
+    #ActivateWindow("weather?content_type=Chooser&sf_options=desc%3DShow%2520Weather%26_options_sf",return) needs to be
     #ActivateWindow(weather)
-    path = path.split('?')[0]
+    path = path.replace('content_type=Chooser&', '')
+    path = path.split('?sf_options')[0]
     path = path.replace('"',      '')
     path = path.replace('&quot;', '')
     if not path.endswith(')'):
         path += ')'
 
     import player
-    player.playCommand(path)
+    player.playCommand(path, contentMode=True) #content mode means we are not actually in SF at the moment
     
 
 if __name__ == '__main__':
-    run()
+    path        = ''
+    includePlay = True
+
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        includePlay = sys.argv[2].lower() == 'true'
+
+
+    run(path, includePlay)

@@ -236,7 +236,7 @@
 	<string id="30242">          Download folder</string>	
 	<string id="30243">Do you wish to stop the current playback?</string>
 	<string id="30244">(This maybe necessary to allow download)</string>
-	<string id="30245">[COLOR forestgreen]Download succeeded[/COLOR]</string>
+	<string id="30245">[COLOR springgreen]Download succeeded[/COLOR]</string>
 	<string id="30246">[COLOR red]Download failed[/COLOR]</string>
 	<string id="30247">Download failed</string>
 	<string id="30248">No response from server</string>
@@ -262,6 +262,8 @@
         <string id="30268">iSearch - </string>
         <string id="30269">Hotkey assignment cancelled</string>
         <string id="30270">Hotkey successfully assigned</string>
+        <string id="30271">This will only work if [COLOR springgreen]%s[/COLOR] is setup as a source</string>
+        <string id="30272">Do you wish to continue?</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>

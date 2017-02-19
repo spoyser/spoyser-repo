@@ -55,6 +55,23 @@ def getCmd(path, fanart, desc, window, filename, isFolder, meta):
         isFolder = True
         window   = 10025
 
+    if window == 10003:#FileManager
+        import sfile
+        import os
+        isFolder = sfile.isdir(path)
+        if isFolder:
+            #special paths fail to open - http://trac.kodi.tv/ticket/17333
+            if path.startswith('special://'):
+                path = xbmc.translatePath(path)
+            path = path.replace('%s%s' % (os.sep, os.sep), os.sep)
+            path = path.replace(os.sep, '/')
+            folder = path
+            if folder.endswith('/'):
+                folder = folder[:-1]
+            folder = folder.rsplit('/', 1)[-1]
+            #if not utils.DialogYesNo(GETTEXT(30271) % folder, GETTEXT(30272)):
+            #    return None
+            
     if isFolder:
         cmd =  'ActivateWindow(%d,"%s' % (window, path)
     elif path.lower().startswith('script'):
@@ -136,7 +153,9 @@ def addToFaves(params, meta=None):
         isFolder = params['isfolder']
 
         cmd = getCmd(path, fanart, desc, window, filename, isFolder, meta)
-        copyFave(label, thumb, cmd)
+
+        if cmd:
+            copyFave(label, thumb, cmd)
     except Exception, e:
         utils.log('\n\nError in menuUtils.addToFaves : %s' % str(e))
         utils.outputDict(params)
@@ -326,6 +345,7 @@ def getCurrentParams():
     #    isStream = file.startswith('http')
 
     if window == 10003: #filemanager
+        import os
         control = 0
         if xbmc.getCondVisibility('Control.HasFocus(20)') == 1:
             control = 20
@@ -336,8 +356,13 @@ def getCurrentParams():
             return None
 
         label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
-        root     = xbmc.getInfoLabel('Container(%d).ListItem.Path'  % control)
-        path     = root + label
+        path     = xbmc.getInfoLabel('Container(%d).ListItem.FolderPath' % control)
+        filename = xbmc.getInfoLabel('Container(%d).ListItem.Filename' % control)
+        folder   = path.replace(filename,  '')
+
+        if path.endswith(os.sep):
+            path = path[:-1] #.rsplit(os.sep, 1)[0]
+
         isFolder = True
         thumb    = 'DefaultFolder.png'
         #if not path.endswith(os.sep):

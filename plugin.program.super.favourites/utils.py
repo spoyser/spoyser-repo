@@ -25,7 +25,6 @@ import xbmcgui
 import os
 import re
 import datetime
-import random as choice
 import sfile
 
 
@@ -40,7 +39,6 @@ def GetXBMCVersion():
 ADDONID = 'plugin.program.super.favourites'
 ADDON   =  xbmcaddon.Addon(ADDONID)
 HOME    =  ADDON.getAddonInfo('path')
-DEFHAN  = -1
 
 _FOLDER = 400
 
@@ -54,7 +52,7 @@ SHOWXBMC         = ADDON.getSetting('SHOWXBMC')         == 'true'
 INHERIT          = ADDON.getSetting('INHERIT')          == 'true'
 ALPHA_SORT       = ADDON.getSetting('ALPHA_SORT')       == 'true'
 LABEL_NUMERIC    = ADDON.getSetting('LABEL_NUMERIC')    == 'true'
-LABEL_NUMERIC_QL = ADDON.getSetting('LABEL_NUMERIC_QL') == 'true'
+LABEL_NUMERIC_QL = False #ADDON.getSetting('LABEL_NUMERIC_QL') == 'true'
 
 
 PROFILE =  os.path.join(ROOT, 'Super Favourites')
@@ -208,18 +206,6 @@ def CheckVersion():
         xbmc.executebuiltin(cmd)
     except:
         pass
-
-
-def GetAddons():
-    return sfile.walk(XBMCHOME)
-
-
-def GetAMD():
-    root, folders, files = GetAddons()
-    addons = []
-    for folder in folders:
-        addons.append(generateMD5(folder))
-    return addons
     
 
 def VerifyZipFiles():
@@ -240,45 +226,6 @@ def safeCall(func):
         func()
     except Exception, e:
         log('Failed in call to %s - %s' % (func.__name__, str(e)))
-
-
-def verifyRunning():
-    original  = ADDON.getSetting(SF_RUNNING)
-    isRunning = original.rsplit('-', 1)
-
-    try:    current, value = int(isRunning[0]), int(isRunning[1])
-    except: current, value = 0, 0
-
-    amd  = GetAMD()
-    amds = GetAMDS()
-
-    for a in amd:
-        if a[::-1] in amds:
-            count = 100
-            while count > 0:
-                try:
-                    day = datetime.datetime.today().day #can cause import lock due to bug in Python
-                    break
-                except:
-                    day    = current
-                    count -= 1
-                    xbmc.sleep(100)
-
-            if day == current:
-                return
-                       
-            update = value+1
-            if update > 0.8*MAX_SIZE:
-                update -= 2
-            log('SF Running')
-            ADDON.setSetting(SF_RUNNING, str(day)+str(-update))
-            return
-
-    if original == '-1-0':
-        return
-
-    ADDON.setSetting(SF_RUNNING, '-1-0')
-
 
 
 def verifySuperSearch():
@@ -316,39 +263,11 @@ def verifySuperSearch():
 
     new = favourite.getFavourites(src, validate=False)
 
-    #line1 = GETTEXT(30123)
-    #line2 = GETTEXT(30124)
-
     for item in new:
         fave, index, nFaves = favourite.findFave(dst, item[2])
         if index < 0:
-            #line = line1 % item[0]
-            #if DialogYesNo(line1=line, line2=line2):
             favourite.addFave(dst, item)
 
-
-def GetAMDS():
-    amd = []
-
-    amd.append('7a27423a76c15288dfebe5b9ee4ef40b')
-    amd.append('090d9fa65c60f9f9d656e675842b565e')
-    amd.append('a9f2a01eb824d5c27523b6ee9597c97d')
-    amd.append('6a9ef33cb9504ff9976fede36d01457c')
-    amd.append('00d8e5375c4c474bb4d66815c8d99365')
-    amd.append('94906e4a097874345dbf60a2d6e7dac5')
-    amd.append('13eba48cfa902e898960a98f62fefb85')
-    amd.append('8bf6fc4f6e0c3e2191a6fd5c2053a67b')
-    amd.append('70dcb4be975c2a655a2028665cf631a0')
-    amd.append('f256cabc1dfc430c983786f0a1146e87')
-    amd.append('aea9c40a2e043c9a1338b9127158d53e')
-    amd.append('f0716e4f8f23fd3f10e4a2ec4378c256')
-    amd.append('b1071c4e360144c0a893c8a89cb93bc0')
-    amd.append('e3a4d05182623971851d88f071a7a4f2')
-    amd.append('96676ab94737aa42b20355a59d15efc8')   
-    amd.append('2b9d2197ba41f989369896c753ad7d3c')
-    amd.append('0f906a421ff04745f93aa66618e2e0f4')
-
-    return amd
 
 
 def UpdateKeymaps():
@@ -768,12 +687,13 @@ def showText(heading, text, waitForClose=False):
 def showChangelog(addonID=None):
     try:
         if addonID:
-            ADDON = xbmcaddon.Addon(addonID)
+            _ADDON = xbmcaddon.Addon(addonID)
         else: 
-            ADDON = xbmcaddon.Addon(ADDONID)
+            _ADDON = xbmcaddon.Addon(ADDONID)
 
-        text  = sfile.read(ADDON.getAddonInfo('changelog'))
-        title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
+        path  = os.path.join(_ADDON.getAddonInfo('path'), 'changelog.txt')
+        text  = sfile.read(path)
+        title = '%s - %s' % (xbmc.getLocalizedString(24054), _ADDON.getAddonInfo('name'))
 
         showText(title, text)
 
@@ -947,6 +867,7 @@ def playItems(items, id=-1):
 
 
 def inWidget():
+    return True
     return validWidget() < maxWidget()
 
 
@@ -968,13 +889,6 @@ def getCurrentWindowId():
 
     return winID if winID != 10000 else 10025
 
-
-def validWidget():
-    return choice.randrange(0, MAX_SIZE)
-
-
-def maxWidget():
-    return MAX_SIZE - (getWindow() if isRunning() else -1)
 
 
 def getFolderThumb(path, isXBMC=False):
@@ -1023,10 +937,6 @@ def getFolderThumb(path, isXBMC=False):
     return thumb, fanart
 
 
-def getWindow():
-    try:    return int(ADDON.getSetting(SF_RUNNING).rsplit('-')[-1])
-    except: return 0
-
 
 def getViewType():
     #logic to obtain viewtype inspired by lambda
@@ -1059,11 +969,6 @@ def getViewType():
             return view
 
     return 0
-
-
-def isRunning():
-    verifyRunning()
-    return getWindow() % 2 == 0
 
 
 def get_params(path):
@@ -1203,7 +1108,6 @@ def changeSkin(skin):
 
     cmd = 'Control.Message(11,click)'
     xbmc.executebuiltin(cmd)
-
 
 
 if __name__ == '__main__':

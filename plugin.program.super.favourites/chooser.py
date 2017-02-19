@@ -231,8 +231,9 @@ class MainGui(xbmcgui.WindowXMLDialog):
             self.favList = self.getControl(3)
 
         self.getControl(5).setVisible(False)
-        self.getControl(1).setVisible(False) #necessary due to a bug in Kodi
-        self.getControl(1).setLabel(GETTEXT(30000))
+        #self.getControl(1).setVisible(False) #necessary due to a bug in Kodi
+        #self.getControl(1).setLabel(GETTEXT(30000))
+        self.getControl(1).setLabel(self.path)
 
         try:    self.getControl(7).setLabel(xbmc.getLocalizedString(222))
         except: pass

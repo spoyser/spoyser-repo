@@ -124,43 +124,57 @@ def Main():
 
 def DoSection(url):
     mode = SERIES
-    if url == 'http://www.watchcartoononline.com/movie-list':
+    print url
+    print mode
+    if url == 'https://www.watchcartoononline.io/movie-list':
         mode = EPISODE
-    if url == 'http://www.watchcartoononline.com/ova-list':
+    if url == 'https://www.watchcartoononline.io/ova-list':
         mode = EPISODE
-
+    
     html = utils.getHTML(url)
 
     html = html.split('<div id="ddmcc_container">', 1)[-1]
-
     html = html.replace('<li><a href=""></a></li>', '')
-  
+    html = html.split('<div class="menu">', 1)[0]
+
     names = []
 
     match = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(html)
-
-    sorted = []
-
+    
+    series   = []
+    episodes = [] 
+    
     for url, name in match:
-        if ('#' not in url) and ('title="' not in url):
+        url = url.split('"', 1)[0]
+        if True:
             if name not in names:
                 names.append(name)
-                if mode == SERIES:
-                    newName = name
-                    if newName.startswith('The '):
-                        newName = newName.split('The ', 1)[-1]
-                    sorted.append([newName, name, url])
-                elif mode == EPISODE:
-                    AddEpisode('', name, url)
 
-    sorted.sort()
-    for item in sorted:
+                newName = name
+                if newName.startswith('The '):
+                    newName = newName.split('The ', 1)[-1]
+                elif newName.startswith('A '):
+                    newName = newName.split('A ', 1)[-1]
+
+                if mode == SERIES:                   
+                    series.append([newName, name, url])
+                elif mode == EPISODE:
+                    episodes.append([newName, name, url])
+
+    series   = sorted(series,   key=lambda x: x[0].lower())
+    episodes = sorted(episodes, key=lambda x: x[0].lower())
+
+    for item in series :
         AddSeries(item[1], item[2])
+
+    for item in episodes :
+        AddEpisode('', item[1], item[2])
+
 
 
 def DoSeries(html):
     title = re.compile('<title>(.+?) \| .+?').search(html).group(1)
-    image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
+    image = re.compile('<meta property="og:image" content="(.+?)" />').search(html).group(1)
 
     html  = html.split('<!--CAT List FINISH-->', 1)[0]
     match = re.compile('<li>(.+?)</li>').findall(html)
@@ -176,6 +190,7 @@ def DoSeries(html):
             name  = re.compile('title="(.+?)"').search(item).group(1)    
             if name.startswith('Watch'):
                 name = name.split('Watch', 1)[-1].strip()
+
             AddEpisode(title, name, url, image)
         except Exception, e:
             pass
@@ -286,7 +301,8 @@ def PlayVideo(_url, select):
         return
 
     html  = utils.getHTML(_url)
-    image = re.compile('"image_src" href="(.+?)"').search(html).group(1)
+    image = re.compile('<meta property="og:image" content="(.+?)" />').search(html).group(1)
+
 
     #following sometimes doesn't contain episode information :(
     #title = re.compile('<title>(.+?)</title>').search(html).group(1).split(' |', 1)[0]
@@ -314,7 +330,7 @@ def PlayVideo(_url, select):
         pl.add(url, liz)
         #xbmc.Player().play(pl)
 
-        player = XBMCPlayer(xbmc.PLAYER_CORE_DVDPLAYER)
+        player = XBMCPlayer()
         player.SetMetaData(metaData)
         player.play(pl)
         while player.isActive:

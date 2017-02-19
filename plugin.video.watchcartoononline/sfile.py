@@ -60,7 +60,7 @@ def read(filename):
     f.close()
     return content
 
-    
+
 def write(filename, content):
     f = file(filename, 'wb')
     f.write(content)

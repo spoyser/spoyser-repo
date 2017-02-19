@@ -42,9 +42,6 @@ def isfile(filename):
     
 
 def isdir(folder):
-    if folder.endswith('\\') or folder.endswith('/'):
-        folder = folder[:-1]
-
     if not exists(folder):
         #raise Exception('sfile.isdir error %s does not exists' % folder)
         return False

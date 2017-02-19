@@ -1,5 +1,5 @@
 
-#       Copyright (C) 2015
+#       Copyright (C) 2013-
 #       Sean Poyser (seanpoyser@gmail.com)
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -17,19 +17,16 @@
 #  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
 #
-#  this module provides a wrapper around the Kodi xbmcvfs class
 
 
 import xbmcvfs
+import os
 
 
 def exists(filename):
-    import xbmc
     if xbmcvfs.exists(filename):
         return True
-
-    import os
-    return xbmcvfs.exists(filename + os.sep)
+    return os.path.exists(filename)
 
 
 def isfile(filename):
@@ -42,9 +39,6 @@ def isfile(filename):
     
 
 def isdir(folder):
-    if folder.endswith('\\') or folder.endswith('/'):
-        folder = folder[:-1]
-
     if not exists(folder):
         #raise Exception('sfile.isdir error %s does not exists' % folder)
         return False
@@ -69,7 +63,10 @@ def read(filename):
 
 
 def write(filename, content):
-    f = file(filename, 'wb')
+    if not content:
+        return
+
+    f = file(filename, 'w')
     f.write(content)
     f.close()
 
@@ -79,19 +76,6 @@ def readlines(filename):
     lines = lines.replace('\r', '')
     lines = lines.split('\n')
     return lines
-
-
-def writelines(filename, lines):
-    f = file(filename, 'w')
-    first = True
-    for line in lines:
-        if not first:
-            f.write('\n')
-        else:
-            first = False
-        f.write(line)        
-    f.close()
-
 
 
 def walk(folder):
@@ -106,6 +90,19 @@ def glob(folder):
     for file in files:
         full.append(os.path.join(current, file))
     return full
+
+
+def related(filename):
+    found  = []
+    folder = filename.rsplit(os.sep, 1)[0]
+    files  = glob(folder)
+    match  = filename.rsplit('.', 1)[0].lower()
+
+    for file in files:
+        if file.rsplit('.', 1)[0].lower() == match:
+            found.append(file)
+
+    return found
 
 
 def makedirs(path):
@@ -138,13 +135,10 @@ def rmtree(folder):
 
 def copytree(src, dst):
     import os
-
-    #if exists(dst):
-    #    rmtree(dst)
-
-    makedirs(dst)
-
     current, dirs, files = walk(src)
+
+    if not exists(dst):
+        makedirs(dst)
 
     for file in files:
         copy(os.path.join(current, file), os.path.join(dst, file))
@@ -153,13 +147,7 @@ def copytree(src, dst):
         copytree(os.path.join(src, dir), os.path.join(dst, dir))
 
 
-def copy(src, dst, overWrite=True):
-    if not overWrite and exists(dst):
-        return False
-
-    if isdir(src):
-        return copytree(src, dst)
-
+def copy(src, dst):
     return xbmcvfs.copy(src, dst)
 
 
@@ -183,6 +171,7 @@ def rename(src, dst):
     return xbmcvfs.rename(src, dst)
 
 
+
 def mtime(filename):
     if not exists(filename):
         raise Exception('sfile.mtime error %s does not exists')
@@ -199,28 +188,18 @@ def ctime(filename):
     return status.st_ctime()
 
 
-#def status(filename):
-#    if not exists(filename):
-#        raise Exception('sfile.status error %s does not exists' % filename)
-#
-#    status = xbmcvfs.Stat(filename)
-#    return status
-
-
-def getfolder(path):
-    import os
-    path = path.replace('/', os.sep)
-    if path.endswith(os.sep):
+def getfolder(path, sep=os.sep):
+    path = path.replace('/', sep)
+    if path.endswith(sep):
         path += 'filename'
 
-    try:    return path.rsplit(os.sep, 1)[0]       
+    try:    return path.rsplit(sep, 1)[0]       
     except: return ''
 
 
-def getfilename(path):
-    import os
-    path = path.replace('/', os.sep)
-    try:    return path.rsplit(os.sep, 1)[-1]
+def getfilename(path, sep=os.sep):
+    path = path.replace('/', sep)
+    try:    return path.rsplit(sep, 1)[-1]
     except: return ''
 
 
@@ -244,3 +223,13 @@ def isempty(folder):
         return False
 
     return True
+
+
+
+
+#def status(filename):
+#    if not exists(filename):
+#        raise Exception('sfile.status error %s does not exists' % filename)
+#
+#    status = xbmcvfs.Stat(filename)
+#    return status

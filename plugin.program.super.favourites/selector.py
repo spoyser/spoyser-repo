@@ -24,6 +24,8 @@ FILENAME = inspect.getfile(inspect.currentframe())
 
 
 def _select(index):
+    import utils
+    #utils.DialogOK(str(index))
     if index < 0:
         return
 

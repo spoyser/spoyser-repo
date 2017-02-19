@@ -18,6 +18,7 @@
 #  http://www.gnu.org/copyleft/gpl.html
 #
 
+
 import xbmc
 import xbmcaddon
 import xbmcplugin
@@ -45,12 +46,13 @@ ROOT     = utils.ROOT
 PROFILE  = utils.PROFILE
 VERSION  = utils.VERSION
 ICON     = utils.ICON
-DEFHAN   = utils.DEFHAN
 
 
 FANART   = utils.FANART
 SEARCH   = utils.SEARCH
 BLANK    = 'NULL'
+
+
 
 GETTEXT  = utils.GETTEXT
 TITLE    = utils.TITLE
@@ -165,6 +167,9 @@ SHOWXBMC              = utils.SHOWXBMC
 INHERIT               = utils.INHERIT
 ALPHA_SORT            = utils.ALPHA_SORT
 LABEL_NUMERIC         = utils.LABEL_NUMERIC
+
+if xbmcgui.getCurrentWindowId() == 10000:
+    LABEL_NUMERIC = False
 
 TMDB_API_KEY='302783d0fefc7b8a97ab7cc7f42a2cde'
 
@@ -1497,11 +1502,11 @@ def editFave(file, cmd, name, thumb):
 
     # --------- Handle Choice -----------
     if option == UP:
-        itemIndex = -1
+        #itemIndex = -1
         return favourite.shiftFave(file, cmd, up=True)
 
     if option == DOWN:
-        itemIndex = -1
+        #itemIndex = -1
         return favourite.shiftFave(file, cmd, up=False)
 
     if option == COPY:
@@ -1847,11 +1852,11 @@ def editSearch(file, cmd, name, thumb):
         option = menus.showMenu(ADDONID, options)
 
     if option == UP:
-        itemIndex = -1
+        #itemIndex = -1
         return favourite.shiftFave(file, cmd, up=True)
 
     if option == DOWN:
-        itemIndex = -1
+        #itemIndex = -1
         return favourite.shiftFave(file, cmd, up=False)
 
     if option == RENAME:
@@ -2271,10 +2276,10 @@ def iPlay():
 
     playlists = favourite.getFavourites(file, validate=False)
     items = []
-    for playlist in playlists:
-        name  = playlist[0]
-        thumb = playlist[1]
-        cmd   = playlist[2]
+    for plist in playlists:
+        name  = plist[0]
+        thumb = plist[1]
+        cmd   = plist[2]
         items.append([cmd, name, thumb])
 
     nItems += addPlaylistItems(items, delete=True)
@@ -2425,7 +2430,9 @@ def iPlaylistURLBrowse():
         try:    html = quicknet.getURL(text, maxSec=0, tidy=False)
         except: html = ''
 
-        items = parse(html.split('\n'))
+        import playlist
+
+        items = playlist.parse(html.split('\n'))
         valid = len(items) > 0
 
         if not valid:
@@ -2697,6 +2704,18 @@ def playCommand(originalCmd):
     player.playCommand(originalCmd, contentMode)
 
 
+def playCommandFromHome(cmd, name):
+    try:
+        cmd = re.compile('"(.+?)"').search(cmd).group(1)
+        cmd = favourite.removeSFOptions(cmd)
+        liz  = xbmcgui.ListItem(name, iconImage='', thumbnailImage='')  
+        liz.setPath(cmd)
+        import xbmcplugin
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
+    except:
+        pass
+
+
 def activateWindowCommand(cmd):
     player.activateWindowCommand(cmd)
 
@@ -2791,6 +2810,8 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         art['landscape'] = addArtwork(ART_LANDSCAPE, thumbnail, fanart)
         art['banner']    = addArtwork(ART_BANNER,    thumbnail, fanart)
         art['poster']    = addArtwork(ART_POSTER,    thumbnail, fanart)
+        art['thumb']     = thumbnail
+        art['fanart']    = fanart
         
         if len(art) > 0:
             liz.setArt(art) 
@@ -2842,10 +2863,7 @@ handle      = int(sys.argv[1])
 theFolder = ''
 thepath   = ''
 
-try:    inWidget = int(params['inWidget']) == 1
-except: inWidget = utils.inWidget()
-
-try:    mode = int(params['mode']) if inWidget else _MAIN
+try:    mode = int(params['mode'])
 except: mode = _MAIN
 
 try:    cmd = params['cmd']
@@ -2944,10 +2962,6 @@ if len(folder) > 0:
     path = os.path.join(PROFILE, folder)
 
 
-if not inWidget and mode <> _MAIN:
-    handle = DEFHAN
- 
-
 isHome = False
 try:    
     if cmd.startswith('HOME:'):
@@ -2968,7 +2982,6 @@ utils.log('launchMode  = %s' % launchMode)
 utils.log('contentType = %s' % contentType)
 utils.log('viewType    = %s' % VIEWTYPE)
 utils.log('isHome      = %s' % str(isHome))
-utils.log('inWidget    = %s' % str(inWidget))
 utils.log('itemIndex   = %s' % str(itemIndex))
 utils.log('ident       = %s' % str(handle))
 utils.log('-------------------------------------------------------')
@@ -2977,7 +2990,10 @@ utils.log('-------------------------------------------------------')
 if mode == _PLAYMEDIA:
     if not contentMode:
         mode = _IGNORE
-        playCommand(cmd)
+        if isHome:
+            playCommandFromHome(cmd, label)
+        else:
+            playCommand(cmd)
 
  
 elif mode == _ACTIVATEWINDOW:
@@ -3406,13 +3422,6 @@ if mode == _PLAYMEDIA:
     xbmc.sleep(250)
     playCommand(cmd)
 
-
-#elif mode == _ACTIVATESEARCH:
-    #if FRODO or GOTHAM:
-    #    pass
-    #else:
-    #xbmc.sleep(250)
-    #playCommand(cmd)
 
 
 elif mode == _ACTIVATEWINDOW:

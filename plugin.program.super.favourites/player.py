@@ -20,6 +20,7 @@
 
 import xbmc
 import xbmcgui
+import xbmcaddon
 
 
 import favourite
@@ -35,13 +36,11 @@ ACTIVATEWINDOW_MODE = utils.ACTIVATEWINDOW_MODE
 RUNPLUGIN_MODE      = utils.RUNPLUGIN_MODE
 ACTION_MODE         = utils.ACTION_MODE
 
-PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'
-    
+PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'    
 
 
 def getParentCommand(cmd):
     parents = []
-    parents.append('fabd660bab0688158888c308dac1f331')
 
     import re
     try:
@@ -73,15 +72,15 @@ def processParentCommand(cmd):
     
 
 
-def playCommand(originalCmd, contentMode=False, handle=None):
+def playCommand(originalCmd, contentMode=False):
     try:
         xbmc.executebuiltin('Dialog.Close(busydialog)') #Isengard fix
  
         cmd = favourite.tidy(originalCmd)
      
         #if a 'Super Favourite' favourite just do it
-        if ADDONID in cmd:
-             return xbmc.executebuiltin(cmd)
+        #if ADDONID in cmd:
+        #     return xbmc.executebuiltin(cmd)
 
         #if in contentMode just do it
         if contentMode:
@@ -108,11 +107,14 @@ def playCommand(originalCmd, contentMode=False, handle=None):
             return playMedia(originalCmd)
 
         if cmd.lower().startswith('executebuiltin'):
-            try:    
-                cmd = cmd.split('"', 1)[-1]
-                cmd = cmd.rsplit('")')[0]
-            except:
-                pass
+            cmd = cmd.replace('"', '')
+            cmd = cmd.lower()
+            cmd = cmd.replace('"', '')
+            cmd = cmd.replace('executebuiltin(', '')
+            if cmd.endswith('))'):
+                cmd = cmd[:-1]
+            if cmd.endswith(')') and '(' not  in cmd:
+                cmd = cmd[:-1]
 
         xbmc.executebuiltin(cmd)
 
@@ -147,7 +149,7 @@ def activateWindowCommand(cmd):
         xbmc.executebuiltin(activate)
 
     if plugin:
-        processParentCommand(plugin)
+        #processParentCommand(plugin)
         xbmc.executebuiltin('Container.Update(%s)' % plugin)
 
 
@@ -155,9 +157,10 @@ def playMedia(original):
     import re
     cmd = favourite.tidy(original) #.replace(',', '') #remove spurious commas
     processParentCommand(cmd)
-        
+
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
+
 
     if mode == PLAYMEDIA_MODE:  
         xbmc.executebuiltin(cmd)
@@ -192,3 +195,5 @@ def playMedia(original):
 
     #if all else fails just execute it
     xbmc.executebuiltin(cmd)
+
+   

@@ -30,7 +30,7 @@ TITLE   = ADDON.getAddonInfo('name')
 VERSION = ADDON.getAddonInfo('version')
 ARTWORK = os.path.join(HOME, 'resources', 'artwork')
 ICON    = os.path.join(HOME, 'icon.png')
-URL     = 'http://www.watchcartoononline.com/'
+URL     = 'http://www.watchcartoononline.io/'
 
 
 

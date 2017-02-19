@@ -35,7 +35,7 @@ def Resolve(html):
             if 'cizgifilmlerizle' in url:
                 DoResolve(url, results)
 
-            if 'animeuploads' in url:
+            if 'animeuploads' in url:                
                 DoResolve(url, results)
 
             if 'vid44.php' in url:
@@ -75,6 +75,12 @@ def DoResolve(url, results):
             links = re.compile(';file=(.+?)&provider=http\'').findall(html)
             for link in links:
                 results.append([urllib.unquote_plus(link), ''])
+
+        if len(links) == 0:
+            links = re.compile('file:"(.+?)"').findall(html.replace(' ', ''))
+            for link in links:
+                results.append([link, ''])
+
 
     except Exception, e:
         pass

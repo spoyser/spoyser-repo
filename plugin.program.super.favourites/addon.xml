@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.55" provider-name="spoyser">
+<addon id="plugin.program.super.favourites" name="Super Favourites" version="1.0.56" provider-name="spoyser">
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
-    <import addon="repository.Dixie-Deans-XBMC-Repo" version="1.1.2"/>
     <import addon="script.module.metahandler" optional="true" />
   </requires>
 
@@ -25,6 +24,19 @@
     <website></website>
     <source>https://github.com/spoyser/spoyser-repo/tree/master/plugin.program.super.favourites</source>
     <email>seanpoyser at gmail.com</email>
+
+    <news>
+1.0.56: 19th February 2017
+    - added optional initial path, and include play folder parameters to quicklaunch script
+        usage: xbmc.runscript(special://home/addons/plugin.program.super.favourites/quicklaunch.py,folder1/folder2,True)
+    - fixed playlist parsing
+    - fixed quicklaunch in Krypton
+    - fixed launching ExecuteBuiltin types from the quick launch dialog
+    - fixed launching playable items added from FileManager
+    - fixed launching playable items from widgets
+    - various other fixes due to changes in Krypton
+    </news>
+
   </extension>
 
 
