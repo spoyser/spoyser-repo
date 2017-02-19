@@ -52,8 +52,12 @@ def run(path, includePlay):
     if not path.endswith(')'):
         path += ')'
 
+    contentMode = True
+    if path.lower().startswith('executebuiltin'):
+        contentMode = False
+
     import player
-    player.playCommand(path, contentMode=True) #content mode means we are not actually in SF at the moment
+    player.playCommand(path, contentMode=contentMode)
     
 
 if __name__ == '__main__':
