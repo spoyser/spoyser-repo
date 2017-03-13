@@ -222,12 +222,12 @@ def PlayAll(url, name, author, image):
     html = html.replace('\n', '')
 
     from player import Player
-    Player(xbmc.PLAYER_CORE_MPLAYER).playAll(url, html, name, author, image, ADDONID)
+    Player().playAll(url, html, name, author, image, ADDONID)
 
 
 def PlayChapter(url, name, chapter, image): 
     from player import Player
-    Player(xbmc.PLAYER_CORE_MPLAYER).playChapter(url, name, chapter, image, ADDONID)
+    Player().playChapter(url, name, chapter, image, ADDONID)
 
 
 def GenreMenu(url):

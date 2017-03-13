@@ -63,14 +63,15 @@ def showText(heading, text, waitForClose=False):
 
 
 def showChangelog(addonID=None):
+    import sfile
     try:
         if addonID:
             ADDON = xbmcaddon.Addon(addonID)
         else: 
             ADDON = xbmcaddon.Addon(ADDONID)
 
-        f     = open(ADDON.getAddonInfo('changelog'))
-        text  = f.read()
+        path  = os.path.join(HOME, 'changelog.txt')
+        text  = sfile.read(path)
         title = '%s - %s' % (xbmc.getLocalizedString(24054), ADDON.getAddonInfo('name'))
 
         showText(title, text)
