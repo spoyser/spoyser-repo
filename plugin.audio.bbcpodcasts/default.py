@@ -46,10 +46,7 @@ ADDON   = utils.ADDON
 TITLE   = utils.TITLE
 PROFILE = utils.PROFILE
 URL     = utils.URL
-
-
-global Year
-Year = 2013
+GETTEXT = utils.GETTEXT
 
 
 def downloadPath(url):        		
@@ -57,19 +54,19 @@ def downloadPath(url):
 
     if ADDON.getSetting('ask_folder') == 'true':
         dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)
+	downloadFolder = dialog.browse(3, GETTEXT(30001), 'files', '', False, False, downloadFolder)
 	if downloadFolder == '' :
 	    return None
 
     if downloadFolder is '':
         d = xbmcgui.Dialog()
-	d.ok(TITLE,'You have not set the default download folder.\nPlease update the addon settings and try again.','','')
-        ADDON.openSettings()
+	d.ok(TITLE, GETTEXT(30002), GETTEXT(30003))
+        utils.openSettings(focus=1.0)
 	downloadFolder = ADDON.getSetting('download_folder')
 
     if downloadFolder == '' and ADDON.getSetting('ask_folder') == 'true':
         dialog = xbmcgui.Dialog()
-	downloadFolder = dialog.browse(3, 'Save to folder...', 'files', '', False, False, downloadFolder)	
+	downloadFolder = dialog.browse(3, GETTEXT(30001), 'files', '', False, False, downloadFolder)	
 
     if downloadFolder == '' :
         return None
@@ -85,7 +82,7 @@ def downloadPath(url):
     filename = ''
    
     if ADDON.getSetting('ask_filename') == 'true':
-        kb = xbmc.Keyboard('', 'Save video as...' )
+        kb = xbmc.Keyboard('', GETTEXT(30004))
 	kb.doModal()
 	if kb.isConfirmed():
 	    filename = kb.getText()
@@ -102,6 +99,11 @@ def downloadPath(url):
 
 
 def Download(url):
+    url = GetPodcastURL(url)
+
+    if not url:
+        return
+
     savePath = downloadPath(url)
   
     if not savePath:
@@ -110,8 +112,11 @@ def Download(url):
     tempPath = savePath.replace('\\', '/')
     tempPath = xbmc.translatePath(os.path.join(PROFILE, savePath.rsplit('/', 1)[-1]))
    
-    time = str(225*len(savePath))
-    xbmc.executebuiltin('XBMC.Notification(' + TITLE + ', Downloading: ' + savePath + ',' + time + ')')
+    time  = 225*len(savePath)
+    label = GETTEXT(30005) % savePath
+    cmd   = '%s,%s,%d' % (TITLE, label, time)
+
+    xbmc.executebuiltin('XBMC.Notification(%s)' % cmd)
     urllib.urlretrieve(url, tempPath)
 
     import sfile
@@ -119,11 +124,85 @@ def Download(url):
     sfile.delete(tempPath)
 
 
+def retrieveNumber(text):
+    num = ''
+    for c in text:
+        if c.isdigit():
+            num += c
+
+    try:    return int(num)
+    except: return 0
+
+
+def GetPodcastURL(url):
+    try:
+        id = url.rsplit('/', 1)[-1]
+
+        html = quicknet.getURL(url, 86400)
+
+        #url = re.compile('(.+?).mp3" download=".+?%s.mp3">' % id).search(html).group(1) + '.mp3'
+        #return 'http:' + url.rsplit('http:')[-1]
+
+        html = html.split('http:')
+
+        streams = []
+
+        for item in html:
+            if '%s.mp3' % id in item: 
+                try:              
+                    search = re.compile('(.+?).mp3" download=".+?%s.mp3">(.+?)<' % id).search(item)
+                    url     = 'http:%s.mp3' % search.group(1)
+                    desc    = search.group(2).strip()
+                    bitrate = retrieveNumber(desc)
+                    streams.append([bitrate, url, desc])
+                except:
+                    pass               
+
+        if len(streams) == 0:
+            return None
+
+        if len(streams) == 1:
+            return streams[0][1]
+
+        streams.sort()
+
+        try:    STREAM = int(ADDON.getSetting('STREAM'))
+        except: STREAM = -1
+        
+        if STREAM == 0:
+            return streams[-1][1]
+
+        if STREAM == 1:
+            return streams[0][1]
+
+        options = []
+        [options.append(stream[2]) for stream in streams]
+
+        choice = xbmcgui.Dialog().select(GETTEXT(30010), options)   
+
+        if choice < 0:
+            return None
+
+        return streams[choice][1]
+
+        return url
+    except:
+        pass
+
+    return None
+
+
 def PlayPodcast(url, duration, thumbnail):
     if duration == None:
         duration = '0'
+
     duration = int(duration)
 
+    url = GetPodcastURL(url)
+
+    if not url:
+        return
+   
     if thumbnail == None:
         thumbnail = 'DefaultPlaylist.png'
         
@@ -149,13 +228,11 @@ def find(f, seq):
 
 
 def GetOPML():
-    global Year
     opml = ElementTree.fromstring(quicknet.getURL(URL, 3600)) # 1 hr  
 
     try:
         head = opml.find('head')
         date = head.findtext('dateModified').split(' ')
-        Year = int(date[3])
     except:
         pass
 
@@ -254,7 +331,6 @@ def Search():
                 thumb       = fixImage(item['image'], '256x256')
                 fanart      = fixImage(item['image'], '1280x720')
                 addSearchResult(title, url, thumb, fanart, description)
-                print artwork
             except:
                 pass
 
@@ -291,7 +367,7 @@ def addSearchResult(title, url, thumb, fanart, description):
 
     liz = xbmcgui.ListItem(title, iconImage=thumb, thumbnailImage=thumb)
 
-    liz.setInfo(type='music', infoLabels={'Title':title, 'comment':description, 'year':Year, 'artist':' ', 'genre':' ', 'album':title} ) 
+    liz.setInfo(type='music', infoLabels={'Title':title, 'comment':description, 'artist':' ', 'genre':' ', 'album':title} ) 
 
     liz.setProperty('Fanart_Image', fanart)    
 
@@ -319,7 +395,7 @@ def addPodcast(name, url, genre, keyname, title, duration, _thumbnail = 'Default
         
     liz = xbmcgui.ListItem(name, iconImage=thumbnail, thumbnailImage=thumbnail)
 
-    liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "year" : Year, "artist" : keyname, "genre" : genre, "album" : title} )    
+    liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "artist" : keyname, "genre" : genre, "album" : title} )    
 
     liz.setProperty('Fanart_Image', fanart)    
     liz.setProperty('IsPlayable', 'true')
@@ -342,7 +418,7 @@ def addStation(name, url, genre, keyname, _thumbnail = 'DefaultPlaylist.png', de
         
     liz = xbmcgui.ListItem(name, iconImage=thumbnail, thumbnailImage=thumbnail)
 
-    liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "year" : Year, "artist" : keyname, "genre" : genre, "album" : name} )        
+    liz.setInfo(type='music', infoLabels={"Title": name, "comment" : desc, "artist" : keyname, "genre" : genre, "album" : name} )        
 
     liz.setProperty('Fanart_Image', fanart)  
 

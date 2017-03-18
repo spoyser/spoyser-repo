@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="General">
-        <setting id="URL" type="text" label="OPML Location" default="http://www.bbc.co.uk/podcasts.opml"/>
+    <category label="31000">
+        <setting id="URL"    type="text" label="31001" default="http://www.bbc.co.uk/podcasts.opml"/>
+        <setting label="31002" id="STREAM" type="enum" lvalues="30007|30008|30009" default="0"/>
     </category>
-    <category label="Downloads">
-        <setting id="download_folder" type="folder" label="Default download folder"  default=""/>
-        <setting id="ask_folder"      type="bool"   label="Ask for folder"           default="false"/>
-        <setting id="ask_filename"    type="bool"   label="Ask for filename"         default="false"/>
+	
+    <category label="32000">
+        <setting id="download_folder" type="folder" label="32001"  default=""/>
+        <setting id="ask_folder"      type="bool"   label="32002"  default="false"/>
+        <setting id="ask_filename"    type="bool"   label="32003"  default="false"/>
   </category>
 </settings>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+	<string id="30000">BBC Podcasts</string>
+	<string id="30001">Save to folder...</string>
+	<string id="30002">You have not set the default download folder.</string>
+	<string id="30003">Please update the addon settings and try again.</string>
+	<string id="30004">Save Podcast as...</string>
+        <string id="30005">Downloading: %s</string>
+        <string id="30007">Best</string>	
+        <string id="30008">Lowest</string>
+        <string id="30009">Ask</string>
+        <string id="30010">Please Select Stream</string>
+	
+	
+	<string id="31000">General</string>
+	<string id="31001">Online location</string>
+        <string id="31002">Stream selection</string>
+	
+	<string id="32000">Downloads</string>
+	<string id="32001">Default download folder</string>
+	<string id="32002">Ask for folder</string>
+	<string id="32003">Ask for filename</string>					
+	
+</strings>
