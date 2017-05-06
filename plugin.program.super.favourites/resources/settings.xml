@@ -6,7 +6,7 @@
     <setting id="MANUAL_ID"  type="text" label="" default="1"     visible="false"/>	
 		
     <setting id="DISPLAYNAME" label="30120" type="labelenum" lvalues="30122|30121" visible="false"/>
-    <setting id="FOLDER"      label="30056" type="folder"    default="special://profile/addon_data/plugin.program.super.favourites/" />
+    <setting id="FOLDER"      label="30056" type="folder"    default="" />
 		
     <setting id="HOTKEY"      label="30026" type="labelenum" lvalues="30027|30028|30029|30030|30031|30032|30033|30034|30035|30036|30037|30038|30039|30058|30111"/>		
     <setting                  label="30112" type="action"    action="RunScript($CWD/keyProgrammer.py,super_favourites_hot.xml)" visible="eq(-1,14)"/>

@@ -219,7 +219,7 @@ def launchDefaultSearch(keyword):
 
          
 def doMenu(mode):
-    import menuUtils
+    import menuUtils        
 
     utils.log('**** Context Menu Information ****')
 
@@ -487,8 +487,8 @@ def main():
 
         if sys.argv[-1].lower() == 'launchsfmenu':
             mode = 2 #launched via LaunchSFMenu script
-    
-    try:      
+
+    try:   
         menu(mode)
     except Exception, e:
         utils.log('Exception in capture.py %s' % str(e))

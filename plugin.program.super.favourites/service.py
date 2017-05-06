@@ -68,6 +68,14 @@ class MyMonitor(xbmc.Monitor):
         self.std_addtofaves = utils.ADDON.getSetting('ADDTOFAVES_ON_STD') == 'true'
         self.std_download   = utils.ADDON.getSetting('DOWNLOAD_ON_STD')   == 'true'
 
+        #print "*************************"
+        #print "CONTEXT_STD       = %s" % self.std_context
+        #print type(self.std_context)
+        #print "ADDTOFAVES_ON_STD = %s" % self.std_addtofaves
+        #print type(self.std_addtofaves)
+        #print "DOWNLOAD_ON_STD   = %s" % self.std_download
+        #print type(self.std_download)
+
         #useage in addon.xml : <visible>!IsEmpty(Window(Home).Property(SF_STD_CONTEXTMENU_ENABLED))</visible>
 
         #---------- SF on standard context menu ------------------------------------------------

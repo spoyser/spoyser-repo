@@ -27,7 +27,7 @@ import urllib
 import utils
 import sfile
 
-
+HOME_INDICATOR = 'HOME:'
 
 SHOWUNAVAIL = utils.ADDON.getSetting('SHOWUNAVAIL') == 'true'
 
@@ -37,11 +37,16 @@ def getFavourites(file, limit=10000, validate=True, superSearch=False, chooser=F
 
     prefix = ''
     if not chooser:
-        prefix = 'HOME:' if xbmcgui.getCurrentWindowId() == 10000 else ''    
+        prefix = HOME_INDICATOR if xbmcgui.getCurrentWindowId() == 10000 else ''    
 
     xml  = '<favourites></favourites>'
     if sfile.exists(file):
         xml = sfile.read(file)
+
+    #fix files due to previous bug
+    if HOME_INDICATOR in xml:
+        xml = xml.replace(HOME_INDICATOR, '')
+        sfile.write(file, xml)
 
     items = []
 
@@ -147,6 +152,13 @@ def upgradeCmd(cmd):
     return cmd
 
 
+def removeHome(cmd):
+    while cmd.startswith(HOME_INDICATOR):
+        cmd = cmd[len(HOME_INDICATOR):]
+    return cmd
+
+
+
 def writeFavourites(file, faves):
     kodiFile = os.path.join('special://profile', utils.FILENAME)
     isKodi = xbmc.translatePath(file) == xbmc.translatePath(kodiFile)
@@ -160,6 +172,8 @@ def writeFavourites(file, faves):
             name  = utils.escape(fave[0])
             thumb = utils.escape(fave[1])
             cmd   = utils.escape(fave[2])
+
+            cmd = removeHome(cmd)
 
             if isKodi and cmd.lower().startswith('playmedia'):
                 cmd = removeSFOptions(cmd)
@@ -512,6 +526,33 @@ def getOption(cmd, option):
 
     try:    return options[option]
     except: return ''
+
+
+def fixCase(cmd):
+    cmd = cmd.replace('activatewindow',       'ActivateWindow')
+    cmd = cmd.replace('runscript',            'RunScript')
+    cmd = cmd.replace('playmedia',            'playmedia')
+    cmd = cmd.replace('startandroidactivity', 'StartAndroidActivity')
+    cmd = cmd.replace('showpicture',          'ShowPicture')
+
+    return cmd
+
+
+def isKodiCommand(cmd):
+    cmd = cmd.lower()
+    commands = []
+    commands.append('activatewindow')
+    commands.append('runscript')
+    commands.append('playmedia')
+    commands.append('startandroidactivity')
+    commands.append('showpicture')
+
+    for command in commands:
+        if cmd.startswith(command):
+            utils.DialogOK("FLLY FORMED")
+            return True
+
+    return False
 
 
 def get_params(path):

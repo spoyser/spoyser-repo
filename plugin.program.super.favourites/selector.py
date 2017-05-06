@@ -25,7 +25,6 @@ FILENAME = inspect.getfile(inspect.currentframe())
 
 def _select(index):
     import utils
-    #utils.DialogOK(str(index))
     if index < 0:
         return
 
@@ -33,7 +32,7 @@ def _select(index):
     import utils 
 
     view  = 0
-    count = 10
+    count = 50
     while view < 1 and count > 0:
         count -= 1
         view   = utils.getViewType()

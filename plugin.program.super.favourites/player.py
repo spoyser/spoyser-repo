@@ -35,6 +35,7 @@ PLAYMEDIA_MODE      = utils.PLAYMEDIA_MODE
 ACTIVATEWINDOW_MODE = utils.ACTIVATEWINDOW_MODE
 RUNPLUGIN_MODE      = utils.RUNPLUGIN_MODE
 ACTION_MODE         = utils.ACTION_MODE
+SHOWPICTURE_MODE    = utils.SHOWPICTURE_MODE
 
 PLAY_PLAYLISTS = ADDON.getSetting('PLAY_PLAYLISTS') == 'true'    
 
@@ -161,12 +162,15 @@ def playMedia(original):
     try:    mode = int(favourite.getOption(original, 'mode'))
     except: mode = 0
 
-
     if mode == PLAYMEDIA_MODE:  
         xbmc.executebuiltin(cmd)
         return
 
     plugin = re.compile('"(.+?)"').search(cmd).group(1)
+
+    if mode == SHOWPICTURE_MODE:  
+        xbmc.executebuiltin('ShowPicture(%s)' % plugin)
+        return
 
     if len(plugin) < 1:
         xbmc.executebuiltin(cmd)

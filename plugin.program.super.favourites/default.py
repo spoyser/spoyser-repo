@@ -68,6 +68,7 @@ PLAYMEDIA_MODE      = utils.PLAYMEDIA_MODE
 ACTIVATEWINDOW_MODE = utils.ACTIVATEWINDOW_MODE
 RUNPLUGIN_MODE      = utils.RUNPLUGIN_MODE
 ACTION_MODE         = utils.ACTION_MODE
+SHOWPICTURE_MODE    = utils.SHOWPICTURE_MODE
 
 MANUAL_CMD = 'SF_MANUAL_CMD_'
 
@@ -1078,6 +1079,7 @@ def changePlaybackMode(file, cmd):
     playMedia      = GETTEXT(30142)
     activateWindow = GETTEXT(30143)
     runPlugin      = GETTEXT(30144)
+    showpicture    = GETTEXT(30273)
 
     if mode == PLAYMEDIA_MODE:
         playMedia = '[COLOR selected]%s[/COLOR]' % playMedia
@@ -1088,10 +1090,14 @@ def changePlaybackMode(file, cmd):
     if mode == RUNPLUGIN_MODE:
         runPlugin = '[COLOR selected]%s[/COLOR]' % runPlugin
 
+    if mode == SHOWPICTURE_MODE:
+        showpicture = '[COLOR selected]%s[/COLOR]' % showpicture
+
     options = []
     options.append([playMedia,      PLAYMEDIA_MODE])
     options.append([activateWindow, ACTIVATEWINDOW_MODE])
     options.append([runPlugin,      RUNPLUGIN_MODE])
+    options.append([showpicture,    SHOWPICTURE_MODE])
 
     import menus
     if DLG_MENU:
@@ -2062,7 +2068,7 @@ def getMeta(grabber, name, type, year=None, season=None, episode=None, imdb=None
     return infoLabels
 
 
-def getMovieMenu(infolabels, menu=None):    
+def getMovieMenu(infolabels, menu=None):  
     if not menu:
         menu = []
 
@@ -2854,10 +2860,11 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
 params = utils.get_params(sys.argv[2])
 
 
-doRefresh   = False
-doEnd       = True
-cacheToDisc = False
-handle      = int(sys.argv[1])
+doRefresh     = False
+doEnd         = True
+cacheToDisc   = False
+updateListing = False
+handle        = int(sys.argv[1])
 
 
 theFolder = ''
@@ -3037,7 +3044,7 @@ if mode == _ACTIVATESEARCH:
 
 elif mode == _XBMC:
     showXBMCFolder()
-    xbmc.executebuiltin('Container.Update')
+    #xbmc.executebuiltin('Container.Update')
 
 
 elif mode == _FOLDER:
@@ -3413,7 +3420,7 @@ if doEnd:
 
     if handle > -1:
         xbmcgui.Window(10000).setProperty('SF_NMR_ITEMS', str(nItem if not parentItem else nItem+1))
-        xbmcplugin.endOfDirectory(handle, cacheToDisc=cacheToDisc)
+        xbmcplugin.endOfDirectory(handle, updateListing=updateListing, cacheToDisc=cacheToDisc)
 
     if VIEWTYPE > 0:        
         xbmc.executebuiltin('Container.SetViewMode(%d)' % VIEWTYPE)

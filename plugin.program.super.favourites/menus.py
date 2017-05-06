@@ -37,8 +37,7 @@ ACTION_UP    = 3
 ACTION_DOWN  = 4
 
 
-ESTUARY_SKIN = xbmc.getSkinDir().lower() == 'skin.estuary'
-FILENAME     = 'script-super-favourites-contextmenu.xml' if not ESTUARY_SKIN else 'script-super-favourites-contextmenu-estuary.xml'
+FILENAME     = 'script-super-favourites-contextmenu-estuary.xml' if utils.ESTUARY_SKIN else 'script-super-favourites-contextmenu.xml'
 
 
 class ContextMenu(xbmcgui.WindowXMLDialog):

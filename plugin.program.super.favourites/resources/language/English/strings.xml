@@ -264,6 +264,7 @@
         <string id="30270">Hotkey successfully assigned</string>
         <string id="30271">This will only work if [COLOR springgreen]%s[/COLOR] is setup as a source</string>
         <string id="30272">Do you wish to continue?</string>
+        <string id="30273">ShowPicture</string>
 	
 	<string id="35000">Global Menu</string>
 	<string id="35001">Enable global Super Favourites menu</string>
