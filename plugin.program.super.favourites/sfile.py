@@ -21,15 +21,17 @@
 
 
 import xbmcvfs
+import os
 
 
 def exists(filename):
-    import xbmc
     if xbmcvfs.exists(filename):
         return True
+ 
+    if xbmcvfs.exists(filename+os.sep):
+        return True
 
-    import os
-    return xbmcvfs.exists(filename + os.sep)
+    return os.path.exists(filename)
 
 
 def isfile(filename):
@@ -42,15 +44,20 @@ def isfile(filename):
     
 
 def isdir(folder):
+    import utils
     if folder.endswith('\\') or folder.endswith('/'):
         folder = folder[:-1]
 
-    if not exists(folder):
-        #raise Exception('sfile.isdir error %s does not exists' % folder)
-        return False
-
     import stat
-    return stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode())
+    if stat.S_ISDIR(xbmcvfs.Stat(folder).st_mode()):
+        return True
+
+    import xbmc
+    folder = xbmc.translatePath(folder)
+    if folder.endswith('\\') or folder.endswith('/'):
+        folder = folder[:-1]
+
+    return stat.S_ISDIR(xbmcvfs.Stat(xbmc.translatePath(folder)).st_mode())
    
 
 def file(filename, type):

@@ -2817,7 +2817,8 @@ def addDir(label, mode, index=-1, path = '', cmd = '', thumbnail='', isFolder=Tr
         art['banner']    = addArtwork(ART_BANNER,    thumbnail, fanart)
         art['poster']    = addArtwork(ART_POSTER,    thumbnail, fanart)
         art['thumb']     = thumbnail
-        art['fanart']    = fanart
+        if SHOW_FANART:
+            art['fanart'] = fanart
         
         if len(art) > 0:
             liz.setArt(art) 

@@ -37,7 +37,7 @@ ACTION_UP    = 3
 ACTION_DOWN  = 4
 
 
-FILENAME     = 'script-super-favourites-contextmenu-estuary.xml' if utils.ESTUARY_SKIN else 'script-super-favourites-contextmenu.xml'
+FILENAME = 'script-super-favourites-contextmenu-estuary.xml' if utils.ESTUARY_SKIN else 'script-super-favourites-contextmenu.xml'
 
 
 class ContextMenu(xbmcgui.WindowXMLDialog):

@@ -1,6 +1,6 @@
 #
 #       Copyright (C) 2016-
-#       Sean Poyser (seanpoyser@gmail.com)
+#       Sean Poyser (seanpoyser@gmail.com)f
 #
 #  This Program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with XBMC; see the file COPYING.  If not, write to
+#  along with XBMC; see the file COPYING.  If not, write tof
 #  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
 #
@@ -44,6 +44,11 @@ def getText(title, text=''):
         return None
 
     return text
+
+
+def getPrefix():
+    try:    return 'Container(%d).' % int(xbmc.getInfoLabel('System.CurrentControlId'))
+    except: return ''
 
 
 def fixWindowID(window):
@@ -88,6 +93,7 @@ def _getCmd(path, fanart, desc, window, filename, isFolder, meta, picture):
     if window == 10003:#FileManager
         import sfile
         import os
+
         isFolder = sfile.isdir(path)
         if isFolder:
             #special paths fail to open - http://trac.kodi.tv/ticket/17333
@@ -101,6 +107,9 @@ def _getCmd(path, fanart, desc, window, filename, isFolder, meta, picture):
             folder = folder.rsplit('/', 1)[-1]
             #if not utils.DialogYesNo(GETTEXT(30271) % folder, GETTEXT(30272)):
             #    return None
+        else:
+            if not sfile.isfile(path):
+                return None
 
     if favourite.isKodiCommand(path):
         return path
@@ -158,16 +167,16 @@ def copyFave(name, thumb, cmd):
 
 
 def getDescription():
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
+    prefix = getPrefix()
 
     labels = []
-    labels.append('Container(%d).ListItem.Plot' % id)
-    labels.append('Container(%d).ListItem.AddonDescription' % id)
-    labels.append('Container(%d).ListItem.AddonSummary' % id)
-    labels.append('Container(%d).ListItem.Property(Artist_Description)' % id)
-    labels.append('Container(%d).ListItem.Property(Album_Description)' % id)
-    labels.append('Container(%d).ListItem.Artist' % id)
-    labels.append('Container(%d).ListItem.Comment' % id)
+    labels.append('%sListItem.Plot' % prefix)
+    labels.append('%sListItem.AddonDescription' % prefix)
+    labels.append('%sListItem.AddonSummary' % prefix)
+    labels.append('%sListItem.Property(Artist_Description)' % prefix)
+    labels.append('%sListItem.Property(Album_Description)' % prefix)
+    labels.append('%sListItem.Artist' % prefix)
+    labels.append('%sListItem.Comment' % prefix)
 
     for label in labels:
         desc = xbmc.getInfoLabel(label)
@@ -199,10 +208,7 @@ def addToFaves(params, meta=None):
 
 
 def getCast():
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
-
-
-    value = xbmc.getInfoLabel('Container(%d).ListItem.%s' % (id, 'castandrole'))
+    value = xbmc.getInfoLabel('%sListItem.%s' % (getPrefix(), 'castandrole'))
     if value:
         return [tuple(cr.split(' as ', 1)) for cr in value.split('\n')]
 
@@ -238,9 +244,7 @@ def getCast():
 def getMovieCast():
     import json
 
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
-
-    dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % id)
+    dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % getPrefix())
 
     if dbid < 0:
         return []
@@ -256,10 +260,8 @@ def getMovieCast():
 def getTVShowCast(dbid=None):
     import json
 
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
-
     if not dbid:
-        dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % id)
+        dbid  = xbmc.getInfoLabel('%sListItem.DBID' % getPrefix())
 
     if dbid < 0:
         return []
@@ -276,9 +278,7 @@ def getTVShowCast(dbid=None):
 def getSeasonCast():
     import json
 
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
-
-    dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % id)
+    dbid  = xbmc.getInfoLabel('%sListItem.DBID' % getPrefix())
 
     if dbid < 0:
         return []
@@ -307,9 +307,7 @@ def getSeasonCast():
 def getEpisodeCast():
     import json
 
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
-
-    dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % id)
+    dbid  = xbmc.getInfoLabel('Container(%d).ListItem.DBID' % getPrefix())
 
     if dbid < 0:
         return []
@@ -325,7 +323,7 @@ def getEpisodeCast():
 def getCurrentMeta():
     infoLabels = []
 
-    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
+    prefix = getPrefix()
 
     infoLabels.append('rating')
     infoLabels.append('userrating')
@@ -351,7 +349,7 @@ def getCurrentMeta():
 
     params = {}
     for label in infoLabels:
-        value = xbmc.getInfoLabel('Container(%d).ListItem.%s' % (id, label))
+        value = xbmc.getInfoLabel('%sListItem.%s' % (prefix, label))
         if value:
             if label == 'duration':
                 try:    value = int(value) * 60
@@ -369,23 +367,23 @@ def getCurrentMeta():
     
 
 def getCurrentParams():
-    id       = int(xbmc.getInfoLabel('System.CurrentControlId'))
+    prefix = getPrefix()
     
     window   = xbmcgui.getCurrentWindowId()
     folder   = xbmc.getInfoLabel('Container.FolderPath')
-    path     = xbmc.getInfoLabel('Container(%d).ListItem.FolderPath' % id)     
-    label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % id)
-    filename = xbmc.getInfoLabel('Container(%d).ListItem.FilenameAndPath' % id)
-    thumb    = xbmc.getInfoLabel('Container(%d).ListItem.Thumb' % id)    
-    icon     = xbmc.getInfoLabel('Container(%d).ListItem.ActualIcon' % id)    
-    #thumb   = xbmc.getInfoLabel('Container(%d)ListItem.Art(thumb)' % id)
-    playable = xbmc.getInfoLabel('Container(%d).ListItem.Property(IsPlayable)' % id).lower() == 'true'
-    #fanart   = xbmc.getInfoLabel('Container(%d)ListItem.Property(Fanart_Image)' % id)
-    fanart   = xbmc.getInfoLabel('Container(%d).ListItem.Art(fanart)' % id)
-    isFolder = xbmc.getCondVisibility('Container(%d).ListItem.IsFolder' % id) == 1
+    path     = xbmc.getInfoLabel('%sListItem.FolderPath' % prefix)     
+    label    = xbmc.getInfoLabel('%sListItem.Label' % prefix)
+    filename = xbmc.getInfoLabel('%sListItem.FilenameAndPath' % prefix)
+    thumb    = xbmc.getInfoLabel('%sListItem.Thumb' % prefix)    
+    icon     = xbmc.getInfoLabel('%sListItem.ActualIcon' % prefix)    
+    #thumb   = xbmc.getInfoLabel('%sListItem.Art(thumb)' % prefix)
+    playable = xbmc.getInfoLabel('%sListItem.Property(IsPlayable)' % prefix).lower() == 'true'
+    #fanart  = xbmc.getInfoLabel('%sListItem.Property(Fanart_Image)' % prefix)
+    fanart   = xbmc.getInfoLabel('%sListItem.Art(fanart)' % prefix)
+    isFolder = xbmc.getCondVisibility('%sListItem.IsFolder' % prefix) == 1
     hasVideo = xbmc.getCondVisibility('Player.HasVideo') == 1
-    picture  = xbmc.getInfoLabel('Container(%d).ListItem.PicturePath' % id)     
-    
+    picture  = xbmc.getInfoLabel('%sListItem.PicturePath' % prefix)
+
     desc = getDescription()
 
     if not thumb:
@@ -395,28 +393,17 @@ def getCurrentParams():
     except: file = None
 
     isStream = xbmc.getCondVisibility('Player.IsInternetStream') == 1
-    
+   
     #if file:
     #    isStream = file.startswith('http')
 
     if window == 10003: #filemanager
-        #import os
-        #control = 0 #id
-        #if xbmc.getCondVisibility('Control.HasFocus(20)') == 1:
-        #    control = 20
-        #elif xbmc.getCondVisibility('Control.HasFocus(21)') == 1:
-        #    control = 21
-
-        #if control == 0:
-        #    return None
+        try:    id = int(xbmc.getInfoLabel('System.CurrentControlId'))
+        except: id = 0
 
         if id not in [20, 21]:
             return None
 
-        #shouldn't need anymore
-        #label    = xbmc.getInfoLabel('Container(%d).ListItem.Label' % control)
-        #path     = xbmc.getInfoLabel('Container(%d).ListItem.FolderPath' % control)
-        #filename = xbmc.getInfoLabel('Container(%d).ListItem.Filename' % control)
         folder   = path.replace(filename,  '')
 
         import os
@@ -425,8 +412,6 @@ def getCurrentParams():
 
         isFolder = True
         thumb    = 'DefaultFolder.png'
-        #if not path.endswith(os.sep):
-        #    path += os.sep
 
     if isFolder:
         path     = path.replace('\\', '\\\\')
