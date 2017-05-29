@@ -340,12 +340,7 @@ def doMenu(mode):
             doStandard(useScript=False)
             return 
   
-        nowPlaying = xbmc.getLocalizedString(31000)
-        if not nowPlaying:
-            nowPlaying = xbmc.getLocalizedString(31040)
-        if not nowPlaying:
-            nowPlaying = GETTEXT(30220)
-
+        nowPlaying = GETTEXT(30220)
         menu.append((nowPlaying, _PLAYLIST))
         
                     
