@@ -63,7 +63,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.5" provider-name="spoyser">
+<addon id="plugin.audio.ramfm" name="RAM FM Eighties Hit Radio" version="2.0.6" provider-name="spoyser">
 
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
@@ -84,6 +84,13 @@
     <source>https://github.com/spoyser/spoyser-repo/tree/master/plugin.audio.ramfm</source>
     <email>seanpoyser at gmail dot com</email>
   </extension>
+
+
+    <news>
+2.0.6: 19th August 2017
+    - Added high quality 320kbps stream
+    </news>
+
 </addon>
 
 <addon id="plugin.audio.sonicstream" name="Sonic Stream Radio" version="1.0.1" provider-name="spoyser">
